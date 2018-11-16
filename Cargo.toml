@@ -18,10 +18,12 @@ publish = false
 version = "0.0.0"
 
 [dependencies]
-untrusted = "^0.6"
 mio = "^0.6"
 rustls = "0.14.0"
 thhp = "0.1.1"
+untrusted = "^0.6"
+url = "^1.7"
+vecio = "^0.1"
 webpki = "0.18.1"
 
 [profile.release]

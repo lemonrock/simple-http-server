@@ -49,6 +49,10 @@ pub struct TlsConfiguration
 
 impl TlsConfiguration
 {
+	pub(crate) const AlpnProtocolHttp_1_1: &'static str = "http/1.1";
+
+	pub(crate) const AlpnProtocolHttp_1_0: &'static str = "http/1.0";
+
 	/// Similar to default() but permits specifying client authentication configuration and the location of the server's certificate chain and private keys.
 	#[inline(always)]
 	pub fn new(client_authentication_configuration: ClientAuthenticationConfiguration, server_certificate_chain_file: PathBuf, server_private_key_file: PathBuf) -> Self
@@ -81,7 +85,7 @@ impl TlsConfiguration
 			server_configuration.set_single_cert_with_ocsp_and_sct(certificate_chain, private_key, online_certificate_status_protocol, signed_certificate_timestamp_list).map_err(|error| ServerConfigurationError::CouldNotSetCertificateChainAndPrivateKey(error))?;
 		}
 
-		server_configuration.set_protocols(&[String::from("http/1.1"), String::from("http/1.0")]);
+		server_configuration.set_protocols(&[String::from(Self::AlpnProtocolHttp_1_1), String::from(Self::AlpnProtocolHttp_1_0)]);
 
 		server_configuration.ignore_client_order = true;
 

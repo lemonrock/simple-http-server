@@ -3,24 +3,12 @@
 
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) enum NewServerClientConnectionError
+enum TlsWriteError
 {
-	ServingMaximumNumberOfConnections(Option<io::Error>),
-
-	NoDelay(io::Error),
-
-	KeepAlive(io::Error),
-
-	Linger(io::Error),
-
-	ReceiveBufferSize(io::Error),
-
-	SendBufferSize(io::Error),
-
-	CouldNotRegisterWithPoll(io::Error),
+	SocketVectoredWriteError(io::Error),
 }
 
-impl Display for NewServerClientConnectionError
+impl Display for TlsWriteError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
@@ -29,32 +17,16 @@ impl Display for NewServerClientConnectionError
 	}
 }
 
-impl error::Error for NewServerClientConnectionError
+impl error::Error for TlsWriteError
 {
 	#[inline(always)]
 	fn source(&self) -> Option<&(error::Error + 'static)>
 	{
-		use self::NewServerClientConnectionError::*;
+		use self::TlsWriteError::*;
 
 		match self
 		{
-			&ServingMaximumNumberOfConnections(ref option_error) => match option_error.as_ref()
-			{
-				None => None,
-				Some(error) => error,
-			},
-
-			&NoDelay(ref error) => Some(error),
-
-			&KeepAlive(ref error) => Some(error),
-
-			&Linger(ref error) => Some(error),
-
-			&ReceiveBufferSize(ref error) => Some(error),
-
-			&SendBufferSize(ref error) => Some(error),
-
-			&CouldNotRegisterWithPoll(ref error) => Some(error),
+			&SocketVectoredWriteError(ref error) => Some(error),
 		}
 	}
 }

@@ -39,6 +39,16 @@ pub struct Constraints
 	///
 	/// Defaults to 1 millisecond.
 	pub poll_time_out: Duration,
+
+	/// Receive buffer size, in bytes.
+	///
+	/// Defaults to 16,384 bytes (16Kb)
+	pub receive_buffer_size: usize,
+
+	/// Send buffer size, in bytes.
+	///
+	/// Defaults to 16,384 bytes (16Kb)
+	pub send_buffer_size: usize,
 }
 
 impl Default for Constraints
@@ -53,7 +63,9 @@ impl Default for Constraints
 			rustls_buffer_limit: 16_384,
 			plain_text_read_buffer_capacity: 4096,
 			expected_number_of_headers: 16,
-			poll_time_out: Duration::from_millis(1)
+			poll_time_out: Duration::from_millis(1),
+			receive_buffer_size: 16_384,
+			send_buffer_size: 16_384,
 		}
 	}
 }
@@ -85,7 +97,7 @@ impl Constraints
 	}
 
 	#[inline(always)]
-	pub(crate) fn read_buffer_length_exceed(&self, read_buffer: &Vec<u8>) -> bool
+	pub(crate) fn read_buffer_length_exceeded(&self, read_buffer: &Vec<u8>) -> bool
 	{
 		read_buffer.len() > self.plain_text_read_buffer_capacity
 	}

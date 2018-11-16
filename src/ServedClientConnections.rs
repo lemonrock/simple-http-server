@@ -8,7 +8,7 @@ struct ServedClientConnections<'a>
 	poll: &'a Poll,
 	constraints: &'a Constraints,
 	token_store: &'a TokenStore,
-	connections: HashMap<Token, ServedClientConnection>,
+	connections: HashMap<Token, RefCell<ServedClientConnection>>,
 }
 
 impl<'a> ServedClientConnections<'a>
@@ -25,34 +25,29 @@ impl<'a> ServedClientConnections<'a>
 		}
 	}
 
+	// TODO: Embed lemonrock/treebitmap
+	// TODO: Use remote address with a set of known good addresses to act as an access control.
 	pub(crate) fn new_served_client_connection(&mut self, (socket, remote_address): (TcpStream, SocketAddr)) -> Result<(), NewServerClientConnectionError>
 	{
 		Self::prepare_socket(socket)?;
 
-		let token = self.token_store.next_token();
+		let client_token = self.token_store.next_token();
 
 		let mut server_session = ServerSession::new(&self.server_configuration);
 		self.constraints.set_rustls_buffer_limit(&mut server_session);
 
-		if let Err(error) = server_session.register(&socket, token)
+		if let Err(error) = server_session.register(self.poll, &socket, client_token)
 		{
 			return Self::shutdown_socket_ignore_error(socket, NewServerClientConnectionError::CouldNotRegisterWithPoll(error))
 		}
 
-		let served_client_connection = ServedClientConnection
-		{
-			server_session,
-			socket,
-			remote_address,
-			read_buffer: self.read_buffer(),
-		};
-
-		let existing = self.connections.insert(token, served_client_connection);
+		let existing = self.connections.insert(client_token, RefCell::new(ServedClientConnection::new(server_session, socket, self.read_buffer())));
 		assert_eq!(existing, None, "Wrap around of tokens")
 	}
 
 	pub(crate) fn handle_event(&mut self, client_token: Token, readiness: Ready)
 	{
+		// Spurious wake-up.
 		if readiness.is_empty()
 		{
 			return
@@ -61,28 +56,43 @@ impl<'a> ServedClientConnections<'a>
 		{
 			let unix_readiness = UnixReady::from(readiness);
 
-			// HUP is sort-of handlable but difficult to understand when using TLS atop of a regular stream.
+			// HUP is difficult to understand how to respond to when using TLS atop of a regular stream.
 			if unix_readiness.is_hup() || unix_readiness.is_error()
 			{
-				self.connections.remove(&client_token);
-				return
+				return self.destroy(client_token)
 			}
 		}
 
+		let served_client_connection = match self.connections.get(&client_token)
+		{
+			// It's possible that more than one event is generated for the same socket, and the previous event resulted in an error; hence this may be empty.
+			None => return,
+			Some(served_client_connection) => served_client_connection,
+		};
+
 		if readiness.is_readable()
 		{
-			if let Some(served_client_connection) = self.connections.get_mut(&client_token)
+			let destroy = served_client_connection.borrow_mut().read().is_err();
+			if destroy
 			{
-				served_client_connection.do_tls_read(&client_token, self.poll, self.constraints)
+				return self.destroy(client_token)
 			}
 		}
 
 		if readiness.is_writable()
 		{
-			if let Some(served_client_connection) = self.connections.get_mut(&client_token)
+			let destroy = served_client_connection.borrow_mut().write().is_err();
+			if destroy
 			{
-				served_client_connection.do_tls_write()
+				return self.destroy(client_token)
 			}
+		}
+
+		// TODO: Cost of reregister system call can be avoided if we cache previous registration state (unless we use oneshot).
+		let destroy = served_client_connection.borrow().reregister(self.poll, client_token).is_err();
+		if destroy
+		{
+			return self.destroy(client_token)
 		}
 	}
 
@@ -115,7 +125,23 @@ impl<'a> ServedClientConnections<'a>
 			return Self::shutdown_socket_ignore_error(socket, Linger(error))
 		}
 
+		if let Error(error) = socket.set_recv_buffer_size(self.constraints.receive_buffer_size)
+		{
+			return Self::shutdown_socket_ignore_error(socket, ReceiveBufferSize(error))
+		}
+
+		if let Error(error) = socket.set_send_buffer_size(self.constraints.send_buffer_size)
+		{
+			return Self::shutdown_socket_ignore_error(socket, SendBufferSize(error))
+		}
+
 		return Ok(())
+	}
+
+	#[inline(always)]
+	fn destroy(&mut self, client_token: Token)
+	{
+		drop(self.connections.remove(&client_token))
 	}
 
 	#[inline(always)]

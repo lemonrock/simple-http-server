@@ -9,9 +9,15 @@ trait ServerSessionExt
 	fn poll_opt(&self) -> PollOpt;
 
 	#[inline(always)]
-	fn register(&self, socket: &TcpStream, token: Token) -> io::Result<()>
+	fn register(&self, poll: &Poll, socket: &TcpStream, client_token: Token) -> io::Result<()>
 	{
-		poll.register(socket, token, self.readiness(), self.poll_opt())
+		poll.register(socket, client_token, self.readiness(), self.poll_opt())
+	}
+
+	#[inline(always)]
+	fn reregister(&self, poll: &Poll, socket: &TcpStream, client_token: Token) -> io::Result<()>
+	{
+		poll.reregister(socket, client_token, self.readiness(), self.poll_opt())
 	}
 }
 
@@ -26,14 +32,16 @@ impl ServerSessionExt for ServerSession
 		let mut readiness = Ready::empty();
 
 		if server_session.wants_read()
-			{
-				readiness |= Ready::readable();
-			}
+		{
+			readiness |= Ready::readable();
+		}
 
 		if server_session.wants_write()
-			{
-				readiness |= Ready::writable();
-			}
+		{
+			readiness |= Ready::writable();
+		}
+
+		debug_assert_ne!(readiness, Ready::empty(), "Session wants neither read nor write");
 
 		readiness | UnixReady::error() | UnixReady::hup()
 	}
