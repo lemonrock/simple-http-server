@@ -11,7 +11,7 @@
 
 //! #simple-http-server
 //! 
-//! This is a rust library.
+//! A simple HTTPS server in Rust which supports client authentication.
 
 
 extern crate untrusted;

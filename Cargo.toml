@@ -4,9 +4,9 @@
 
 [package]
 name = "simple-http-server"
-description = "simple-http-server"
-keywords = ["simple-http-server"]
-categories = []
+description = "A simple HTTPS server in Rust which supports client authentication"
+keywords = ["simple", "http", "https", "web", "server"]
+categories = ["web-programming::http-server"]
 license = "MIT"
 authors = ["Raphael Cohn <raphael.cohn@stormmq.com>"]
 homepage = "https://github.com/lemonrock/simple-http-server"
@@ -23,7 +23,6 @@ mio = "^0.6"
 rustls = "0.14.0"
 thhp = "0.1.1"
 webpki = "0.18.1"
-
 
 [profile.release]
 opt-level = 3

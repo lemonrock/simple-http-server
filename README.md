@@ -1,10 +1,8 @@
 # simple-http-server
 
-[simple-http-server] is a rust crate.
+A simple HTTPS server in Rust which supports client authentication.
 
 
 ## Licensing
 
 The license for this project is MIT.
-
-[simple-http-server]: https://github.com/lemonrock/simple-http-server "simple-http-server GitHub page"
