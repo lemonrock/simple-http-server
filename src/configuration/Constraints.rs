@@ -20,20 +20,10 @@ pub struct Constraints
 
 	/// Buffer limit, in bytes, passed to rustls; controls internal write buffers and unread plain text buffers.
 	///
+	/// Zero (0) is interpreted as infinite.
+	///
 	/// Defaults to 16,384 bytes (16Kb).
 	pub rustls_buffer_limit: usize,
-
-	/// Initial capacity and upper limit of plain text read buffer, in bytes, for incoming HTTP request headers and the like.
-	///
-	/// This value can be exceeded (causing a realloc to occur) but when detected the sending socket will be closed.
-	///
-	/// Defaults to 4,096 bytes (4Kb).
-	pub plain_text_read_buffer_capacity: usize,
-
-	/// Expected number of headers likely in an incoming HTTP request.
-	///
-	/// Defaults to 16.
-	pub expected_number_of_headers: usize,
 
 	/// Time out during polling to allow for processing of other events (eg signals).
 	///
@@ -47,7 +37,7 @@ pub struct Constraints
 
 	/// Send buffer size, in bytes.
 	///
-	/// Defaults to 16,384 bytes (16Kb)
+	/// Defaults to 16,384 bytes (16Kb).
 	pub send_buffer_size: usize,
 }
 
@@ -61,8 +51,6 @@ impl Default for Constraints
 			events_capacity: 1024,
 			maximum_connections: 4096,
 			rustls_buffer_limit: 16_384,
-			plain_text_read_buffer_capacity: 4096,
-			expected_number_of_headers: 16,
 			poll_time_out: Duration::from_millis(1),
 			receive_buffer_size: 16_384,
 			send_buffer_size: 16_384,
@@ -88,23 +76,5 @@ impl Constraints
 	pub(crate) fn set_rustls_buffer_limit(&self, server_session: &mut ServerSession) -> Events
 	{
 		server_session.set_buffer_limit(self.rustls_buffer_limit)
-	}
-
-	#[inline(always)]
-	pub(crate) fn read_buffer(&self) -> Vec<u8>
-	{
-		Vec::with_capacity(self.plain_text_read_buffer_capacity)
-	}
-
-	#[inline(always)]
-	pub(crate) fn read_buffer_length_exceeded(&self, read_buffer: &Vec<u8>) -> bool
-	{
-		read_buffer.len() > self.plain_text_read_buffer_capacity
-	}
-
-	#[inline(always)]
-	pub(crate) fn header_buffer(&self) -> Vec<HeaderField>
-	{
-		Vec::with_capacity(constraints.expected_number_of_headers)
 	}
 }

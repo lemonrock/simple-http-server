@@ -2,7 +2,8 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+/// A fatal error whilst executing the main loop.
+#[derive(Debug)]
 pub enum MainLoopError
 {
 	/// Server configuration failed.

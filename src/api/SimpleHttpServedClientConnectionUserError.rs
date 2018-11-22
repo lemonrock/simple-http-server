@@ -2,10 +2,12 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-enum HttpServerReadError
+#[derive(Debug)]
+pub enum SimpleHttpServedClientConnectionUserError
 {
-	ReadBufferLengthExceeded,
+	CloseNotify,
+
+	ReadBufferLengthEqualed,
 
 	HttpHeadersInvalid(::thhp::Error),
 
@@ -29,9 +31,11 @@ enum HttpServerReadError
 
 	/// This should not occur as it is supposed to have been validated by rustls.
 	EndEntityClientCertificateInvalid(webpki::Error),
+
+	HttpGetUser(E),
 }
 
-impl Display for HttpServerReadError
+impl Display for SimpleHttpServedClientConnectionUserError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
@@ -40,16 +44,18 @@ impl Display for HttpServerReadError
 	}
 }
 
-impl error::Error for HttpServerReadError
+impl error::Error for SimpleHttpServedClientConnectionUserError
 {
 	#[inline(always)]
 	fn source(&self) -> Option<&(error::Error + 'static)>
 	{
-		use self::HttpServerReadError::*;
+		use self::SimpleHttpServedClientConnectionUserError::*;
 
 		match self
 		{
-			&ReadBufferLengthExceeded => None,
+			&CloseNotify => None,
+
+			&ReadBufferLengthEqualed => None,
 
 			&HttpHeadersInvalid(ref error) => Some(error),
 
@@ -72,6 +78,8 @@ impl error::Error for HttpServerReadError
 			&TargetIsInvalidUri(ref error) => Some(error),
 
 			&EndEntityClientCertificateInvalid(ref error) => Some(error),
+
+			&HttpGetUser(ref error) => Some(error),
 		}
 	}
 }

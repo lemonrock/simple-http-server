@@ -2,8 +2,10 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum ServerConfigurationError
+/// Represents an error when configuring a server.
+#[allow(missing_docs)]
+#[derive(Debug)]
+pub enum ServerConfigurationError
 {
 	CouldNotOpenCertificateAuthoritiesPemFile(io::Error),
 

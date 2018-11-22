@@ -4,16 +4,19 @@
 
 /// A simple HTTPS server.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SimpleHttpsServer<'a>
+pub struct SimpleHttpsServer<'a, SCCUF: ServedClientConnectionsUserFactory>
 {
-	/// Constraints
+	/// Constraints.
 	pub constraints: &'a Constraints,
 
-	/// Essential TLS configuration
-	pub tls_configuration: &'a TlsConfiguration
+	/// Essential TLS configuration.
+	pub tls_configuration: &'a TlsConfiguration,
+
+	/// Factory.
+	pub served_client_connections_user_factory: &'a SCCUF,
 }
 
-impl<'a> SimpleHttpsServer<'a>
+impl<'a, SCCUF: ServedClientConnectionsUserFactory> SimpleHttpsServer<'a, SCCUF>
 {
 	/// Main loop; may exit with an error if it can't be created.
 	///
@@ -27,7 +30,7 @@ impl<'a> SimpleHttpsServer<'a>
 		let poll = Self::poll()?;
 		let token_store = TokenStore::default();
 
-		let mut served_client_connections = ServedClientConnections::new(server_config, &poll, &token_store, self.constraints)?;
+		let mut served_client_connections = ServedClientConnections::new(server_config, &poll, &token_store, self.constraints, self.served_client_connections_user_factory)?;
 
 		let (server, server_token) = Self::register_server(&token_store, &poll, socket_address)?;
 

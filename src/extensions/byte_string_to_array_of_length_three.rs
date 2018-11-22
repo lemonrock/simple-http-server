@@ -2,31 +2,12 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum TlsWriteError
+#[inline(always)]
+const fn byte_string_to_array_of_length_three(byte_string: &[u8]) -> [u8; 3]
 {
-	SocketVectoredWriteError(io::Error),
-}
-
-impl Display for TlsWriteError
-{
-	#[inline(always)]
-	fn fmt(&self, f: &mut Formatter) -> fmt::Result
-	{
-		Debug::fmt(self, f)
-	}
-}
-
-impl error::Error for TlsWriteError
-{
-	#[inline(always)]
-	fn source(&self) -> Option<&(error::Error + 'static)>
-	{
-		use self::TlsWriteError::*;
-
-		match self
-		{
-			&SocketVectoredWriteError(ref error) => Some(error),
-		}
-	}
+	[
+		byte_string[0],
+		byte_string[1],
+		byte_string[2],
+	]
 }

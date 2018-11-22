@@ -3,50 +3,26 @@
 
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-enum TlsReadError
+pub struct SimpleHttpServedClientConnectionUserSettings
 {
-	SocketReadError(io::Error),
+	pub(crate) our_hostname: String,
 
-	EndOfFile,
+	pub(crate) our_port_string: String,
 
-	ProcessNewPacketsError(TLSError),
-
-	ReadToEndError(io::Error),
-
-	ReadBufferLengthExceeded,
-
-	HttpViolation(HttpServerReadError),
+	pub(crate) our_url: Url,
 }
 
-impl Display for TlsReadError
+impl SimpleHttpServedClientConnectionUserSettings
 {
 	#[inline(always)]
-	fn fmt(&self, f: &mut Formatter) -> fmt::Result
+	pub fn new(our_hostname: &str, our_port: u16) -> Self
 	{
-		Debug::fmt(self, f)
-	}
-}
-
-impl error::Error for TlsReadError
-{
-	#[inline(always)]
-	fn source(&self) -> Option<&(error::Error + 'static)>
-	{
-		use self::TlsReadError::*;
-
-		match self
+		let our_port_string = format!("{:?}", our_port);
+		Self
 		{
-			&SocketReadError(ref error) => Some(error),
-
-			&EndOfFile => None,
-
-			&ProcessNewPacketsError(ref error) => Some(error),
-
-			&ReadToEndError(ref error) => Some(error),
-
-			&ReadBufferLengthExceeded => None,
-
-			&HttpViolation(ref error) => Some(error),
+			our_url: Url::parse(&format!("https://{}:{}", our_hostname, &our_port_string)).unwrap(),
+			our_hostname: our_hostname.to_string(),
+			our_port_string,
 		}
 	}
 }

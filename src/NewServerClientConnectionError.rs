@@ -2,8 +2,8 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) enum NewServerClientConnectionError
+#[derive(Debug)]
+pub(crate) enum NewServerClientConnectionError<E: error::Error>
 {
 	ServingMaximumNumberOfConnections(Option<io::Error>),
 
@@ -17,10 +17,14 @@ pub(crate) enum NewServerClientConnectionError
 
 	SendBufferSize(io::Error),
 
+	CouldNotCreateNewServedClientConnectionUser,
+
+	FailedOnFirstUse(ServerSessionProcessWriteReadError<E>),
+
 	CouldNotRegisterWithPoll(io::Error),
 }
 
-impl Display for NewServerClientConnectionError
+impl<E: error::Error> Display for NewServerClientConnectionError<E>
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
@@ -29,7 +33,7 @@ impl Display for NewServerClientConnectionError
 	}
 }
 
-impl error::Error for NewServerClientConnectionError
+impl<E: error::Error> error::Error for NewServerClientConnectionError<E>
 {
 	#[inline(always)]
 	fn source(&self) -> Option<&(error::Error + 'static)>
@@ -53,6 +57,10 @@ impl error::Error for NewServerClientConnectionError
 			&ReceiveBufferSize(ref error) => Some(error),
 
 			&SendBufferSize(ref error) => Some(error),
+
+			$CouldNotCreateNewServedClientConnectionUser => None,
+
+			&FailedOnFirstUse(ref error) => Some(error),
 
 			&CouldNotRegisterWithPoll(ref error) => Some(error),
 		}

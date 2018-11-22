@@ -14,41 +14,30 @@
 //! A simple HTTPS server in Rust which supports client authentication.
 
 
+extern crate arrayvec;
 extern crate mio;
 extern crate rustls;
 extern crate thhp;
+extern crate time;
 extern crate untrusted;
 extern crate url;
 extern crate vecio;
 pub extern crate webpki;
 
 
-use ::mio::Events;
-use ::mio::Poll;
-use ::mio::PollOpt;
-use ::mio::Ready;
-use ::mio::Token;
-use ::mio::tcp::TcpListener;
-use ::mio::tcp::TcpStream;
+use self::configuration::*;
+use self::extensions::*;
+use self::support::*;
+use ::mio::*;
+use ::mio::tcp::*;
 use ::mio::unix::UnixReady;
-use ::rustls::Certificate;
-use ::rustls::ClientCertVerified;
-use ::rustls::ClientCertVerifier;
-use ::rustls::DistinguishedNames;
-use ::rustls::NoServerSessionStorage;
-use ::rustls::ProtocolVersion;
-use ::rustls::RootCertStore;
-use ::rustls::ServerConfig;
-use ::rustls::ServerSession;
-use ::rustls::ServerSessionMemoryCache;
-use ::rustls::TLSError;
+use ::rustls::*;
+use ::rustls::internal::pemfile::*;
 use ::rustls::TLSError::FailedToGetCurrentTime;
 use ::rustls::TLSError::NoCertificatesPresented;
 use ::rustls::TLSError::WebPKIError;
-use ::rustls::WriteV;
-use ::rustls::internal::pemfile::certs;
-use ::rustls::internal::pemfile::pkcs8_private_keys;
-use ::rustls::internal::pemfile::rsa_private_keys;
+use ::std::borrow::Borrow;
+use ::std::borrow::Cow;
 use ::std::cell::RefCell;
 use ::std::error;
 use ::std::fmt;
@@ -65,15 +54,20 @@ use ::std::sync::atomic::AtomicBool;
 use ::std::sync::atomic::AtomicUsize;
 use ::std::sync::atomic::Ordering::Relaxed;
 use ::std::collections::HashMap;
+use ::std::mem::uninitialized;
 use ::std::net::AddrParseError;
 use ::std::net::Shutdown::Both;
 use ::std::net::SocketAddr;
+use ::std::ptr::NonNull;
+use ::std::rc::Rc;
 use ::std::sync::Arc;
 use ::std::time::Duration;
 use ::std::time::SystemTime;
 use ::thhp::HeaderField;
 use ::thhp::Request;
 use ::thhp::Status::*;
+use ::time::now_utc;
+use ::time::Tm;
 use ::untrusted::Input;
 use ::url::Url;
 use ::url::ParseError;
@@ -81,23 +75,25 @@ use ::vecio::Rawv;
 use ::webpki::*;
 
 
-include!("CertificateExt.rs");
-include!("ClientAuthenticationConfiguration.rs");
-include!("Constraints.rs");
-include!("HttpServerReadError.rs");
+/// API.
+pub mod api;
+
+
+/// Configuration.
+pub mod configuration;
+
+
+pub(crate) mod extensions;
+
+
+pub(crate) mod support;
+
+
+include!("HttpGetUser.rs");
+include!("HttpReadBufferUser.rs");
 include!("MainLoopError.rs");
 include!("NewServerClientConnectionError.rs");
-include!("RequestExt.rs");
+include!("ReadBufferUser.rs");
 include!("ServedClientConnection.rs");
 include!("ServedClientConnections.rs");
-include!("ServerConfigurationError.rs");
-include!("ServerSessionExt.rs");
 include!("SimpleHttpsServer.rs");
-include!("SignatureAlgorithms.rs");
-include!("SupportedTlsVersions.rs");
-include!("TimeExt.rs");
-include!("TlsConfiguration.rs");
-include!("TlsReadError.rs");
-include!("TlsWriteError.rs");
-include!("TokenStore.rs");
-include!("WriteVAdapter.rs");

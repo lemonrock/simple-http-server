@@ -2,18 +2,19 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-struct ServedClientConnections<'a>
+struct ServedClientConnections<'a, SCCUF: ServedClientConnectionUserFactory>
 {
 	server_configuration: Arc<ServerConfig>,
 	poll: &'a Poll,
 	constraints: &'a Constraints,
 	token_store: &'a TokenStore,
-	connections: HashMap<Token, RefCell<ServedClientConnection>>,
+	connections: HashMap<Token, RefCell<ServedClientConnection<SCCUF::SCCU::Error>>>,
+	served_client_connection_user_factory: &'a SCCUF,
 }
 
-impl<'a> ServedClientConnections<'a>
+impl<'a, SCCUF: ServedClientConnectionUserFactory> ServedClientConnections<'a, SCCUF>
 {
-	pub(crate) fn new(server_configuration: ServerConfig, poll: &'a Poll, token_store: &'a TokenStore, constraints: &'a Constraints) -> Self<'a>
+	pub(crate) fn new(server_configuration: ServerConfig, poll: &'a Poll, token_store: &'a TokenStore, constraints: &'a Constraints, served_client_connection_user_factory: &'a SCCUF) -> Self<'a>
 	{
 		Self
 		{
@@ -21,42 +22,60 @@ impl<'a> ServedClientConnections<'a>
 			poll,
 			token_store,
 			constraints,
-			connections: HashMap::with_capacity(EventsCapacity)
+			connections: HashMap::with_capacity(EventsCapacity),
+			served_client_connection_user_factory,
 		}
 	}
 
 	// TODO: Embed lemonrock/treebitmap
 	// TODO: Use remote address with a set of known good addresses to act as an access control.
-	pub(crate) fn new_served_client_connection(&mut self, (socket, remote_address): (TcpStream, SocketAddr)) -> Result<(), NewServerClientConnectionError>
+	pub(crate) fn new_served_client_connection(&mut self, (socket, remote_address): (TcpStream, SocketAddr)) -> Result<(), NewServerClientConnectionError<SCCUF::SCCU::Error>>
 	{
+		use self::NewServerClientConnectionError::*;
+
 		Self::prepare_socket(socket)?;
 
-		let client_token = self.token_store.next_token();
-
-		let mut server_session = ServerSession::new(&self.server_configuration);
-		self.constraints.set_rustls_buffer_limit(&mut server_session);
-
-		if let Err(error) = server_session.register(self.poll, &socket, client_token)
+		let served_client_connection_user = match self.served_client_connection_user_factory.new(remote_address)
 		{
-			return Self::shutdown_socket_ignore_error(socket, NewServerClientConnectionError::CouldNotRegisterWithPoll(error))
+			Err(()) => return Self::shutdown_socket_ignore_error(socket, CouldNotCreateNewServedClientConnectionUser(error)),
+			Ok(served_client_connection_user) => served_client_connection_user,
+		};
+
+		let server_session = self.new_server_session();
+
+		let served_client_connection = ServedClientConnection::new(server_session, socket, served_client_connection_user);
+
+		let registration_state = match served_client_connection.service()
+		{
+			Err(server_session_process_write_read_error) => return FailedOnFirstUse(server_session_process_write_read_error),
+			Ok(server_session_polling) => server_session_polling.registration_state(),
+		};
+
+		let client_token = self.token_store.next_token();
+		if let Err(error) = self.poll.register(&socket, client_token, registration_state.0, registration_state.1)
+		{
+			return Self::shutdown_socket_ignore_error(socket, CouldNotRegisterWithPoll(error))
 		}
 
-		let existing = self.connections.insert(client_token, RefCell::new(ServedClientConnection::new(server_session, socket, self.read_buffer())));
+		served_client_connection.initialize_registration_state(registration_state);
+
+		let existing = self.connections.insert(client_token, RefCell::new(served_client_connection));
 		assert_eq!(existing, None, "Wrap around of tokens")
+	}
+
+	fn new_server_session(&self) -> ServerSession
+	{
+		let mut server_session = ServerSession::new(&self.server_configuration);
+		self.constraints.set_rustls_buffer_limit(&mut server_session);
+		server_session
 	}
 
 	pub(crate) fn handle_event(&mut self, client_token: Token, readiness: Ready)
 	{
-		// Spurious wake-up.
-		if readiness.is_empty()
-		{
-			return
-		}
-
 		{
 			let unix_readiness = UnixReady::from(readiness);
 
-			// HUP is difficult to understand how to respond to when using TLS atop of a regular stream.
+			// HUP is not easy to make use of when using TLS atop of a regular stream.
 			if unix_readiness.is_hup() || unix_readiness.is_error()
 			{
 				return self.destroy(client_token)
@@ -70,26 +89,16 @@ impl<'a> ServedClientConnections<'a>
 			Some(served_client_connection) => served_client_connection,
 		};
 
-		if readiness.is_readable()
+		let result = served_client_connection.borrow_mut().process_write_read();
+		let destroy = match result
 		{
-			let destroy = served_client_connection.borrow_mut().read().is_err();
-			if destroy
+			Err(_) => return self.destroy(client_token),
+			Ok(server_session_polling) =>
 			{
-				return self.destroy(client_token)
-			}
-		}
-
-		if readiness.is_writable()
-		{
-			let destroy = served_client_connection.borrow_mut().write().is_err();
-			if destroy
-			{
-				return self.destroy(client_token)
-			}
-		}
-
-		// TODO: Cost of reregister system call can be avoided if we cache previous registration state (unless we use oneshot).
-		let destroy = served_client_connection.borrow().reregister(self.poll, client_token).is_err();
+				let next_registration_state = server_session_polling.registration_state();
+				served_client_connection.borrow_mut().reregister(self.poll, client_token, next_registration_state).is_err()
+			},
+		};
 		if destroy
 		{
 			return self.destroy(client_token)
@@ -161,11 +170,5 @@ impl<'a> ServedClientConnections<'a>
 	fn shutdown_socket(socket: TcpStream) -> Result<(), io::Error>
 	{
 		socket.shutdown(Both)
-	}
-
-	#[inline(always)]
-	fn read_buffer(&self) -> Vec<u8>
-	{
-		self.constraints.read_buffer()
 	}
 }
