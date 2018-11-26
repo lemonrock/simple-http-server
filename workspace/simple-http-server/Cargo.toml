@@ -1,0 +1,29 @@
+# This file is part of simple-http-server. It is subject to the license terms in the COPYRIGHT file found in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT. No part of simple-http-server, including this file, may be copied, modified, propagated, or distributed except according to the terms contained in the COPYRIGHT file.
+# Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
+
+
+[package]
+name = "simple-http-server"
+description = "A simple HTTPS server in Rust which supports client authentication"
+keywords = ["simple", "http", "https", "web", "server"]
+categories = ["web-programming::http-server"]
+license = "MIT"
+authors = ["Raphael Cohn <raphael.cohn@stormmq.com>"]
+homepage = "https://github.com/lemonrock/simple-http-server"
+repository = "https://github.com/lemonrock/simple-http-server.git"
+exclude = ["*"]
+include = ["README.md", "LICENSE", "COPYRIGHT", "src/**/*.rs", "Cargo.toml", "rustfmt.toml", "clippy.toml"]
+readme = "README.md"
+publish = false
+version = "0.0.0"
+
+[dependencies]
+arrayvec = "^0.4.7"
+likely = "^0.1"
+mio = "^0.6"
+rustls = "0.14.0"
+simple-http-server-vectored-buffers = { path = "../simple-http-server-vectored-buffers", version = "0.0.0" }
+time = "^0.1.40"
+untrusted = "^0.6"
+vecio = "^0.1"
+webpki = "0.18.1"

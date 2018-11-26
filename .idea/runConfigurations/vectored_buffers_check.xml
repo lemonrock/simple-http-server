@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="vectored-buffers check" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+    <option name="channel" value="NIGHTLY" />
+    <option name="command" value="check" />
+    <option name="allFeatures" value="true" />
+    <option name="nocapture" value="false" />
+    <option name="backtrace" value="SHORT" />
+    <option name="workingDirectory" value="file://$PROJECT_DIR$/workspace/simple-http-server-vectored-buffers" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>
