@@ -2,29 +2,29 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during read of a timer instance.
+/// An error that can occur during creation of a timer instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum TimerReadError
+pub enum EventCreationError
 {
-	/// There are no timer events to read at this time.
-	WouldBlock,
+	/// The per-process limit on the number of open file descriptors would be exceeded
+	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
 
-	/// Timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
-	Cancelled,
+	/// The system-wide limit on the total number of open files would be exceeded.
+	SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
 
-	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
-	Interrupted,
+	/// Kernel would be out of memory.
+	KernelWouldBeOutOfMemory,
 }
 
-impl Display for TimerReadError
+impl Display for EventCreationError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<TimerReadError as Debug>::fmt(self, f)
+		<EventCreationError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for TimerReadError
+impl error::Error for EventCreationError
 {
 }

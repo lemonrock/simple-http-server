@@ -4,27 +4,27 @@
 
 /// An error that can occur during read of a timer instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum TimerReadError
+pub enum EventReadError
 {
-	/// There are no timer events to read at this time.
+	/// There are no events to read at this time.
 	WouldBlock,
 
-	/// Timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
+	/// Event was cancelled; it is not obvious whether this can actually ever occur.
 	Cancelled,
 
 	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
 	Interrupted,
 }
 
-impl Display for TimerReadError
+impl Display for EventReadError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<TimerReadError as Debug>::fmt(self, f)
+		<EventReadError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for TimerReadError
+impl error::Error for EventReadError
 {
 }
