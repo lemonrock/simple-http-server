@@ -2,29 +2,29 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during creation of an event instance.
+/// An error that can occur during read of a timer instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum EventCreationError
+pub enum SignalReadError
 {
-	/// The per-process limit on the number of open file descriptors would be exceeded
-	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
+	/// There are no signals to read at this time.
+	WouldBlock,
 
-	/// The system-wide limit on the total number of open files would be exceeded.
-	SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
+	/// Signal was cancelled; it is not obvious whether this can actually ever occur.
+	Cancelled,
 
-	/// Kernel would be out of memory.
-	KernelWouldBeOutOfMemory,
+	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
+	Interrupted,
 }
 
-impl Display for EventCreationError
+impl Display for SignalReadError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<EventCreationError as Debug>::fmt(self, f)
+		<SignalReadError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for EventCreationError
+impl error::Error for SignalReadError
 {
 }
