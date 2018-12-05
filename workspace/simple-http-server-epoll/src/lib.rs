@@ -31,7 +31,7 @@
 //! * timerfd.
 //!
 //!
-//! ## Unsupported
+//! ## Unsupported for now
 //!
 //! * userfaultd.
 //! * memfd.
