@@ -25,17 +25,17 @@ extern "C"
 	/// 
 	/// Errors documented to be returned from `epoll_ctl()` in `errno`:-
 	/// 
-	/// *`EBADF`: `epfd` or `fd` is not a valid file descriptor.
-	/// *`EEXIST`: `op` was `EPOLL_CTL_ADD`, and the supplied file descriptor `fd` is already registered with this epoll instance.
-	/// *`EINVAL`: `epfd` is not an epoll file descriptor, or `fd` is the same as `epfd`, or the requested operation `op` is not supported by this interface.
-	/// *`EINVAL`: An invalid event type was specified along with `EPOLLEXCLUSIVE` in `events`.
-	/// *`EINVAL`: `op` was `EPOLL_CTL_MOD` and `events` included `EPOLLEXCLUSIVE`.
-	/// *`EINVAL`: `op` was `EPOLL_CTL_MOD` and the `EPOLLEXCLUSIVE` flag has previously been applied to this `epfd`, `fd` pair.
-	/// *`EINVAL`: `EPOLLEXCLUSIVE` was specified in `events` and `fd` refers to an epoll instance.
-	/// *`ELOOP`: `fd` refers to an epoll instance and this `EPOLL_CTL_ADD` operation would result in a circular loop of epoll instances monitoring one another.
-	/// *`ENOENT`: `op` was `EPOLL_CTL_MOD` or `EPOLL_CTL_DEL`, and `fd` is not registered with this epoll instance.
-	/// *`ENOMEM`: There was insufficient memory to handle the requested `op` control operation.
-	/// *`ENOSPC`: The limit imposed by `/proc/sys/fs/epoll/max_user_watches` was encountered while trying to register (`EPOLL_CTL_ADD`) a new file descriptor on an epoll instance.
-	/// *`EPERM`: The target file `fd` does not support epoll. This error can occur if `fd` refers to, for example, a regular file or a directory.
+	/// * `EBADF`: `epfd` or `fd` is not a valid file descriptor.
+	/// * `EEXIST`: `op` was `EPOLL_CTL_ADD`, and the supplied file descriptor `fd` is already registered with this epoll instance.
+	/// * `EINVAL`: `epfd` is not an epoll file descriptor, or `fd` is the same as `epfd`, or the requested operation `op` is not supported by this interface.
+	/// * `EINVAL`: An invalid event type was specified along with `EPOLLEXCLUSIVE` in `events`.
+	/// * `EINVAL`: `op` was `EPOLL_CTL_MOD` and `events` included `EPOLLEXCLUSIVE`.
+	/// * `EINVAL`: `op` was `EPOLL_CTL_MOD` and the `EPOLLEXCLUSIVE` flag has previously been applied to this `epfd`, `fd` pair.
+	/// * `EINVAL`: `EPOLLEXCLUSIVE` was specified in `events` and `fd` refers to an epoll instance.
+	/// * `ELOOP`: `fd` refers to an epoll instance and this `EPOLL_CTL_ADD` operation would result in a circular loop of epoll instances monitoring one another.
+	/// * `ENOENT`: `op` was `EPOLL_CTL_MOD` or `EPOLL_CTL_DEL`, and `fd` is not registered with this epoll instance.
+	/// * `ENOMEM`: There was insufficient memory to handle the requested `op` control operation.
+	/// * `ENOSPC`: The limit imposed by `/proc/sys/fs/epoll/max_user_watches` was encountered while trying to register (`EPOLL_CTL_ADD`) a new file descriptor on an epoll instance.
+	/// * `EPERM`: The target file `fd` does not support epoll. This error can occur if `fd` refers to, for example, a regular file or a directory.
 	pub(crate) fn epoll_ctl(epfd: RawFd, op: c_int, fd: RawFd, event: *mut epoll_event) -> c_int;
 }

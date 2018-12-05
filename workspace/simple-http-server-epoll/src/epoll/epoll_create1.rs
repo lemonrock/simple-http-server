@@ -21,10 +21,10 @@ extern "C"
 	///
 	/// Errors documented to be returned from `epoll_ctl()` in `errno`:-
 	///
-	/// *`EINVAL`: Invalid value specified in flags.
-	/// *`EMFILE`: The per-user limit on the number of epoll instances imposed by `/proc/sys/fs/epoll/max_user_instances` was encountered.
-	/// *`EMFILE`: The per-process limit on the number of open file descriptors has been reached.
-	/// *`ENFILE`: The system-wide limit on the total number of open files has been reached.
-	/// *`ENOMEM`: There was insufficient memory to create the kernel object.
+	/// * `EINVAL`: Invalid value specified in flags.
+	/// * `EMFILE`: The per-user limit on the number of epoll instances imposed by `/proc/sys/fs/epoll/max_user_instances` was encountered.
+	/// * `EMFILE`: The per-process limit on the number of open file descriptors has been reached.
+	/// * `ENFILE`: The system-wide limit on the total number of open files has been reached.
+	/// * `ENOMEM`: There was insufficient memory to create the kernel object.
 	pub(crate) fn epoll_create1(flags: c_int) -> c_int;
 }

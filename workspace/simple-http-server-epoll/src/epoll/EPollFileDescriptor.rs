@@ -4,9 +4,9 @@
 
 /// Represents an epoll instance.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct EPoll(RawFd);
+pub struct EPollFileDescriptor(RawFd);
 
-impl Drop for EPoll
+impl Drop for EPollFileDescriptor
 {
 	#[inline(always)]
 	fn drop(&mut self)
@@ -20,7 +20,7 @@ impl Drop for EPoll
 	}
 }
 
-impl EPoll
+impl EPollFileDescriptor
 {
 	/// Creates a new instance.
 	#[inline(always)]
@@ -31,7 +31,7 @@ impl EPoll
 		let result = unsafe { epoll_create1(EPOLL_CLOEXEC) };
 		if likely!(result >= 0)
 		{
-			Ok(EPoll(result))
+			Ok(EPollFileDescriptor(result))
 		}
 		else if likely!(result == -1)
 		{
