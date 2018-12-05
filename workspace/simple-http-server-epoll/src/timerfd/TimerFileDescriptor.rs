@@ -50,6 +50,53 @@ impl TimerFileDescriptor
 		}
 	}
 
+	/// Reads the time from the timer.
+	///
+	/// Use this only after a read-ready event notification is received (using edge-triggered events).
+	#[inline(always)]
+	pub fn read(&self) -> Result<u64, TimerReadError>
+	{
+		use self::TimerReadError::*;
+
+		let mut value: u64 = unsafe { uninitialized() };
+
+		const SizeOfRead: usize = size_of::<u64>();
+
+		let result = unsafe { read(self.0, &mut value as *mut _ as *mut _, SizeOfRead) };
+
+		if likely!(result == SizeOfRead as isize)
+		{
+			Ok(value)
+		}
+		else
+		{
+			match result
+			{
+				-1 =>
+				{
+					let error_number = errno();
+					match error_number.0
+					{
+						EAGAIN => Err(WouldBlock),
+						ECANCELED => Err(Cancelled),
+						EINTR => Err(Interrupted),
+						EIO => Err(Cancelled),
+						EBADF => panic!("`fd` is not a valid file descriptor or is not open for reading"),
+						EFAULT => panic!("`buf` is outside your accessible address space"),
+						EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
+						EISDIR => panic!("`fd` refers to a directory"),
+
+						_ => panic!("Unexpected error `{}`", error_number),
+					}
+				}
+
+				0 => panic!("End of file but we haven't closed the file descriptor"),
+
+				_ => unreachable!(),
+			}
+		}
+	}
+
 	/// Get the value of the timer.
 	#[inline(always)]
 	pub fn get(&self) -> itimerspec
@@ -76,12 +123,89 @@ impl TimerFileDescriptor
 		}
 	}
 
-	/// Set the value of the timer.
+	/// Disarms the timer and returns the old value of it.
+	#[inline(always)]
+	pub fn disarm(&self) -> itimerspec
+	{
+		static Disarm: itimerspec = itimerspec
+		{
+			it_interval: timespec
+			{
+				tv_sec: 0,
+				tv_nsec: 0,
+			},
+			it_value: timespec
+			{
+				tv_sec: 0,
+				tv_nsec: 0,
+			},
+		};
+		self.set(&Disarm, TimerSetChoices::Relative)
+	}
+
+	/// Arms the timer to go off once and returns the old value of it.
+	#[inline(always)]
+	pub fn arm_as_one_off(&self, alarm_goes_off_at: &timespec, interpretation_of_new_value: TimerSetChoices) -> itimerspec
+	{
+		debug_assert_ne!((alarm_goes_off_at.tv_sec == 0 && alarm_goes_off_at.tv_nsec == 0), true, "alarm_goes_off_at.tv_sec and alarm_goes_off_at.tv_nsec can not both be zero");
+
+		self.set
+		(
+			&itimerspec
+			{
+				it_interval: timespec
+				{
+					tv_sec: 0,
+					tv_nsec: 0,
+				},
+				it_value: timespec
+				{
+					tv_sec: alarm_goes_off_at.tv_sec,
+					tv_nsec: alarm_goes_off_at.tv_nsec,
+				},
+			},
+			interpretation_of_new_value
+		)
+	}
+
+	/// Arms the timer to go off once and returns the old value of it.
+	#[inline(always)]
+	pub fn arm_to_go_off_repeatedly(&self, alarm_goes_off_at_repeatedly: &timespec, interpretation_of_new_value: TimerSetChoices) -> itimerspec
+	{
+		debug_assert_ne!((alarm_goes_off_at_repeatedly.tv_sec == 0 && alarm_goes_off_at_repeatedly.tv_nsec == 0), true, "alarm_goes_off_at_repeatedly.tv_sec and alarm_goes_off_at_repeatedly.tv_nsec can not both be zero");
+
+		self.set
+		(
+			&itimerspec
+			{
+				it_interval: timespec
+				{
+					tv_sec: alarm_goes_off_at_repeatedly.tv_sec,
+					tv_nsec: alarm_goes_off_at_repeatedly.tv_nsec,
+				},
+				it_value: timespec
+				{
+					tv_sec: alarm_goes_off_at_repeatedly.tv_sec,
+					tv_nsec: alarm_goes_off_at_repeatedly.tv_nsec,
+				},
+			},
+			interpretation_of_new_value
+		)
+	}
+
+	/// Arms or disarms the timer.
+	///
+	/// Set both fields of `new_value.it_value to disarm the timer`.
+	///
+	/// If both fields of `new_value.it_interval` are zero, the timer expires just once, at the time specified by `new_value.it_value`.
 	///
 	/// Returns the previous value of the timer.
 	#[inline(always)]
-	pub fn set(&self, new_value: &itimerspec, interpretation_of_new_value: TimerSetChoices) -> itimerspec
+	fn set(&self, new_value: &itimerspec, interpretation_of_new_value: TimerSetChoices) -> itimerspec
 	{
+		debug_assert!(new_value.it_interval.tv_nsec <= 999_999_999, "new_value.it_interval must not exceed 999,999,999");
+		debug_assert!(new_value.it_value.tv_nsec <= 999_999_999, "new_value.it_value must not exceed 999,999,999");
+
 		let mut old_value = unsafe { uninitialized() };
 		let result = unsafe { timerfd_settime(self.0, interpretation_of_new_value as i32, new_value, &mut old_value) };
 		if likely!(result == 0)
