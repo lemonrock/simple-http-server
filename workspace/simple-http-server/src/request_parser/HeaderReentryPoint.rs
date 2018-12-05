@@ -5,11 +5,11 @@
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 enum HeaderReentryPoint
 {
-	Begin(NonNull<u8>),
+	Begin(VectoredBufferOffset),
 
-	HeaderNameEnds(NonNull<u8>, NonNull<u8>),
+	HeaderNameEnds(VectoredBufferOffset, VectoredBufferOffset),
 
-	HeaderValueStarts(NonNull<u8>, NonNull<u8>, NonNull<u8>),
+	HeaderValueStarts(VectoredBufferOffset, VectoredBufferOffset, VectoredBufferOffset),
 }
 
 impl HeaderReentryPoint
@@ -92,7 +92,7 @@ impl HeaderReentryPoint
 	}
 
 	#[inline(always)]
-	fn check_amount_parsed_is_not_too_great(name_starts_at_inclusive: NonNull<u8>, bytes: &Bytes) -> Result<(), Status<Self>>
+	fn check_amount_parsed_is_not_too_great(name_starts_at_inclusive: VectoredBufferOffset, bytes: &Bytes) -> Result<(), Status<Self>>
 	{
 		const MaximumAmountToParse: usize = 1024;
 
@@ -137,7 +137,7 @@ impl HeaderReentryPoint
 		Self::parse_after_header_name(bytes, request_user, name_starts_at_inclusive, name_ends_at_exclusive)
 	}
 
-	fn parse_after_header_name(bytes: &mut Bytes, request_user: &mut impl RequestUser, name_starts_at_inclusive: NonNull<u8>, name_ends_at_exclusive: NonNull<u8>) -> Result<bool, Status<Self>>
+	fn parse_after_header_name(bytes: &mut Bytes, request_user: &mut impl RequestUser, name_starts_at_inclusive: VectoredBufferOffset, name_ends_at_exclusive: VectoredBufferOffset) -> Result<bool, Status<Self>>
 	{
 		let name_starts_at_inclusive = bytes.current_pointer;
 
@@ -150,7 +150,7 @@ impl HeaderReentryPoint
 
 				0x00 ... 0x08 | 0x0A ... 0x1F | 0x7F => return Err(Invalid(BadRequest("Invalid byte in header value token"))),
 
-				_ => break bytes.previous(),
+				_ => break bytes.previous_position(),
 			}
 
 			Self::check_amount_parsed_is_not_too_great(name_starts_at_inclusive)?
@@ -161,7 +161,7 @@ impl HeaderReentryPoint
 		Self::parse_header_value(bytes, request_user, name_starts_at_inclusive, name_ends_at_exclusive, value_starts_at_inclusive)
 	}
 
-	fn parse_header_value(bytes: &mut Bytes, request_user: &mut impl RequestUser, name_starts_at_inclusive: NonNull<u8>, name_ends_at_exclusive: NonNull<u8>, value_starts_at_inclusive: NonNull<u8>) -> Result<bool, Status<Self>>
+	fn parse_header_value(bytes: &mut Bytes, request_user: &mut impl RequestUser, name_starts_at_inclusive: VectoredBufferOffset, name_ends_at_exclusive: VectoredBufferOffset, value_starts_at_inclusive: VectoredBufferOffset) -> Result<bool, Status<Self>>
 	{
 		let reentry_point = HeaderReentryPoint::HeaderValueStarts(name_starts_at_inclusive, name_ends_at_exclusive, value_starts_at_inclusive);
 		let mut last_whitespace_started_at_exclusive = value_starts_at_inclusive.current_pointer.next();

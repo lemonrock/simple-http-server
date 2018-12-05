@@ -2,12 +2,16 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Called for a HTTP GET.
-pub trait HttpGetUser
+#[derive(Debug)]
+pub(crate) enum ReceiveFromWorkerEvent
 {
-	/// Type of errors returned.
-	type Error: error::Error;
+}
 
-	/// Called for each valid HTTP GET.
-	fn use_http_get(&self, headers: Vec<HeaderField>, target_uri: Url, client_end_entity_certificate: EndEntityCert) -> Result<(), Self::Error>;
+impl ReceiveFromWorkerEvent
+{
+	#[inline(always)]
+	pub(crate) fn handle_event(&mut self, _poll: &Poll) -> bool
+	{
+		false
+	}
 }

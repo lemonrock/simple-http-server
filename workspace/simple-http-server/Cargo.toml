@@ -19,11 +19,18 @@ version = "0.0.0"
 
 [dependencies]
 arrayvec = "^0.4.7"
+cpu-affinity = "^0.1.1"
 likely = "^0.1"
 mio = "^0.6"
+mio-extras = "^2.0.5"
+num_cpus = "^1.8"
 rustls = "0.14.0"
 simple-http-server-vectored-buffers = { path = "../simple-http-server-vectored-buffers", version = "0.0.0" }
+treebitmap = "^0.3"
 time = "^0.1.40"
 untrusted = "^0.6"
 vecio = "^0.1"
 webpki = "0.18.1"
+
+[target.'cfg(unix)'.dependencies]
+libc = "^0.2"

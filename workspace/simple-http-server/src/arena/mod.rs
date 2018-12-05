@@ -2,10 +2,8 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum Status<ReentryPoint>
-{
-	RanOutOfBytes(ReentryPoint),
+use super::*;
 
-	Invalid(InvalidReason),
-}
+
+include!("Arena.rs");
+include!("ArenaItem.rs");

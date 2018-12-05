@@ -6,10 +6,17 @@
 pub trait ServedClientConnectionUserFactory
 {
 	/// Type created.
-	type SCCU: ServedClientConnectionUser;
+	type User: ServedClientConnectionUser;
+
+	type Error: error::Error;
 
 	/// Create a new served client connection user.
 	///
-	/// `remote_address` is not particularly useful and may be removed from the API.
-	fn new(&self, remote_address: SocketAddr) -> Result<Self::SCCU, ()>;
+	/// Called after checking the remote address is permitted and the maximum number of connections has not been reached.
+	fn connect(&self, remote_address: SocketAddr) -> Result<Self::User, Self::Error>;
+
+	/// Create a new served client connection user.
+	///
+	/// Called after the number of connections has been reduced by one.
+	fn disconnect(&self, remote_address: SocketAddr);
 }

@@ -3,4 +3,69 @@
 
 
 /// A buffer index.
-pub type BufferIndex = usize;
+#[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct BufferIndex(usize);
+
+impl BufferIndex
+{
+	/// Minimum index, inclusive.
+	pub const Minimum: Self = BufferIndex(0);
+
+	/// Maximum index, inclusive.
+	pub const Maximum: Self = BufferIndex(15);
+
+	pub(crate) const MaximumSize: usize = Self::Maximum.0 + 1;
+
+	/// Converts an ever-increasing index to a known `BufferIndex` within (inclusively) `Self::Minimum` and `Self::Maximum`.
+	#[inline(always)]
+	pub const fn from_only_ever_increasing_index(only_ever_increasing_index: usize) -> Self
+	{
+		BufferIndex(only_ever_increasing_index % Self::MaximumSize)
+	}
+
+	/// Converts to a vector buffer offset, with an inclusive offset of 0 (zero).
+	#[inline(always)]
+	pub const fn to_vector_buffer_offset(self) -> Self
+	{
+		self.to_vector_buffer_offset_with_offset(0)
+	}
+
+	/// Converts to a vector buffer offset.
+	#[inline(always)]
+	pub const fn to_vector_buffer_offset_with_offset(self, offset: InclusiveFromOffset) -> Self
+	{
+		VectoredBufferOffset::new(self, offset)
+	}
+
+	/// Always get the next index, wrapping round as appropriate.
+	#[inline(always)]
+	pub fn next(self) -> Self
+	{
+		if unlikely!(self == Self::Maximum)
+		{
+			BufferIndex(0)
+		}
+		else
+		{
+			self.next_unchecked()
+		}
+	}
+
+	#[inline(always)]
+	pub(crate) fn next_unchecked(self) -> Self
+	{
+		BufferIndex(self.0 + 1)
+	}
+
+	#[inline(always)]
+	pub(crate) fn increment_unchecked(&mut self)
+	{
+		self.0 += 1
+	}
+
+	#[inline(always)]
+	pub(crate) fn decrement_unchecked(&mut self)
+	{
+		self.0 -= 1
+	}
+}

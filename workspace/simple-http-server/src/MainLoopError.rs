@@ -6,11 +6,11 @@
 #[derive(Debug)]
 pub enum MainLoopError
 {
-	/// Server configuration failed.
-	ServerConfiguration(ServerConfigurationError),
-
-	/// Poll creation failed.
+	/// Main loop poll creation failed.
 	PollCreation(io::Error),
+
+	/// Could not allocate memory for a server listener.
+	CouldNotAllocateMemoryForAServerListener,
 
 	/// Parsing TCP server listener socket address failed.
 	CouldNotParseTcpListenerSocketAddress(AddrParseError),
@@ -18,8 +18,14 @@ pub enum MainLoopError
 	/// Binding TCP server listener failed.
 	CouldNotBindTcpListener(io::Error),
 
-	/// Registering TCP server listener with Poll failed.
+	/// Registering TCP server listener with poll failed.
 	CouldNotRegisterTcpListenerWithPoll(io::Error),
+
+	/// Registering channel with poll failed.
+	CouldNotRegisterChannelWithPoll(io::Error),
+
+	/// Starting a worker thread failed.
+	WorkerCreation(WorkerCreationError),
 
 	/// Poll listen failed.
 	PollLoop(io::Error),
@@ -43,15 +49,19 @@ impl error::Error for MainLoopError
 
 		match self
 		{
-			&ServerConfiguration(ref error) => Some(error),
-
 			&PollCreation(ref error) => Some(error),
+
+			&CouldNotAllocateMemoryForAServerListener => None,
 
 			&CouldNotParseTcpListenerSocketAddress(ref error) => Some(error),
 
 			&CouldNotBindTcpListener(ref error) => Some(error),
 
 			&CouldNotRegisterTcpListenerWithPoll(ref error) => Some(error),
+
+			&CouldNotRegisterChannelWithPoll(ref error) => Some(error),
+
+			&WorkerCreation(ref error) => Some(error),
 
 			&PollLoop(ref error) => Some(error),
 		}

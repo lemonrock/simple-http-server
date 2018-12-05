@@ -2,17 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct TokenStore
-{
-	next_token: AtomicUsize,
-}
-
-impl TokenStore
-{
-	#[inline(always)]
-	pub(crate) fn next_token(&self) -> Token
-	{
-		Token(self.next_token.fetch_add(1, Relaxed))
-	}
-}
+/// An identifier for an AllocationObserver.
+///
+/// Typically also a HTTP connection identifier.
+pub type AllocationObserverIdentifier = usize;

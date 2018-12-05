@@ -11,21 +11,21 @@ pub struct VectoredBufferOffset
 	/// Zero-based.
 	///
 	/// Must never be the same as `RingBufferMaximumLength` (or greater).
-	pub buffer_index: usize,
+	pub buffer_index: BufferIndex,
 
 	/// Offset (in bytes) within the buffer at `buffer_index` from 0 inclusive.
 	///
 	/// Zero-based.
 	///
 	/// Must never be the same as the buffer length (or greater) of the buffer at `buffer_index`.
-	pub offset: usize,
+	pub offset: InclusiveFromOffset,
 }
 
 impl VectoredBufferOffset
 {
 	/// Convenience constructor.
 	#[inline(always)]
-	pub const fn new(buffer_index: usize, offset: usize) -> Self
+	pub const fn new(buffer_index: BufferIndex, offset: InclusiveFromOffset) -> Self
 	{
 		Self
 		{
@@ -40,8 +40,44 @@ impl VectoredBufferOffset
 	{
 		Self
 		{
-			buffer_index: self.buffer_index + 1,
+			buffer_index: self.buffer_index.next(),
 			offset: 0,
 		}
+	}
+
+	/// Increments offset by 1.
+	#[inline(always)]
+	pub fn increment_offset(&self) -> Self
+	{
+		self.increment_offset_by(1)
+	}
+
+	/// Increments offset by `increment`.
+	#[inline(always)]
+	pub fn increment_offset_by(&self, increment: usize) -> Self
+	{
+		Self
+			{
+				buffer_index: self.buffer_index,
+				offset: self.offset + increment,
+			}
+	}
+
+	/// Increments offset by 1.
+	#[inline(always)]
+	pub fn decrement_offset(&self) -> Self
+	{
+		self.decrement_offset_by(1)
+	}
+
+	/// Increments offset by `increment`.
+	#[inline(always)]
+	pub fn decrement_offset_by(&self, decrement: usize) -> Self
+	{
+		Self
+			{
+				buffer_index: self.buffer_index,
+				offset: self.offset +- decrement,
+			}
 	}
 }

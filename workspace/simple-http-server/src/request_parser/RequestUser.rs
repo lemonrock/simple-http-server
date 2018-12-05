@@ -2,101 +2,6 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-
-
-pub struct BufferProvider
-{
-}
-
-impl BufferProvider
-{
-	pub(crate) fn request(this: &Arc<Self>, connection_identifier: usize) -> Result<Buffer, ()>
-	{
-		...
-	}
-
-	fn retire(this: &Arc<Self>, connection_identifier: usize)
-	{
-		...
-	}
-}
-
-pub struct Buffer
-{
-	connection_identifier: usize,
-	buffer_provider: Arc<BufferProvider>,
-	buffer: [u8; 4096],
-
-	// Links?
-	previous: Option<Box<Buffer>>,
-	next: Option<Box<Buffer>>,
-}
-
-use ::std::convert::AsMut;
-use ::std::convert::AsRef;
-
-impl Drop for Buffer
-{
-	fn drop(&mut self)
-	{
-		BufferProvider::retire(self.buffer_provider, self.connection_identifier)
-	}
-}
-
-impl AsRef<[u8]> for Buffer
-{
-	fn as_ref(&self) -> &[u8]
-	{
-		...
-	}
-}
-
-impl AsMut<[u8]> for Buffer
-{
-	fn as_mut(&mut self) -> &mut [u8]
-	{
-		...
-	}
-}
-
-impl Buffer
-{
-
-}
-
-// TODO: Bytes needs to abstract over multiple buffers, and be able to retire them when necessary.
-// TODO: RequestUser likewise needs to be able to handle multiple buffers.
-// TODO: Retirement should only happen when there are no more references to a buffer.
-
-// TODO: Move from a (pointer) to a (buffer, pointer) or (buffer, offset) tuple.
-
-// In essence, we need to provide vectored-io slices, where a 'slice' is for one or more buffers.
-
-
-pub struct VectoredSlice<'a>
-{
-	// This design sucks.
-	slices: ArrayVec<[&'a mut [u8]; 16]>,
-}
-
-impl VectoredSlice
-{
-	fn get(&self, index: usize);
-
-	fn set(&mut self, index: usize, value: u8);
-
-	fn read();
-
-	fn write();
-}
-
-
-
-
-
-
-
-
 pub struct Request<RU: RequestUser>
 {
 	bytes: Bytes,
@@ -127,11 +32,11 @@ impl<RU: RequestUser> Request<RU>
 
 enum RequestState
 {
-	RequestMethod(NonNull<u8>),
+	RequestMethod(VectoredBufferOffset),
 
 	TargetUri(TargetUriReentryPoint),
 
-	HttpVersion(NonNull<u8>),
+	HttpVersion(VectoredBufferOffset),
 
 	Headers(HeaderReentryPoint),
 }
@@ -291,7 +196,7 @@ pub trait RequestUser
 	/// No percent-decoding is performed but values are checked for byte validity.
 	///
 	/// A decoder of the segment could assume that it is %-encoded UTF-8 string.
-	fn target_uri_segment(&mut self, segment_starts_at_inclusive: NonNull<u8>, segment_ends_at_exclusive: NonNull<u8>) -> Result<(), InvalidReason>;
+	fn target_uri_segment(&mut self, segment_starts_at_inclusive: VectoredBufferOffset, segment_ends_at_exclusive: VectoredBufferOffset) -> Result<(), InvalidReason>;
 
 	/// Will only be called either never or once (will not be called if there is no query).
 	///
@@ -302,7 +207,7 @@ pub trait RequestUser
 	/// No percent-decoding is performed but values are checked for byte validity.
 	///
 	/// A decoder of the query could assume that it is %-encoded UTF-8 string.
-	fn target_uri_query(&mut self, query_starts_at_inclusive: NonNull<u8>, query_ends_at_exclusive: NonNull<u8>) -> Result<(), InvalidReason>;
+	fn target_uri_query(&mut self, query_starts_at_inclusive: VectoredBufferOffset, query_ends_at_exclusive: VectoredBufferOffset) -> Result<(), InvalidReason>;
 
 	/// Will be called exactly once.
 	///
@@ -319,7 +224,7 @@ pub trait RequestUser
 	/// May never be called.
 	///
 	/// Header field names and values are checked for token validity.
-	fn header_field(&mut self, name_starts_at_inclusive: NonNull<u8>, name_ends_at_exclusive: NonNull<u8>, value_starts_at_inclusive: NonNull<u8>, value_ends_at_exclusive: NonNull<u8>) -> Result<(), ()>;
+	fn header_field(&mut self, name_starts_at_inclusive: VectoredBufferOffset, name_ends_at_exclusive: VectoredBufferOffset, value_starts_at_inclusive: VectoredBufferOffset, value_ends_at_exclusive: VectoredBufferOffset) -> Result<(), ()>;
 
 	/// Will be called once headers have been parsed and before any request body is examined.
 	///

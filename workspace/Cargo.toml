@@ -5,6 +5,7 @@
 [workspace]
 members = [
     "simple-http-server",
+    "simple-http-server-epoll",
     "simple-http-server-vectored-buffers",
 ]
 

@@ -4,4 +4,13 @@
 
 /// Represents registration state.
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct RegistrationState(pub(crate) Ready, pub(crate) Poll);
+pub struct RegistrationState(pub Ready, pub Poll);
+
+impl RegistrationState
+{
+	#[inline(always)]
+	pub fn is_empty(&self) -> bool
+	{
+		self.0.is_empty()
+	}
+}

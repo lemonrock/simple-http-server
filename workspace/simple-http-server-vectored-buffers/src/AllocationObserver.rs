@@ -2,23 +2,14 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-struct HttpReadBufferUser<HGU: HttpGetUser>
+/// An observer of allocations (and deallocations) which can also veto any allocation.
+pub trait AllocationObserver
 {
-	our_hostname: String,
-	our_port_string: String,
-	our_base_url: Url,
-	http_get_user: HGU
-}
+	/// Observes an allocation just prior to it occurring.
+	///
+	/// Returns `true` if allocation should be vetoed.
+	fn observe_and_veto_forthcoming_allocation(&self, allocation_oberserver_identifier: AllocationObserverIdentifier) -> bool;
 
-impl<HGU: HttpGetUser> ReadBufferUser for HttpReadBufferUser<HGU>
-{
-	type Error = HttpServerReadError<HGU::Error>;
-
-	fn use_read_buffer(&self, constraints: &Constraints, read_buffer: &[u8]) -> Result<(), Self::Error>
-	{
-	}
-}
-
-impl HttpReadBufferUser
-{
+	/// Observes a deallocation just before it occurs.
+	fn observe_forthcoming_deallocation(&self, allocation_oberserver_identifier: AllocationObserverIdentifier);
 }

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/workspace/simple-http-server/simple-http-server.iml" filepath="$PROJECT_DIR$/workspace/simple-http-server/simple-http-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/workspace/simple-http-server-epoll/simple-http-server-epoll.iml" filepath="$PROJECT_DIR$/workspace/simple-http-server-epoll/simple-http-server-epoll.iml" />
       <module fileurl="file://$PROJECT_DIR$/workspace/simple-http-server-vectored-buffers/simple-http-server-vectored-buffers.iml" filepath="$PROJECT_DIR$/workspace/simple-http-server-vectored-buffers/simple-http-server-vectored-buffers.iml" />
     </modules>
   </component>

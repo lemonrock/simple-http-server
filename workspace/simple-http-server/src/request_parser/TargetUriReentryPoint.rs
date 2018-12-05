@@ -5,11 +5,11 @@
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 enum TargetUriReentryPoint
 {
-	Begin(NonNull<u8>),
+	Begin(VectoredBufferOffset),
 
-	SegmentStartsFrom(NonNull<u8>, NonNull<u8>),
+	SegmentStartsFrom(VectoredBufferOffset, VectoredBufferOffset),
 
-	QueryStartsFrom(NonNull<u8>, NonNull<u8>),
+	QueryStartsFrom(VectoredBufferOffset, VectoredBufferOffset),
 }
 
 impl TargetUriReentryPoint
@@ -51,7 +51,7 @@ impl TargetUriReentryPoint
 	}
 
 	#[inline(always)]
-	fn check_amount_parsed_is_not_too_great(uri_starts_at_inclusive: NonNull<u8>, bytes: &Bytes) -> Result<(), Status<Self>>
+	fn check_amount_parsed_is_not_too_great(uri_starts_at_inclusive: VectoredBufferOffset, bytes: &Bytes) -> Result<(), Status<Self>>
 	{
 		const MaximumAmountToParse: usize = 8 * 1024;
 
@@ -80,7 +80,7 @@ impl TargetUriReentryPoint
 	}
 
 	#[inline(always)]
-	fn parse_segments(uri_starts_at_inclusive: NonNull<u8>, bytes: &mut Bytes, request_user: &mut impl RequestUser) -> Result<(), Status<Self>>
+	fn parse_segments(uri_starts_at_inclusive: VectoredBufferOffset, bytes: &mut Bytes, request_user: &mut impl RequestUser) -> Result<(), Status<Self>>
 	{
 		use self::Status::Invalid;
 
@@ -91,7 +91,7 @@ impl TargetUriReentryPoint
 			{
 				b' ' =>
 				{
-					request_user.use_segment(reentry_point.0, bytes.curent_pointer).map_err(|invalid_reason| Invalid(invalid_reason))?;
+					request_user.use_segment(reentry_point.0, bytes.current_position()).map_err(|invalid_reason| Invalid(invalid_reason))?;
 					return request_user.finished().map_err(|invalid_reason| Invalid(invalid_reason))
 				}
 
@@ -99,13 +99,13 @@ impl TargetUriReentryPoint
 
 				b'/' =>
 				{
-					request_user.use_segment(reentry_point.0, bytes.curent_pointer).map_err(|invalid_reason| Invalid(invalid_reason))?;
+					request_user.use_segment(reentry_point.0, bytes.current_position()).map_err(|invalid_reason| Invalid(invalid_reason))?;
 					reentry_point = SegmentStartsFrom(uri_starts_at_inclusive, bytes.current_pointer);
 				}
 
 				b'?' =>
 				{
-					request_user.use_segment(reentry_point.0, bytes.curent_pointer).map_err(|invalid_reason| Invalid(invalid_reason))?;
+					request_user.use_segment(reentry_point.0, bytes.current_position()).map_err(|invalid_reason| Invalid(invalid_reason))?;
 					return Self::parse_query(uri_starts_at_inclusive, bytes, request_user)
 				}
 
@@ -148,7 +148,7 @@ impl TargetUriReentryPoint
 	}
 
 	#[inline(always)]
-	fn parse_query(uri_starts_at_inclusive: NonNull<u8>, bytes: &mut Bytes, request_user: &mut impl RequestUser) -> Result<(), Status<Self>>
+	fn parse_query(uri_starts_at_inclusive: VectoredBufferOffset, bytes: &mut Bytes, request_user: &mut impl RequestUser) -> Result<(), Status<Self>>
 	{
 		let reentry_point = TargetUriReentryPoint::QueryStartsFrom(uri_starts_at_inclusive, bytes.current_pointer);
 		loop
@@ -157,7 +157,7 @@ impl TargetUriReentryPoint
 			{
 				b' ' =>
 				{
-					request_user.use_query(reentry_point.0, bytes.curent_pointer).map_err(|invalid_reason| Invalid(invalid_reason))?;
+					request_user.use_query(reentry_point.0, bytes.current_position()).map_err(|invalid_reason| Invalid(invalid_reason))?;
 					return request_user.finished().map_err(|invalid_reason| Invalid(invalid_reason))
 				},
 

@@ -2,56 +2,89 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 struct Buffer
 {
-	start_pointer: NonNull<u8>,
-	size: usize,
+	header: BufferHeader,
+	bytes: RefCell<[u8; BufferHeader::BufferSize]>,
 }
 
-impl Drop for Buffer
+impl<'b> Buffer
 {
 	#[inline(always)]
-	fn drop(&mut self)
+	fn borrow(&'b self) -> Ref<'b, [u8]>
 	{
-		// TODO: drop !
+		let borrow = self.bytes.borrow();
+		Ref::map(borrow, |borrow| &borrow[..])
+	}
+
+	#[inline(always)]
+	fn try_borrow(&'b self) -> Result<Ref<'b, [u8]>, BorrowError>
+	{
+		let borrow = self.bytes.try_borrow()?;
+		Ok(Ref::map(borrow, |borrow| &borrow[..]))
+	}
+
+	#[inline(always)]
+	fn borrow_mut(&'b self) -> RefMut<'b, [u8]>
+	{
+		let borrow_mut = self.bytes.borrow_mut();
+		RefMut::map(borrow_mut, |borrow_mut| &mut borrow_mut[..])
+	}
+
+	#[inline(always)]
+	fn try_borrow_mut(&'b self) -> Result<RefMut<'b, [u8]>, BorrowMutError>
+	{
+		let borrow_mut = self.bytes.try_borrow_mut()?;
+		Ok(RefMut::map(borrow_mut, |borrow_mut| &mut borrow_mut[..]))
 	}
 }
 
-impl AsRef<[u8]> for Buffer
+impl Buffer
 {
 	#[inline(always)]
-	fn as_ref(&self) -> &[u8]
+	fn new(index: usize) -> Self
 	{
-		unsafe { from_raw_parts(self.start_pointer.as_ptr() as *const u8, self.size) }
+		Self
+		{
+			header: BufferHeader::new(index),
+			bytes: UnsafeCell::new(unsafe { uninitialized() }),
+		}
 	}
-}
 
-impl AsMut<[u8]> for Buffer
-{
 	#[inline(always)]
-	fn as_mut(&mut self) -> &mut [u8]
+	fn next_available_slot_index(&self) -> usize
 	{
-		unsafe { from_raw_parts_mut(self.start_pointer.as_ptr(), self.size) }
+		self.header.next_available_slot_index()
 	}
-}
-
-impl Deref for Buffer
-{
-	type Target = [u8];
 
 	#[inline(always)]
-	fn deref(&self) -> &Self::Target
+	fn set_next_available_slot_index(&self, next_available_slot_index: usize)
 	{
-		self.as_ref()
+		self.header.set_next_available_slot_index(next_available_slot_index)
 	}
-}
 
-impl DerefMut for Buffer
-{
 	#[inline(always)]
-	fn deref_mut(&mut self) -> &mut Self::Target
+	fn allocation_observer_identifier(&self) -> AllocationObserverIdentifier
 	{
-		self.as_mut()
+		self.header.allocation_observer_identifier()
+	}
+
+	#[inline(always)]
+	fn set_allocation_observer_identifier(&self, allocation_observer_identifier: AllocationObserverIdentifier)
+	{
+		self.header.set_allocation_observer_identifier(next_available_slot_index)
+	}
+
+	#[inline(always)]
+	fn increment_reference_count(&self)
+	{
+		self.header.increment_reference_count();
+	}
+
+	#[inline(always)]
+	fn decrement_reference_count(&self) -> bool
+	{
+		self.header.decrement_reference_count()
 	}
 }

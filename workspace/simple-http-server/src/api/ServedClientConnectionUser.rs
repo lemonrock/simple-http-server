@@ -4,7 +4,11 @@
 
 pub(crate) trait ServedClientConnectionUser
 {
+	/// Errors returned by `service()`.
 	type Error: error::Error;
 
-	fn service<'a>(&mut self, simplified_server_session: SimplifiedServerSession<'a>) -> Result<(), Result<RegistrationState, Self::Error>>;
+	/// Called when an event occurs that a previous `RegistrationState` expressed an interest in.
+	///
+	/// Return an empty RegistrationState for the connection to be dropped.
+	fn service(&mut self, socket: &TcpStream) -> Result<RegistrationState, Self::Error>;
 }

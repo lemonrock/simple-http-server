@@ -6,77 +6,136 @@
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SimpleHttpsServer<'a, SCCUF: ServedClientConnectionsUserFactory>
 {
-	/// Constraints.
-	pub constraints: &'a Constraints,
+	/// Poll constraints.
+	pub poll_constraints: &'a PollConstraints,
 
-	/// Essential TLS configuration.
-	pub tls_configuration: &'a TlsConfiguration,
+	/// Number of CPU logical cores to utilize.
+	pub logical_core_utilization_detail: LogicalCoreUtilizationDetail<'a>,
 
-	/// Factory.
-	pub served_client_connections_user_factory: &'a SCCUF,
+	// TODO: Gets 'used up' creating ConnectionObserver.
+	/// Server listeners.
+	pub server_listeners: Vec<(ServerListenerConfiguration<'a, SCCUF>, SCCUF)>,
+
+	/// Configuration of worker threads.
+	pub worker_thread_configuration: WorkerThreadConfiguration,
 }
 
 impl<'a, SCCUF: ServedClientConnectionsUserFactory> SimpleHttpsServer<'a, SCCUF>
 {
-	/// Main loop; may exit with an error if it can't be created.
+	/// Main loop that repeats infinitely unless:-
 	///
-	/// * `should_finish` is checked every loop. When it is true, the method will return.
-	/// * `socket_address` is a string of the form `"127.0.0.1:443"`.
-	pub fn main_loop(&self, should_finish: &AtomicBool, socket_address: &str) -> Result<(), MainLoopError>
+	/// * it can't be created due to an error;
+	/// * `terminate` is signalled (this can be done internally by a thread if it panics)
+	pub fn execute(&mut self, terminate: Terminate) -> Result<(), MainLoopError>
 	{
-		use self::MainLoopError::*;
+		// TODO: All errors MUST trigger terminate once workers are running.
 
-		let mut server_config = self.server_configuration()?;
 		let poll = Self::poll()?;
-		let token_store = TokenStore::default();
 
-		let mut served_client_connections = ServedClientConnections::new(server_config, &poll, &token_store, self.constraints, self.served_client_connections_user_factory)?;
+		let served_client_connection_arena_capacity = self.start_server_listeners()?;
 
-		let (server, server_token) = Self::register_server(&token_store, &poll, socket_address)?;
+		let served_client_connection_arena = Arena::with_capacity(served_client_connection_arena_capacity);
 
-		let mut events = self.events();
+		let XXXXX = self.start_worker_threads(&terminate, &self.logical_core_utilization_detail.worker_loops)?;
+
+		let result_of_looping = self.loop_around(terminate, poll, served_client_connection_arena);
+
+		// TODO: Register Box'd tokens with something so we can drop them safely.
+			// Reconsider the idea of an arena!
+
+		result_of_looping
+	}
+
+	fn loop_around(&self, terminate: Terminate, poll: Poll, served_client_connection_arena: Arena<ServedClientConnectionToken<SCCUF>>) -> Result<(), MainLoopError>
+	{
+		// TODO: Decide which signals to allow through / allow client to control if this is not a main thread.
+		block_all_signals();
+
+		self.set_main_loop_thread_affinity();
+
 		let poll_time_out = self.poll_time_out();
+		let mut events = self.events();
+		let mut drop_token_when_all_events_handled = HashSet::with_capacity(16);
 
-		while !should_finish.get()
+		while terminate.should_continue()
 		{
-			poll.poll(&mut events, poll_time_out).map_err(|error| PollLoop(error))?;
+			if let Err(error) = poll.poll(&mut events, poll_time_out)
+			{
+				use self::ErrorKind::*;
+
+				match error.kind()
+				{
+					// Spurious wake up.
+					Interrupted => continue,
+
+					// Should have been handled by mio?
+					TimedOut => continue,
+
+					_ => return Err(MainLoopError::PollLoop(error)),
+				}
+			}
 
 			for event in events.iter()
 			{
-				let token = event.token();
-
-				if token == server_token
-				{
-					if let Some(connection) = server.accept()
-					{
-						served_client_connections.new_served_client_connection(connection);
-					}
-				}
-				else
-				{
-					served_client_connections.handle_event(token, event.readiness())
-				}
+				TokenKind::handle_event(event.token(), event.ready(), &mut drop_token_when_all_events_handled)
 			}
-		}
 
-		Ok(())
+			TokenKind::drop_tokens(&served_client_connection_arena, &mut drop_token_when_all_events_handled)
+		}
 	}
 
-	fn register_server(token_store: &TokenStore, poll: &Poll, socket_address: &str) -> Result<(TcpListener, Token), MainLoopError>
-	{
-		use self::MainLoopError::*;
+	/*
+		TODO: https://jmarshall.com/easy/http/#conclusion
 
-		let socket_address = socket_address.parse().map_err(|error| CouldNotParseTcpListenerSocketAddress(error))?;
-		let server = TcpListener::bind(&socket_address).map_err(|error| CouldNotBindTcpListener(error))?;
-		let server_token = token_store.next_token();
-		poll.register(&server, server_token, Ready::readable(), PollOpt::edge()).map_err(|error| CouldNotRegisterTcpListenerWithPoll(error))?;
-		Ok((server, server_token))
+
+		// TODO: We can use edge notification if we then hange onto connections with 'remaining' bytes inside a worker thread.
+
+		// TODO: Cap at 10% or 1% the maximum number of connections from any one IP address.
+
+		TODO: 3 Timeout slow and no-progress connections
+			- record how much 'real' (ie plain text) data read and written (vs outstanding)
+			-
+			- consider using the timer wheel design from the networking stack WITH mio's timer, eg
+				- wake up every second
+				- check for slow connections (schedule a connection for a check)
+				- kill connections
+	*/
+
+
+// TODO: TLS
+// let mut server_config = self.server_configuration()?;
+//	/// Essential TLS configuration.
+//	pub tls_configuration: &'a TlsConfiguration,
+//	#[inline(always)]
+//	fn server_configuration(&self) -> Result<ServerConfig, MainLoopError>
+//	{
+//		self.tls_configuration.server_configuration().map_err(|error| ServerConfiguration(error))
+//	}
+
+	#[inline(always)]
+	fn start_server_listeners(&mut self) -> Result<usize, MainLoopError>
+	{
+		let mut served_client_connection_arena_capacity = 0;
+
+		for (server_listener_configuration, served_client_connection_user_factory) in self.server_listeners.drain()
+		{
+			served_client_connection_arena_capacity += server_listener_configuration.maximum_connections();
+			ServerListenerToken::new(poll, server_listener_configuration, served_client_connection_user_factory)?;
+		}
+
+		Ok(served_client_connection_arena_capacity)
 	}
 
 	#[inline(always)]
-	fn server_configuration(&self) -> Result<ServerConfig, MainLoopError>
+	fn start_worker_threads(&self) -> Result<XXXX, MainLoopError>
 	{
-		self.tls_configuration.server_configuration().map_err(|error| ServerConfiguration(error))
+		self.worker_thread_configuration.start_worker_threads(&terminate, self.logical_core_utilization_detail).map_err(|error| MainLoopError::WorkerCreation(error))
+	}
+
+	#[inline(always)]
+	fn set_main_loop_thread_affinity(&self)
+	{
+		self.logical_core_utilization_detail.main_loop.set_current_thread_affinity()
 	}
 
 	#[inline(always)]
@@ -88,12 +147,12 @@ impl<'a, SCCUF: ServedClientConnectionsUserFactory> SimpleHttpsServer<'a, SCCUF>
 	#[inline(always)]
 	fn poll_time_out(&self) -> Option<Duration>
 	{
-		self.constraints.poll_time_out()
+		self.poll_constraints.poll_time_out()
 	}
 
 	#[inline(always)]
 	fn events(&self) -> Events
 	{
-		self.constraints.events()
+		self.poll_constraints.events()
 	}
 }

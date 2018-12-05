@@ -6,29 +6,22 @@
 ///
 /// Note that `rlimit` may still need to be set, particularly on Linux systems, to handle more than about 1020 connections.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Constraints
+pub struct ServerListenerConstraints
 {
-	/// How many events to be capable of processing at once?
-	///
-	/// Defaults to 1,024.
-	pub events_capacity: usize,
-
 	/// Maximum number of served client connections that can be simultaneously open.
 	///
 	/// Defaults to 4,096.
 	pub maximum_connections: usize,
 
-	/// Buffer limit, in bytes, passed to rustls; controls internal write buffers and unread plain text buffers.
+	/// Inbound Internet Protocol Version 4 addresses to permit.
 	///
-	/// Zero (0) is interpreted as infinite.
-	///
-	/// Defaults to 16,384 bytes (16Kb).
-	pub rustls_buffer_limit: usize,
+	/// If left empty, nothing will match and all inbound Internet Protocol Version 4 connections will be denied.
+	pub permitted_internet_protocol_version_4_addresses: HashSet<PermittedInternetProtocolVersionAddresses<Ipv4Addr>>,
 
-	/// Time out during polling to allow for processing of other events (eg signals).
+	/// Inbound Internet Protocol Version 6 addresses to permit.
 	///
-	/// Defaults to 1 millisecond.
-	pub poll_time_out: Duration,
+	/// If left empty, nothing will match and all inbound Internet Protocol Version 6 connections will be denied.
+	pub permitted_internet_protocol_version_6_addresses: HashSet<PermittedInternetProtocolVersionAddresses<Ipv6Addr>>,
 
 	/// Receive buffer size, in bytes.
 	///
@@ -39,38 +32,44 @@ pub struct Constraints
 	///
 	/// Defaults to 16,384 bytes (16Kb).
 	pub send_buffer_size: usize,
+
+
+
+	/// Buffer limit, in bytes, passed to rustls; controls internal write buffers and unread plain text buffers.
+	///
+	/// Zero (0) is interpreted as infinite.
+	///
+	/// Defaults to 16,384 bytes (16Kb).
+	pub rustls_buffer_limit: usize,
 }
 
-impl Default for Constraints
+impl Default for ServerListenerConstraints
 {
 	#[inline(always)]
 	fn default() -> Self
 	{
 		Self
 		{
-			events_capacity: 1024,
 			maximum_connections: 4096,
-			rustls_buffer_limit: 16_384,
-			poll_time_out: Duration::from_millis(1),
+			permitted_internet_protocol_version_4_addresses: HashSet::default(),
+			permitted_internet_protocol_version_6_addresses: HashSet::default(),
 			receive_buffer_size: 16_384,
 			send_buffer_size: 16_384,
+
+			rustls_buffer_limit: 16_384,
 		}
 	}
 }
 
-impl Constraints
+impl ServerListenerConstraints
 {
-	#[inline(always)]
-	pub(crate) fn poll_time_out(&self) -> Option<Duration>
-	{
-		Some(self.constraints.poll_time_out)
-	}
+//	fn new_server_session(&self) -> ServerSession
+//	{
+//		let mut server_session = ServerSession::new(&self.server_configuration);
+//		self.constraints.set_rustls_buffer_limit(&mut server_session);
+//		server_session
+//	}
 
-	#[inline(always)]
-	pub(crate) fn events(&self) -> Events
-	{
-		Events::with_capacity(self.constraints.events_capacity)
-	}
 
 	#[inline(always)]
 	pub(crate) fn set_rustls_buffer_limit(&self, server_session: &mut ServerSession) -> Events

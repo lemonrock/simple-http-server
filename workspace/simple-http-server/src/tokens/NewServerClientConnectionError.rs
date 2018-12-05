@@ -3,7 +3,7 @@
 
 
 #[derive(Debug)]
-pub(crate) enum NewServerClientConnectionError<E: error::Error>
+pub(crate) enum NewServerClientConnectionError<SCCUF: ServerClientConnectionUserFactory>
 {
 	ServingMaximumNumberOfConnections(Option<io::Error>),
 
@@ -17,14 +17,14 @@ pub(crate) enum NewServerClientConnectionError<E: error::Error>
 
 	SendBufferSize(io::Error),
 
-	CouldNotCreateNewServedClientConnectionUser,
+	CouldNotCreateNewServedClientConnectionUser(ConnectionObserverConnectError<SCCUF::Error>),
 
-	FailedOnFirstUse(ServerSessionProcessWriteReadError<E>),
+	CouldNotAllocateMemory,
 
-	CouldNotRegisterWithPoll(io::Error),
+	FailedOnFirstUse,
 }
 
-impl<E: error::Error> Display for NewServerClientConnectionError<E>
+impl<SCCUF: ServerClientConnectionUserFactory> Display for NewServerClientConnectionError<SCCUF>
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
@@ -33,7 +33,7 @@ impl<E: error::Error> Display for NewServerClientConnectionError<E>
 	}
 }
 
-impl<E: error::Error> error::Error for NewServerClientConnectionError<E>
+impl<SCCUF: ServerClientConnectionUserFactory> error::Error for NewServerClientConnectionError<SCCUF>
 {
 	#[inline(always)]
 	fn source(&self) -> Option<&(error::Error + 'static)>
@@ -58,11 +58,11 @@ impl<E: error::Error> error::Error for NewServerClientConnectionError<E>
 
 			&SendBufferSize(ref error) => Some(error),
 
-			$CouldNotCreateNewServedClientConnectionUser => None,
+			&CouldNotCreateNewServedClientConnectionUser(ref error) => Some(error),
 
-			&FailedOnFirstUse(ref error) => Some(error),
+			&CouldNotAllocateMemory => None,
 
-			&CouldNotRegisterWithPoll(ref error) => Some(error),
+			&FailedOnFirstUse => None,
 		}
 	}
 }

@@ -10,6 +10,7 @@ include!("CertificateExt.rs");
 include!("RequestExt.rs");
 include!("ServerSessionExt.rs");
 include!("ServerSessionProcessWriteReadError.rs");
+include!("TokenExt.rs");
 include!("TimeExt.rs");
 include!("TmExt.rs");
 include!("VecExt.rs");
