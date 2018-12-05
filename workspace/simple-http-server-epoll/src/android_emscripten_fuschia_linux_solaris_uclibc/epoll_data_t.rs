@@ -2,34 +2,22 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use ::libc::c_int;
-use ::libc::c_void;
-use ::libc::uint32_t;
-use ::libc::uint64_t;
-use ::std::cmp::Ordering;
-use ::std::fmt;
-use ::std::fmt::Debug;
-use ::std::fmt::Formatter;
-use ::std::hash::Hash;
-use ::std::hash::Hasher;
-use ::std::mem::zeroed;
-
-
 /// epoll data associated with an event and registered with a file descriptor (FD).
+#[repr(C)]
 #[derive(Copy, Clone, Eq)]
-pub union epoll_data_t
+pub(crate) union epoll_data_t
 {
 	/// Data as a pointer.
-	pub ptr: *mut c_void,
+	pub(crate) ptr: *mut c_void,
 
 	/// Data as a file descriptor.
-	pub fd: c_int,
+	pub(crate) fd: RawFd,
 
 	/// Data as an arbitrary 32-bit unsigned integer.
-	pub u32: uint32_t,
+	pub(crate) u32: uint32_t,
 
 	/// Data as an arbitrary 64-bit unsigned integer.
-	pub u64: uint64_t,
+	pub(crate) u64: uint64_t,
 }
 
 impl Default for epoll_data_t
@@ -84,15 +72,4 @@ impl Ord for epoll_data_t
 	{
 		unsafe { self.u64.cmp(&other.u64) }
 	}
-}
-
-/// Represents an event that occurs after waiting on an epoll file descriptor.
-#[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct epoll_event
-{
-	/// A bitfield of events.
-	pub events: uint32_t,
-
-	/// An union containing the data associated when epoll_ctl was called.
-	pub data: epoll_data_t,
 }

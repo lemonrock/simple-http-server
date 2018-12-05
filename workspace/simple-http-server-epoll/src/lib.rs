@@ -7,14 +7,32 @@
 #![allow(non_camel_case_types)]
 #![deny(missing_docs)]
 #![deny(unreachable_patterns)]
+#![feature(core_intrinsics)]
 
 
 //! #simple-http-server-epoll
 //! 
 //! A wrapper around epoll for a simple HTTPS server in Rust which supports client authentication.
+//!
+//! Fully functional on Android and Linux.
+//!
+//! Mostly functional supported by Fuschia.
+//!
+//! Mostly functional supported by Illumos, a Solaris fork.
+//!
+//! Mostly functional supported by uclibc and emscripten.
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_env = "uclibc"))] extern crate libc;
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate errno;
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate libc;
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[macro_use] extern crate likely;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_env = "uclibc"))] include!("lib.android_emscripten_fuschia_linux_uclibc.rs");
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] pub use android_emscripten_fuschia_linux_solaris_uclibc::*;
+
+
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] mod android_emscripten_fuschia_linux_solaris_uclibc;
+
+
+// signalfd, timerfd, memfd, eventfd, mpsc-support, ?POSIX message queues?
+
