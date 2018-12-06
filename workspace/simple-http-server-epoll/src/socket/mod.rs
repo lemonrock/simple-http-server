@@ -18,6 +18,7 @@ use ::libc::ENETUNREACH;
 use ::libc::ENOBUFS;
 use ::libc::ENOTDIR;
 use ::libc::ENOTSOCK;
+use ::libc::EOPNOTSUPP;
 use ::libc::EPROTONOSUPPORT;
 use ::libc::EROFS;
 use ::libc::ETIMEDOUT;
@@ -39,15 +40,18 @@ use ::std::os::unix::ffi::OsStrExt;
 include!("bind.rs");
 include!("connect.rs");
 include!("FilePathInvalidReason.rs");
+include!("listen.rs");
 include!("NewSocketClientError.rs");
 include!("NewSocketServerListenerError.rs");
 include!("socket.rs");
 include!("sockaddr_storage.rs");
+include!("SocketAddress.rs");
 include!("SocketBindError.rs");
 include!("SocketConnectError.rs");
 include!("SocketCreationError.rs");
 include!("SocketData.rs");
 include!("SocketFileDescriptor.rs");
+include!("SocketListenError.rs");
 
 
 /// MIPS and SPARC were early ports of Linux and so often differ in details that they shouldn't.

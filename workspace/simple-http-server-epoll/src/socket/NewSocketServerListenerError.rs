@@ -11,6 +11,9 @@ pub enum NewSocketServerListenerError
 
 	/// Bind.
 	Bind(SocketBindError),
+
+	/// Listen.
+	Listen(SocketListenError),
 }
 
 impl Display for NewSocketServerListenerError
@@ -33,6 +36,7 @@ impl error::Error for NewSocketServerListenerError
 		{
 			&Creation(ref error) => Some(error),
 			&Bind(ref error) => Some(error),
+			&Listen(ref error) => Some(error),
 		}
 	}
 }
@@ -52,5 +56,14 @@ impl From<SocketBindError> for NewSocketServerListenerError
 	fn from(error: SocketBindError) -> Self
 	{
 		NewSocketServerListenerError::Bind(error)
+	}
+}
+
+impl From<SocketListenError> for NewSocketServerListenerError
+{
+	#[inline(always)]
+	fn from(error: SocketListenError) -> Self
+	{
+		NewSocketServerListenerError::Listen(error)
 	}
 }

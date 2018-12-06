@@ -41,15 +41,19 @@ impl IntoRawFd for SocketFileDescriptor
 impl SocketFileDescriptor
 {
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 or 6 server listener.
+	///
+	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
+	///
+	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
 	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_server_listener(socket_address: SocketAddr) -> Result<(), NewSocketServerListenerError>
+	pub fn new_transmission_control_protocol_over_internet_protocol_server_listener(socket_address: SocketAddr, back_log: u32) -> Result<(), NewSocketServerListenerError>
 	{
 		use self::SocketAddr::*;
 
 		match socket_address
 		{
-			V4(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address),
-			V6(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address),
+			V4(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address, back_log),
+			V6(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address, back_log),
 		}
 	}
 
@@ -92,11 +96,16 @@ impl SocketFileDescriptor
 	}
 
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 server listener.
+	///
+	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
+	///
+	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
 	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4) -> Result<(), NewSocketServerListenerError>
+	pub fn new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4, back_log: u32) -> Result<(), NewSocketServerListenerError>
 	{
 		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_4()?;
 		this.bind_internet_protocol_version_4_socket(socket_address)?;
+		this.listen(back_log)?;
 		Ok(())
 	}
 
@@ -110,11 +119,16 @@ impl SocketFileDescriptor
 	}
 	
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 server listener.
+	///
+	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
+	///
+	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
 	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6) -> Result<(), NewSocketServerListenerError>
+	pub fn new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6, back_log: u32) -> Result<(), NewSocketServerListenerError>
 	{
 		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_6()?;
 		this.bind_internet_protocol_version_6_socket(socket_address)?;
+		this.listen(back_log)?;
 		Ok(())
 	}
 
@@ -171,6 +185,7 @@ impl SocketFileDescriptor
 	{
 		let this = Self::new_streaming_unix_domain_socket()?;
 		this.bind_unix_domain_socket(path)?;
+		this.listen(0)?;
 		Ok(())
 	}
 
@@ -270,6 +285,34 @@ impl SocketFileDescriptor
 		unsafe { socket_data.sun_path.as_mut_ptr().copy_from_nonoverlapping(path_bytes.as_ptr() as *const _, path_bytes_length) };
 
 		socket_data
+	}
+
+	#[inline(always)]
+	fn listen(&self, back_log: u32) -> Result<(), SocketListenError>
+	{
+		debug_assert!(back_log <= ::std::i32::MAX as u32, "back_log can not be greater than :std::i32::MAX");
+
+		let result = unsafe { listen(self.0, back_log as i32) };
+		if likely!(result == 0)
+		{
+			Ok(())
+		}
+		else if likely!(result == -1)
+		{
+			match errno().0
+			{
+				EADDRINUSE => Err(SocketListenError::AddressInUse),
+				EBADF => panic!("`sockfd` is not a valid descriptor"),
+				ENOTSOCK => panic!("`sockfd` is not a socket file descriptor"),
+				EOPNOTSUPP => panic!("The socket is not of a type that supports the `listen()` operation"),
+
+				_ => unreachable!(),
+			}
+		}
+		else
+		{
+			unreachable!()
+		}
 	}
 
 	#[inline(always)]
