@@ -11,6 +11,24 @@ trait SocketData: Sized
 	fn family(&self) -> sa_family_t;
 }
 
+impl SocketData for sockaddr_in
+{
+	#[inline(always)]
+	fn family(&self) -> sa_family_t
+	{
+		self.sin_family
+	}
+}
+
+impl SocketData for sockaddr_in6
+{
+	#[inline(always)]
+	fn family(&self) -> sa_family_t
+	{
+		self.sin6_family
+	}
+}
+
 impl SocketData for sockaddr_un
 {
 	#[inline(always)]

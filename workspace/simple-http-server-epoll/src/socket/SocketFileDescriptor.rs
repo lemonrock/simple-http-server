@@ -40,34 +40,129 @@ impl IntoRawFd for SocketFileDescriptor
 
 impl SocketFileDescriptor
 {
-	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4.
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 or 6 server listener.
 	#[inline(always)]
-	fn new_transmission_control_protocol_over_internet_protocol_version_4() -> Result<Self, SocketCreationError>
+	pub fn new_transmission_control_protocol_over_internet_protocol_server_listener(socket_address: SocketAddr) -> Result<(), NewSocketServerListenerError>
 	{
-		Self::new(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+		use self::SocketAddr::*;
+
+		match socket_address
+		{
+			V4(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address),
+			V6(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address),
+		}
 	}
 
-	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6.
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 or 6 client.
 	#[inline(always)]
-	fn new_transmission_control_protocol_over_internet_protocol_version_6() -> Result<Self, SocketCreationError>
+	pub fn new_transmission_control_protocol_over_internet_protocol_client(socket_address: SocketAddr) -> Result<(), NewSocketClientError>
 	{
-		Self::new(AF_INET6, SOCK_STREAM, IPPROTO_TCP)
+		use self::SocketAddr::*;
+
+		match socket_address
+		{
+			V4(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address),
+			V6(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address),
+		}
+	}
+	/// Creates a new instance of an User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 or 6 server listener.
+	#[inline(always)]
+	pub fn new_user_datagram_protocol_over_internet_protocol_server_listener(socket_address: SocketAddr) -> Result<(), NewSocketServerListenerError>
+	{
+		use self::SocketAddr::*;
+
+		match socket_address
+		{
+			V4(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address),
+			V6(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address),
+		}
 	}
 
-	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4.
+	/// Creates a new instance of an User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 or 6 client.
 	#[inline(always)]
-	fn new_user_datagram_protocol_over_internet_protocol_version_4() -> Result<Self, SocketCreationError>
+	pub fn new_user_datagram_protocol_over_internet_protocol_client(socket_address: SocketAddr) -> Result<(), NewSocketClientError>
 	{
-		Self::new(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+		use self::SocketAddr::*;
+
+		match socket_address
+		{
+			V4(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address),
+			V6(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address),
+		}
 	}
 
-	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6.
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 server listener.
 	#[inline(always)]
-	fn new_user_datagram_protocol_over_internet_protocol_version_6() -> Result<Self, SocketCreationError>
+	pub fn new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4) -> Result<(), NewSocketServerListenerError>
 	{
-		Self::new(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)
+		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_4()?;
+		this.bind_internet_protocol_version_4_socket(socket_address)?;
+		Ok(())
 	}
 
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 client.
+	#[inline(always)]
+	pub fn new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4) -> Result<(), NewSocketClientError>
+	{
+		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_4()?;
+		this.connect_internet_protocol_version_4_socket(socket_address)?;
+		Ok(())
+	}
+	
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 server listener.
+	#[inline(always)]
+	pub fn new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6) -> Result<(), NewSocketServerListenerError>
+	{
+		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_6()?;
+		this.bind_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 client.
+	#[inline(always)]
+	pub fn new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6) -> Result<(), NewSocketClientError>
+	{
+		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_6()?;
+		this.connect_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 server listener.
+	#[inline(always)]
+	pub fn new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4) -> Result<(), NewSocketServerListenerError>
+	{
+		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_4()?;
+		this.bind_internet_protocol_version_4_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 client.
+	#[inline(always)]
+	pub fn new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4) -> Result<(), NewSocketClientError>
+	{
+		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_4()?;
+		this.connect_internet_protocol_version_4_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 server listener.
+	#[inline(always)]
+	pub fn new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6) -> Result<(), NewSocketServerListenerError>
+	{
+		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_6()?;
+		this.bind_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 client.
+	#[inline(always)]
+	pub fn new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6) -> Result<(), NewSocketClientError>
+	{
+		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_6()?;
+		this.connect_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+	
 	/// Creates a new streaming Unix Domain server listener socket.
 	///
 	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
@@ -113,6 +208,30 @@ impl SocketFileDescriptor
 	}
 
 	#[inline(always)]
+	fn connect_internet_protocol_version_4_socket(&self, socket_address: SocketAddrV4) -> Result<(), SocketConnectError>
+	{
+		self.connect(&Self::internet_protocol_version_4_socket_data(socket_address))
+	}
+
+	#[inline(always)]
+	fn bind_internet_protocol_version_4_socket(&self, socket_address: SocketAddrV4) -> Result<(), SocketBindError>
+	{
+		self.bind(&Self::internet_protocol_version_4_socket_data(socket_address))
+	}
+
+	#[inline(always)]
+	fn connect_internet_protocol_version_6_socket(&self, socket_address: SocketAddrV6) -> Result<(), SocketConnectError>
+	{
+		self.connect(&Self::internet_protocol_version_6_socket_data(socket_address))
+	}
+
+	#[inline(always)]
+	fn bind_internet_protocol_version_6_socket(&self, socket_address: SocketAddrV6) -> Result<(), SocketBindError>
+	{
+		self.bind(&Self::internet_protocol_version_6_socket_data(socket_address))
+	}
+
+	#[inline(always)]
 	fn connect_unix_domain_socket(&self, path: impl AsRef<Path>) -> Result<(), SocketConnectError>
 	{
 		self.connect(&Self::unix_domain_socket_data(path))
@@ -122,6 +241,18 @@ impl SocketFileDescriptor
 	fn bind_unix_domain_socket(&self, path: impl AsRef<Path>) -> Result<(), SocketBindError>
 	{
 		self.bind(&Self::unix_domain_socket_data(path))
+	}
+
+	#[inline(always)]
+	fn internet_protocol_version_4_socket_data(socket_address: SocketAddrV4) -> sockaddr_in
+	{
+		unsafe { transmute(socket_address) }
+	}
+
+	#[inline(always)]
+	fn internet_protocol_version_6_socket_data(socket_address: SocketAddrV6) -> sockaddr_in6
+	{
+		unsafe { transmute(socket_address) }
 	}
 
 	#[inline(always)]
@@ -226,136 +357,29 @@ impl SocketFileDescriptor
 		}
 	}
 
-//	#[inline(always)]
-//	pub fn bind(self) -> ServerSocketFileDescriptor
-//	{
-//		ServerSocketFileDescriptor(self)
-//	}
-//
-//	#[inline(always)]
-//	pub fn connect(self) -> ClientSocketFileDescriptor
-//	{
-//		ClientSocketFileDescriptor(self)
-//	}
-	/*
+	#[inline(always)]
+	fn new_transmission_control_protocol_over_internet_protocol_version_4() -> Result<Self, SocketCreationError>
+	{
+		Self::new(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+	}
 
-	Solaris
+	#[inline(always)]
+	fn new_transmission_control_protocol_over_internet_protocol_version_6() -> Result<Self, SocketCreationError>
+	{
+		Self::new(AF_INET6, SOCK_STREAM, IPPROTO_TCP)
+	}
 
-pub type socklen_t = ::c_uint;
-pub type sa_family_t = u16;
+	#[inline(always)]
+	fn new_user_datagram_protocol_over_internet_protocol_version_4() -> Result<Self, SocketCreationError>
+	{
+		Self::new(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+	}
 
-    pub struct sockaddr {
-        pub sa_family: sa_family_t,
-        pub sa_data: [::c_char; 14],
-}
-    pub struct sockaddr_in {
-        pub sin_family: sa_family_t,
-        pub sin_port: ::in_port_t,
-        pub sin_addr: ::in_addr,
-        pub sin_zero: [::c_char; 8]
-    }
-
-    pub struct sockaddr_in6 {
-        pub sin6_family: sa_family_t,
-        pub sin6_port: ::in_port_t,
-        pub sin6_flowinfo: u32,
-        pub sin6_addr: ::in6_addr,
-        pub sin6_scope_id: u32,
-        pub __sin6_src_id: u32
-    }
-
-    pub struct sockaddr_un {
-        pub sun_family: sa_family_t,
-        pub sun_path: [c_char; 108]
-
-
-
-   Fuschia
-
-
-pub type socklen_t = u32;
-pub type sa_family_t = u16;
-
-    pub struct sockaddr {
-        pub sa_family: sa_family_t,
-        pub sa_data: [::c_char; 14],
-    }
-
-    pub struct sockaddr_in {
-        pub sin_family: sa_family_t,
-        pub sin_port: ::in_port_t,
-        pub sin_addr: ::in_addr,
-        pub sin_zero: [u8; 8],
-    }
-
-    pub struct sockaddr_in6 {
-        pub sin6_family: sa_family_t,
-        pub sin6_port: ::in_port_t,
-        pub sin6_flowinfo: u32,
-        pub sin6_addr: ::in6_addr,
-        pub sin6_scope_id: u32,
-    }
-
-    pub struct sockaddr_un {
-        pub sun_family: sa_family_t,
-        pub sun_path: [::c_char; 108]
-    }
-
-    pub struct sockaddr_storage {
-        pub ss_family: sa_family_t,
-        __ss_align: ::size_t,
-        __ss_pad2: [u8; 128 - 2 * 8],
-}
-
-
-	Linux
-
-pub type sa_family_t = u16;
-
-
-    pub struct sockaddr {
-        pub sa_family: sa_family_t,
-        pub sa_data: [::c_char; 14],
-    }
-
-    pub struct sockaddr_in {
-        pub sin_family: sa_family_t,
-        pub sin_port: ::in_port_t,
-        pub sin_addr: ::in_addr,
-        pub sin_zero: [u8; 8],
-    }
-
-    pub struct sockaddr_in6 {
-        pub sin6_family: sa_family_t,
-        pub sin6_port: ::in_port_t,
-        pub sin6_flowinfo: u32,
-        pub sin6_addr: ::in6_addr,
-        pub sin6_scope_id: u32,
-    }
-
-    pub struct sockaddr_un {
-        pub sun_family: sa_family_t,
-        pub sun_path: [::c_char; 108]
-    }
-
-    pub struct sockaddr_storage {
-        pub ss_family: sa_family_t,
-        __ss_align: ::size_t,
-        #[cfg(target_pointer_width = "32")]
-        __ss_pad2: [u8; 128 - 2 * 4],
-        #[cfg(target_pointer_width = "64")]
-        __ss_pad2: [u8; 128 - 2 * 8],
-}
-
-}
-
-
-		For a client, call connect()
-
-		For a server, call bind()
-	*/
-
-
+	#[inline(always)]
+	fn new_user_datagram_protocol_over_internet_protocol_version_6() -> Result<Self, SocketCreationError>
+	{
+		Self::new(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)
+	}
 
 	#[inline(always)]
 	fn new_streaming_unix_domain_socket() -> Result<Self, SocketCreationError>

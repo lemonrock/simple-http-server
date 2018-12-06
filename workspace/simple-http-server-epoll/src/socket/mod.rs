@@ -30,6 +30,9 @@ use ::libc::sockaddr_in;
 use ::libc::sockaddr_in6;
 use ::libc::sockaddr_un;
 use ::libc::socklen_t; // Typically u32.
+use ::std::net::SocketAddr;
+use ::std::net::SocketAddrV4;
+use ::std::net::SocketAddrV6;
 use ::std::os::unix::ffi::OsStrExt;
 
 
