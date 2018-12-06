@@ -2,15 +2,11 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-
-use ::std::convert::AsRef;
-use ::std::path::Path;
-
-
-/// Represents socket data.
-pub trait SocketData: Sized
+/// Whilst this is present in libc, it does not support useful derives.
+#[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(C)]
+pub struct in_addr
 {
-	/// Socket family (eg `AF_UNIX`).
-	#[inline(always)]
-	fn family(&self) -> sa_family_t;
+	/// Must a 32-bit integer in Network Endian form, not Native Endian form.
+	pub s_addr: in_addr_t,
 }

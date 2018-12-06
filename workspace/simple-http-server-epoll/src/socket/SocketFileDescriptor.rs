@@ -4,23 +4,18 @@
 
 /// Represents a socket instance.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SocketFileDescriptor(RawFd);
+pub struct SocketFileDescriptor<SD: SocketData>(RawFd, PhantomData<SD>);
 
-impl Drop for SocketFileDescriptor
+impl<SD: SocketData> Drop for SocketFileDescriptor<SD>
 {
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		// Please see <http://austingroupbugs.net/view.php?id=529> and <http://austingroupbugs.net/view.php?id=529> for why ignoring the `EINTR` error on close is actually sane.
-		//
-		// Frankly, the defects here are those of POSIX: (a) signals, and (b) using a file descriptor so small that it isn't thread safe.
-		//
-		// To be far, both signals and file descriptors predate threads by a long way.
-		unsafe { close(self.0) };
+		self.0.close()
 	}
 }
 
-impl AsRawFd for SocketFileDescriptor
+impl<SD: SocketData> AsRawFd for SocketFileDescriptor<SD>
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -29,7 +24,7 @@ impl AsRawFd for SocketFileDescriptor
 	}
 }
 
-impl IntoRawFd for SocketFileDescriptor
+impl<SD: SocketData> IntoRawFd for SocketFileDescriptor<SD>
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -38,187 +33,46 @@ impl IntoRawFd for SocketFileDescriptor
 	}
 }
 
-impl SocketFileDescriptor
+
+impl SocketFileDescriptor<sockaddr_in>
 {
-	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 or 6 server listener.
-	///
-	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
-	///
-	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
-	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_server_listener(socket_address: SocketAddr, back_log: u32) -> Result<(), NewSocketServerListenerError>
-	{
-		use self::SocketAddr::*;
-
-		match socket_address
-		{
-			V4(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address, back_log),
-			V6(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address, back_log),
-		}
-	}
-
-	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 or 6 client.
-	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_client(socket_address: SocketAddr) -> Result<(), NewSocketClientError>
-	{
-		use self::SocketAddr::*;
-
-		match socket_address
-		{
-			V4(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address),
-			V6(socket_address) => Self::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address),
-		}
-	}
-	/// Creates a new instance of an User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 or 6 server listener.
-	#[inline(always)]
-	pub fn new_user_datagram_protocol_over_internet_protocol_server_listener(socket_address: SocketAddr) -> Result<(), NewSocketServerListenerError>
-	{
-		use self::SocketAddr::*;
-
-		match socket_address
-		{
-			V4(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address),
-			V6(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address),
-		}
-	}
-
-	/// Creates a new instance of an User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 or 6 client.
-	#[inline(always)]
-	pub fn new_user_datagram_protocol_over_internet_protocol_client(socket_address: SocketAddr) -> Result<(), NewSocketClientError>
-	{
-		use self::SocketAddr::*;
-
-		match socket_address
-		{
-			V4(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address),
-			V6(socket_address) => Self::new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address),
-		}
-	}
-
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 server listener.
 	///
 	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
 	///
 	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
 	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4, back_log: u32) -> Result<(), NewSocketServerListenerError>
+	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4, back_log: u32) -> Result<ServerListenerSocketFileDescriptor<sockaddr_in>, NewSocketServerListenerError>
 	{
-		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_4()?;
+		let this = SocketFileDescriptor::<sockaddr_in>::new_transmission_control_protocol_over_internet_protocol_version_4()?;
 		this.bind_internet_protocol_version_4_socket(socket_address)?;
-		this.listen(back_log)?;
-		Ok(())
+		Ok(this.listen(back_log)?)
 	}
 
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 client.
 	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4) -> Result<(), NewSocketClientError>
+	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4) -> Result<(), NewSocketClientError>
 	{
-		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_4()?;
+		let this = SocketFileDescriptor::<sockaddr_in>::new_transmission_control_protocol_over_internet_protocol_version_4()?;
 		this.connect_internet_protocol_version_4_socket(socket_address)?;
-		Ok(())
-	}
-	
-	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 server listener.
-	///
-	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
-	///
-	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
-	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6, back_log: u32) -> Result<(), NewSocketServerListenerError>
-	{
-		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_6()?;
-		this.bind_internet_protocol_version_6_socket(socket_address)?;
-		this.listen(back_log)?;
-		Ok(())
-	}
-
-	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 client.
-	#[inline(always)]
-	pub fn new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6) -> Result<(), NewSocketClientError>
-	{
-		let this = Self::new_transmission_control_protocol_over_internet_protocol_version_6()?;
-		this.connect_internet_protocol_version_6_socket(socket_address)?;
 		Ok(())
 	}
 
 	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 server listener.
 	#[inline(always)]
-	pub fn new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4) -> Result<(), NewSocketServerListenerError>
+	pub(crate) fn new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address: SocketAddrV4) -> Result<(), NewSocketServerListenerError>
 	{
-		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_4()?;
+		let this = SocketFileDescriptor::<sockaddr_in>::new_user_datagram_protocol_over_internet_protocol_version_4()?;
 		this.bind_internet_protocol_version_4_socket(socket_address)?;
 		Ok(())
 	}
 
 	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 client.
 	#[inline(always)]
-	pub fn new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4) -> Result<(), NewSocketClientError>
+	pub(crate) fn new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4) -> Result<(), NewSocketClientError>
 	{
-		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_4()?;
+		let this = SocketFileDescriptor::<sockaddr_in>::new_user_datagram_protocol_over_internet_protocol_version_4()?;
 		this.connect_internet_protocol_version_4_socket(socket_address)?;
-		Ok(())
-	}
-
-	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 server listener.
-	#[inline(always)]
-	pub fn new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6) -> Result<(), NewSocketServerListenerError>
-	{
-		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_6()?;
-		this.bind_internet_protocol_version_6_socket(socket_address)?;
-		Ok(())
-	}
-
-	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 client.
-	#[inline(always)]
-	pub fn new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6) -> Result<(), NewSocketClientError>
-	{
-		let this = Self::new_user_datagram_protocol_over_internet_protocol_version_6()?;
-		this.connect_internet_protocol_version_6_socket(socket_address)?;
-		Ok(())
-	}
-	
-	/// Creates a new streaming Unix Domain server listener socket.
-	///
-	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
-	#[inline(always)]
-	pub fn new_streaming_unix_domain_socket_server_listener(path: impl AsRef<Path>) -> Result<(), NewSocketServerListenerError>
-	{
-		let this = Self::new_streaming_unix_domain_socket()?;
-		this.bind_unix_domain_socket(path)?;
-		this.listen(0)?;
-		Ok(())
-	}
-
-	/// Creates a new streaming Unix Domain client socket.
-	///
-	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
-	#[inline(always)]
-	pub fn new_streaming_unix_domain_socket_client(path: impl AsRef<Path>) -> Result<(), NewSocketClientError>
-	{
-		let this = Self::new_streaming_unix_domain_socket()?;
-		this.connect_unix_domain_socket(path)?;
-		Ok(())
-	}
-
-	/// Creates a new datagram Unix Domain server listener socket.
-	///
-	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
-	#[inline(always)]
-	pub fn new_datagram_unix_domain_socket_server_listener(path: impl AsRef<Path>) -> Result<(), NewSocketServerListenerError>
-	{
-		let this = Self::new_datagram_unix_domain_socket()?;
-		this.bind_unix_domain_socket(path)?;
-		Ok(())
-	}
-
-	/// Creates a new datagram Unix Domain client socket.
-	///
-	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
-	#[inline(always)]
-	pub fn new_datagram_unix_domain_socket_client(path: impl AsRef<Path>) -> Result<(), NewSocketClientError>
-	{
-		let this = Self::new_datagram_unix_domain_socket()?;
-		this.connect_unix_domain_socket(path)?;
 		Ok(())
 	}
 
@@ -235,6 +89,55 @@ impl SocketFileDescriptor
 	}
 
 	#[inline(always)]
+	fn internet_protocol_version_4_socket_data(socket_address: SocketAddrV4) -> sockaddr_in
+	{
+		unsafe { transmute(socket_address) }
+	}
+}
+
+impl SocketFileDescriptor<sockaddr_in6>
+{
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 server listener.
+	///
+	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
+	///
+	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
+	#[inline(always)]
+	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6, back_log: u32) -> Result<ServerListenerSocketFileDescriptor<sockaddr_in6>, NewSocketServerListenerError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_in6>::new_transmission_control_protocol_over_internet_protocol_version_6()?;
+		this.bind_internet_protocol_version_6_socket(socket_address)?;
+		Ok(this.listen(back_log)?)
+	}
+
+	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 client.
+	#[inline(always)]
+	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6) -> Result<(), NewSocketClientError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_in6>::new_transmission_control_protocol_over_internet_protocol_version_6()?;
+		this.connect_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 server listener.
+	#[inline(always)]
+	pub(crate) fn new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address: SocketAddrV6) -> Result<(), NewSocketServerListenerError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_in6>::new_user_datagram_protocol_over_internet_protocol_version_6()?;
+		this.bind_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+
+	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 client.
+	#[inline(always)]
+	pub(crate) fn new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6) -> Result<(), NewSocketClientError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_in6>::new_user_datagram_protocol_over_internet_protocol_version_6()?;
+		this.connect_internet_protocol_version_6_socket(socket_address)?;
+		Ok(())
+	}
+
+	#[inline(always)]
 	fn connect_internet_protocol_version_6_socket(&self, socket_address: SocketAddrV6) -> Result<(), SocketConnectError>
 	{
 		self.connect(&Self::internet_protocol_version_6_socket_data(socket_address))
@@ -244,6 +147,59 @@ impl SocketFileDescriptor
 	fn bind_internet_protocol_version_6_socket(&self, socket_address: SocketAddrV6) -> Result<(), SocketBindError>
 	{
 		self.bind(&Self::internet_protocol_version_6_socket_data(socket_address))
+	}
+
+	#[inline(always)]
+	fn internet_protocol_version_6_socket_data(socket_address: SocketAddrV6) -> sockaddr_in6
+	{
+		unsafe { transmute(socket_address) }
+	}
+}
+
+impl SocketFileDescriptor<sockaddr_un>
+{
+	/// Creates a new streaming Unix Domain server listener socket.
+	///
+	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
+	#[inline(always)]
+	pub(crate) fn new_streaming_unix_domain_socket_server_listener(path: impl AsRef<Path>) -> Result<ServerListenerSocketFileDescriptor<sockaddr_un>, NewSocketServerListenerError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_un>::new_streaming_unix_domain_socket()?;
+		this.bind_unix_domain_socket(path)?;
+		Ok(this.listen(0)?)
+	}
+
+	/// Creates a new streaming Unix Domain client socket.
+	///
+	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
+	#[inline(always)]
+	pub(crate) fn new_streaming_unix_domain_socket_client(path: impl AsRef<Path>) -> Result<(), NewSocketClientError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_un>::new_streaming_unix_domain_socket()?;
+		this.connect_unix_domain_socket(path)?;
+		Ok(())
+	}
+
+	/// Creates a new datagram Unix Domain server listener socket.
+	///
+	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
+	#[inline(always)]
+	pub(crate) fn new_datagram_unix_domain_socket_server_listener(path: impl AsRef<Path>) -> Result<(), NewSocketServerListenerError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_un>::new_datagram_unix_domain_socket()?;
+		this.bind_unix_domain_socket(path)?;
+		Ok(())
+	}
+
+	/// Creates a new datagram Unix Domain client socket.
+	///
+	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
+	#[inline(always)]
+	pub(crate) fn new_datagram_unix_domain_socket_client(path: impl AsRef<Path>) -> Result<(), NewSocketClientError>
+	{
+		let this = SocketFileDescriptor::<sockaddr_un>::new_datagram_unix_domain_socket()?;
+		this.connect_unix_domain_socket(path)?;
+		Ok(())
 	}
 
 	#[inline(always)]
@@ -259,25 +215,13 @@ impl SocketFileDescriptor
 	}
 
 	#[inline(always)]
-	fn internet_protocol_version_4_socket_data(socket_address: SocketAddrV4) -> sockaddr_in
-	{
-		unsafe { transmute(socket_address) }
-	}
-
-	#[inline(always)]
-	fn internet_protocol_version_6_socket_data(socket_address: SocketAddrV6) -> sockaddr_in6
-	{
-		unsafe { transmute(socket_address) }
-	}
-
-	#[inline(always)]
 	fn unix_domain_socket_data(path: impl AsRef<Path>) -> sockaddr_un
 	{
 		let mut socket_data = sockaddr_un
-		{
-			sun_family: AF_UNIX as sa_family_t,
-			sun_path: unsafe { zeroed() },
-		};
+			{
+				sun_family: AF_UNIX as sa_family_t,
+				sun_path: unsafe { zeroed() },
+			};
 
 		let path_bytes = path.as_ref().as_os_str().as_bytes();
 		let path_bytes_length = path_bytes.len();
@@ -286,16 +230,19 @@ impl SocketFileDescriptor
 
 		socket_data
 	}
+}
 
+impl<SD: SocketData> SocketFileDescriptor<SD>
+{
 	#[inline(always)]
-	fn listen(&self, back_log: u32) -> Result<(), SocketListenError>
+	fn listen(self, back_log: u32) -> Result<ServerListenerSocketFileDescriptor<SD>, SocketListenError>
 	{
 		debug_assert!(back_log <= ::std::i32::MAX as u32, "back_log can not be greater than :std::i32::MAX");
 
 		let result = unsafe { listen(self.0, back_log as i32) };
 		if likely!(result == 0)
 		{
-			Ok(())
+			Ok(ServerListenerSocketFileDescriptor(self))
 		}
 		else if likely!(result == -1)
 		{
@@ -316,7 +263,7 @@ impl SocketFileDescriptor
 	}
 
 	#[inline(always)]
-	fn bind<SD: SocketData>(&self, socket_data: &SD) -> Result<(), SocketBindError>
+	fn bind(&self, socket_data: &SD) -> Result<(), SocketBindError>
 	{
 		use self::SocketBindError::*;
 		use self::FilePathInvalidReason::*;
@@ -359,7 +306,7 @@ impl SocketFileDescriptor
 	}
 
 	#[inline(always)]
-	fn connect<SD: SocketData>(&self, socket_data: &SD) -> Result<(), SocketConnectError>
+	fn connect(&self, socket_data: &SD) -> Result<(), SocketConnectError>
 	{
 		use self::SocketConnectError::*;
 
@@ -445,7 +392,7 @@ impl SocketFileDescriptor
 		let result = unsafe { socket(domain, type_ | Flags, ethernet_protocol) };
 		if likely!(result != -1)
 		{
-			Ok(SocketFileDescriptor(result))
+			Ok(SocketFileDescriptor(result, PhantomData))
 		}
 		else
 		{

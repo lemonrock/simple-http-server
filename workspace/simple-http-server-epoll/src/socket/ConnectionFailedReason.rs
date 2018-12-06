@@ -2,15 +2,19 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-
-use ::std::convert::AsRef;
-use ::std::path::Path;
-
-
-/// Represents socket data.
-pub trait SocketData: Sized
+/// Additional information on why a connection failed during accept.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ConnectionFailedReason
 {
-	/// Socket family (eg `AF_UNIX`).
-	#[inline(always)]
-	fn family(&self) -> sa_family_t;
+	/// The connection aborted.
+	Aborted,
+
+	/// Firewall rules denied permission.
+	FirewallPermissionDenied,
+
+	/// Connection establishment timed out.
+	TimedOut,
+
+	/// A protocol error (`EPROTO`) occurred.
+	Protocol,
 }

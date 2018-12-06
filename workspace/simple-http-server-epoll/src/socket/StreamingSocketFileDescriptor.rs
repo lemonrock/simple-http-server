@@ -2,15 +2,24 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+/// Represents a streaming socket instance between two peers.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct StreamingSocketFileDescriptor<SD: SocketData>(SocketFileDescriptor<SD>);
 
-use ::std::convert::AsRef;
-use ::std::path::Path;
-
-
-/// Represents socket data.
-pub trait SocketData: Sized
+impl<SD: SocketData> AsRawFd for StreamingSocketFileDescriptor<SD>
 {
-	/// Socket family (eg `AF_UNIX`).
 	#[inline(always)]
-	fn family(&self) -> sa_family_t;
+	fn as_raw_fd(&self) -> RawFd
+	{
+		self.0.as_raw_fd()
+	}
+}
+
+impl<SD: SocketData> IntoRawFd for StreamingSocketFileDescriptor<SD>
+{
+	#[inline(always)]
+	fn into_raw_fd(self) -> RawFd
+	{
+		self.0.into_raw_fd()
+	}
 }

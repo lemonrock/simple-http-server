@@ -2,15 +2,13 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-
-use ::std::convert::AsRef;
-use ::std::path::Path;
-
-
-/// Represents socket data.
-pub trait SocketData: Sized
+/// An accepted connection.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct AcceptedConnection<SD: SocketData>
 {
-	/// Socket family (eg `AF_UNIX`).
-	#[inline(always)]
-	fn family(&self) -> sa_family_t;
+	/// A streaming socket instance between two peers.
+	pub streaming_socket_file_descriptor: StreamingSocketFileDescriptor<SD>,
+
+	/// Peer (remote) address.
+	pub peer_address: SD,
 }

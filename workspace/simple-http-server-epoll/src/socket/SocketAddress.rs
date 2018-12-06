@@ -3,54 +3,54 @@
 
 
 /// Represents a socket address that can be used as a server listener or as a client, for streams and data grams.
-pub enum SocketAddress<P: AsRef<Path>>
+pub enum SocketAddress<FilePath: AsRef<Path>>
 {
 	/// An Internet Protocol (IP) version 4 or 6 socket.
-	InternetProtocol
-	{
-		/// An Internet Protocol (IP) version 4 or 6 socket address.
-		socket_address: SocketAddr,
-	},
+	InternetProtocol(SocketAddr),
 
-	/// An Unix Domain Socket.
-	Unix
-	{
-		/// File path.
-		///
-		/// Can not be more than 108 bytes long.
-		file_path: P
-	}
+	/// An Unix Domain Socket file path of up to 108 bytes.
+	Unix(FilePath),
 }
 
-impl<P: AsRef<Path>> SocketAddress<P>
+impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 {
 	/// New streaming server listener.
 	///
 	/// `back_log` can not exceed `::std::i32::MAX` and is capped by the Operating System to the value in `/proc/sys/net/core/somaxconn`.
 	///
 	/// The default value in `/proc/sys/net/core/somaxconn` is `128`.
+	///
+	/// `back_log` is ignored for Unix domain sockets.
 	#[inline(always)]
-	pub fn new_streaming_server_listener(&self, back_log: u32) -> Result<(), NewSocketServerListenerError>
+	pub fn new_streaming_server_listener(&self, back_log: u32) -> Result<ServerListenerSocketFileDescriptorEnum, NewSocketServerListenerError>
 	{
+		use self::ServerListenerSocketFileDescriptorEnum::*;
+		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
-		match self
-		{
-			&InternetProtocol { socket_address } => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_server_listener(socket_address, back_log),
-			&Unix { ref file_path } => SocketFileDescriptor::new_streaming_unix_domain_socket_server_listener(file_path),
-		}
+		Ok
+		(
+			match self
+			{
+				&InternetProtocol(V4(socket_address)) => InternetProtocolVersion4(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address, back_log)?),
+				&InternetProtocol(V6(socket_address)) => InternetProtocolVersion6(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address, back_log)?),
+				&Unix(ref file_path) => UnixDomain(SocketFileDescriptor::new_streaming_unix_domain_socket_server_listener(file_path)?),
+			}
+		)
 	}
 
 	/// New streaming client.
 	#[inline(always)]
 	pub fn new_streaming_client(&self) -> Result<(), NewSocketClientError>
 	{
+		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
 		match self
 		{
-			&InternetProtocol { socket_address } => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_client(socket_address),
-			&Unix { ref file_path } => SocketFileDescriptor::new_streaming_unix_domain_socket_client(file_path),
+			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address),
+			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address),
+			&Unix(ref file_path) => SocketFileDescriptor::new_streaming_unix_domain_socket_client(file_path),
 		}
 	}
 
@@ -58,12 +58,14 @@ impl<P: AsRef<Path>> SocketAddress<P>
 	#[inline(always)]
 	pub fn new_datagram_server_listener(&self) -> Result<(), NewSocketServerListenerError>
 	{
+		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
 		match self
 		{
-			&InternetProtocol { socket_address } => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_server_listener(socket_address),
-			&Unix { ref file_path } => SocketFileDescriptor::new_datagram_unix_domain_socket_server_listener(file_path),
+			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address),
+			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address),
+			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_server_listener(file_path),
 		}
 	}
 
@@ -71,12 +73,14 @@ impl<P: AsRef<Path>> SocketAddress<P>
 	#[inline(always)]
 	pub fn new_datagram_client(&self) -> Result<(), NewSocketClientError>
 	{
+		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
 		match self
 		{
-			&InternetProtocol { socket_address } => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_client(socket_address),
-			&Unix { ref file_path } => SocketFileDescriptor::new_datagram_unix_domain_socket_client(file_path),
+			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address),
+			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address),
+			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_client(file_path),
 		}
 	}
 }

@@ -2,15 +2,16 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-
-use ::std::convert::AsRef;
-use ::std::path::Path;
-
-
-/// Represents socket data.
-pub trait SocketData: Sized
+/// One of three possible types.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum AcceptedConnectionEnum
 {
-	/// Socket family (eg `AF_UNIX`).
-	#[inline(always)]
-	fn family(&self) -> sa_family_t;
+	/// An Internet Protocol (IP) version 4 accepted connection.
+	InternetProtocolVersion4(AcceptedConnection<sockaddr_in>),
+
+	/// An Internet Protocol (IP) version 6 accepted connection.
+	InternetProtocolVersion6(AcceptedConnection<sockaddr_in6>),
+
+	/// An Unix Domain connection.
+	UnixDomain(AcceptedConnection<sockaddr_un>),
 }
