@@ -2,7 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Represents an event instance.
+/// Represents a signal instance.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SignalFileDescriptor(RawFd);
 

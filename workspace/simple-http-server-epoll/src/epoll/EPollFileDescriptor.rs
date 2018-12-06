@@ -227,9 +227,3 @@ impl EPollFileDescriptor
 		}
 	}
 }
-
-
-// TODO Share a file descriptor across threads
-// SO_REUSEPORT with SO_INCOMING_CPU
-// EPOLLEXCLUSIVE
-
