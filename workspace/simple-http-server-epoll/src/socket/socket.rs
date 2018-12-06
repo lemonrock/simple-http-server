@@ -48,5 +48,3 @@ pub(crate) const SOCK_NONBLOCK: c_int = O_NONBLOCK;
 ///
 /// Since Linux 2.6.27.
 pub(crate) const SOCK_CLOEXEC: c_int = O_CLOEXEC;
-
-

@@ -2,38 +2,50 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use ::errno::errno;
-use ::libc::c_int;
-use ::libc::close;
+use super::*;
 use ::libc::AF_INET;
 use ::libc::AF_INET6;
+use ::libc::AF_UNIX;
 use ::libc::EACCES;
+use ::libc::EADDRINUSE;
+use ::libc::EADDRNOTAVAIL;
+use ::libc::EALREADY;
 use ::libc::EAFNOSUPPORT;
-use ::libc::EINTR;
-use ::libc::EINVAL;
-use ::libc::EMFILE;
-use ::libc::ENFILE;
+use ::libc::ECONNREFUSED;
+use ::libc::EINPROGRESS;
+use ::libc::EISCONN;
+use ::libc::ENETUNREACH;
 use ::libc::ENOBUFS;
-use ::libc::ENOMEM;
+use ::libc::ENOTDIR;
+use ::libc::ENOTSOCK;
 use ::libc::EPROTONOSUPPORT;
-use ::libc::O_CLOEXEC;
-use ::libc::O_NONBLOCK;
+use ::libc::EROFS;
+use ::libc::ETIMEDOUT;
+use ::libc::IPPROTO_TCP;
+use ::libc::IPPROTO_UDP;
+use ::libc::sa_family_t; // Typically u16.
 use ::libc::SOCK_DGRAM;
 use ::libc::SOCK_STREAM;
-use ::libc::read;
-use ::libc::write;
-use ::std::error;
-use ::std::fmt;
-use ::std::fmt::Debug;
-use ::std::fmt::Display;
-use ::std::fmt::Formatter;
-use ::std::mem::size_of;
-use ::std::os::unix::io::RawFd;
+use ::libc::sockaddr_in;
+use ::libc::sockaddr_in6;
+use ::libc::sockaddr_un;
+use ::libc::socklen_t; // Typically u32.
+use ::std::os::unix::ffi::OsStrExt;
 
 
+include!("bind.rs");
+include!("connect.rs");
+include!("FilePathInvalidReason.rs");
+include!("NewSocketClientError.rs");
+include!("NewSocketServerListenerError.rs");
 include!("socket.rs");
+include!("sockaddr_storage.rs");
+include!("SocketBindError.rs");
+include!("SocketConnectError.rs");
 include!("SocketCreationError.rs");
+include!("SocketData.rs");
 include!("SocketFileDescriptor.rs");
+
 
 /// MIPS and SPARC were early ports of Linux and so often differ in details that they shouldn't.
 #[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc", target_arch = "sparc64")))] pub(crate) const SO_REUSEADDR: c_int = 0x0004;

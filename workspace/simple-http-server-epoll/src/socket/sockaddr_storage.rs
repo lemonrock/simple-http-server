@@ -2,16 +2,16 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::timespec;
+/// Whilst this is present in libc, it is not always consistently defined.
+#[repr(C)]
+pub(crate) struct sockaddr_storage
+{
+	/// Socket address family.
+	pub(crate) ss_family: sa_family_t,
 
+	/// Alignment.
+	__ss_align: size_t,
 
-include!("itimerspec.rs");
-include!("TimerClock.rs");
-include!("TimerCreationError.rs");
-include!("TimerFileDescriptor.rs");
-include!("TimerReadError.rs");
-include!("TimerSetChoices.rs");
-include!("timerfd_create.rs");
-include!("timerfd_settime.rs");
-include!("timerfd_gettime.rs");
+	/// Padding to 128 bytes.
+	__ss_pad2: [u8; 128 - size_of::<sa_family_t>() - size_of::<size_t>()],
+}

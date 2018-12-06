@@ -2,29 +2,22 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during creation of a socket instance.
+/// An explanation of the `FilePathInvalid` error that can occur during binding of a socket instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SocketCreationError
+pub enum FilePathInvalidReason
 {
-	/// The per-process limit on the number of open file descriptors would be exceeded
-	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
+	/// A nonexistent interface was requested or the requested address was not local (eg it was on a NFS mount).
+	AddressUnavailable,
 
-	/// The system-wide limit on the total number of open files would be exceeded.
-	SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
+	/// Too many symbolic links were encountered in resolving the file path.
+	TooManySymbolicLinksInFilePath,
 
-	/// Kernel would be out of memory.
-	KernelWouldBeOutOfMemory,
-}
+	/// The file path does not exist.
+	DoesNotExist,
 
-impl Display for SocketCreationError
-{
-	#[inline(always)]
-	fn fmt(&self, f: &mut Formatter) -> fmt::Result
-	{
-		<SocketCreationError as Debug>::fmt(self, f)
-	}
-}
+	/// A component of the file path prefix is not a directory.
+	FilePathPrefixComponentIsNotADirectory,
 
-impl error::Error for SocketCreationError
-{
+	/// The socket inode would reside on a read-only file system.
+	FilePathIsReadOnly,
 }

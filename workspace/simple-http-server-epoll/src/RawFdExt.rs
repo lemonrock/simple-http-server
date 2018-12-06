@@ -2,16 +2,21 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::timespec;
+pub(crate) trait RawFdExt
+{
+	fn close(self);
+}
 
-
-include!("itimerspec.rs");
-include!("TimerClock.rs");
-include!("TimerCreationError.rs");
-include!("TimerFileDescriptor.rs");
-include!("TimerReadError.rs");
-include!("TimerSetChoices.rs");
-include!("timerfd_create.rs");
-include!("timerfd_settime.rs");
-include!("timerfd_gettime.rs");
+impl RawFdExt for RawFd
+{
+	#[inline(always)]
+	fn close(self)
+	{
+		// Please see <http://austingroupbugs.net/view.php?id=529> and <http://austingroupbugs.net/view.php?id=529> for why ignoring the `EINTR` error on close is actually sane.
+		//
+		// Frankly, the defects here are those of POSIX: (a) signals, and (b) using a file descriptor so small that it isn't thread safe.
+		//
+		// To be fair, both signals and file descriptors predate threads by a long way.
+		unsafe { close(self) };
+	}
+}

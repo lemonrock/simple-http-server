@@ -11,12 +11,25 @@ impl Drop for TimerFileDescriptor
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		// Please see <http://austingroupbugs.net/view.php?id=529> and <http://austingroupbugs.net/view.php?id=529> for why ignoring the `EINTR` error on close is actually sane.
-		//
-		// Frankly, the defects here are those of POSIX: (a) signals, and (b) using a file descriptor so small that it isn't thread safe.
-		//
-		// To be far, both signals and file descriptors predate threads by a long way.
-		unsafe { close(self.0) };
+		self.0.close()
+	}
+}
+
+impl AsRawFd for TimerFileDescriptor
+{
+	#[inline(always)]
+	fn as_raw_fd(&self) -> RawFd
+	{
+		self.0
+	}
+}
+
+impl IntoRawFd for TimerFileDescriptor
+{
+	#[inline(always)]
+	fn into_raw_fd(self) -> RawFd
+	{
+		self.0
 	}
 }
 

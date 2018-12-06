@@ -20,6 +20,24 @@ impl Drop for SignalFileDescriptor
 	}
 }
 
+impl AsRawFd for SignalFileDescriptor
+{
+	#[inline(always)]
+	fn as_raw_fd(&self) -> RawFd
+	{
+		self.0
+	}
+}
+
+impl IntoRawFd for SignalFileDescriptor
+{
+	#[inline(always)]
+	fn into_raw_fd(self) -> RawFd
+	{
+		self.0
+	}
+}
+
 impl SignalFileDescriptor
 {
 	/// Creates a new instance.

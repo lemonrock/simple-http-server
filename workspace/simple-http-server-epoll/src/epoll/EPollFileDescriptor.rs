@@ -20,6 +20,24 @@ impl Drop for EPollFileDescriptor
 	}
 }
 
+impl AsRawFd for EPollFileDescriptor
+{
+	#[inline(always)]
+	fn as_raw_fd(&self) -> RawFd
+	{
+		self.0
+	}
+}
+
+impl IntoRawFd for EPollFileDescriptor
+{
+	#[inline(always)]
+	fn into_raw_fd(self) -> RawFd
+	{
+		self.0
+	}
+}
+
 impl EPollFileDescriptor
 {
 	/// Creates a new instance.

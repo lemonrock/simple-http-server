@@ -2,16 +2,20 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::timespec;
 
+use ::std::convert::AsRef;
+use ::std::path::Path;
 
-include!("itimerspec.rs");
-include!("TimerClock.rs");
-include!("TimerCreationError.rs");
-include!("TimerFileDescriptor.rs");
-include!("TimerReadError.rs");
-include!("TimerSetChoices.rs");
-include!("timerfd_create.rs");
-include!("timerfd_settime.rs");
-include!("timerfd_gettime.rs");
+trait SocketData: Sized
+{
+	fn family(&self) -> sa_family_t;
+}
+
+impl SocketData for sockaddr_un
+{
+	#[inline(always)]
+	fn family(&self) -> sa_family_t
+	{
+		self.sun_family
+	}
+}

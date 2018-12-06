@@ -2,29 +2,34 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during creation of a socket instance.
+/// An error that can occur during binding of a socket instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SocketCreationError
+pub enum SocketBindError
 {
-	/// The per-process limit on the number of open file descriptors would be exceeded
-	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
+	/// Permission denied.
+	///
+	/// For an Unix Domain Socket, some part of the path not might searchable.
+	PermissionDenied,
 
-	/// The system-wide limit on the total number of open files would be exceeded.
-	SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
+	/// The address is already in use.
+	AddressInUse,
 
 	/// Kernel would be out of memory.
 	KernelWouldBeOutOfMemory,
+
+	/// Specifically, for an Unix Domain Socket, additional failures are possible.
+	FilePathInvalid(FilePathInvalidReason)
 }
 
-impl Display for SocketCreationError
+impl Display for SocketBindError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<SocketCreationError as Debug>::fmt(self, f)
+		<SocketBindError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for SocketCreationError
+impl error::Error for SocketBindError
 {
 }
