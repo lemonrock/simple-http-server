@@ -2,9 +2,37 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Represents a streaming socket instance between two peers.
+/// Represents a streaming socket instance between a local peer and a remote peer.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct StreamingSocketFileDescriptor<SD: SocketData>(SocketFileDescriptor<SD>);
+
+impl<SD: SocketData> Drop for StreamingSocketFileDescriptor<SD>
+{
+	#[inline(always)]
+	fn drop(&mut self)
+	{
+		let result = unsafe { shutdown(self.as_raw_fd(), SHUT_RDWR) };
+		if likely!(result == 0)
+		{
+			return
+		}
+		else if likely!(result != -1)
+		{
+			match errno().0
+			{
+				EBADF => panic!("The argument `sockfd` is an invalid descriptor"),
+				EINVAL => panic!("An invalid value was specified in `how`"),
+				ENOTCONN => panic!("The socket is associated with a connection-oriented protocol and has not been connected"),
+				ENOTSOCK => panic!("The argument `sockfd` does not refer to a socket"),
+				_ => unreachable!(),
+			}
+		}
+		else
+		{
+			unreachable!()
+		}
+	}
+}
 
 impl<SD: SocketData> AsRawFd for StreamingSocketFileDescriptor<SD>
 {
@@ -12,15 +40,6 @@ impl<SD: SocketData> AsRawFd for StreamingSocketFileDescriptor<SD>
 	fn as_raw_fd(&self) -> RawFd
 	{
 		self.0.as_raw_fd()
-	}
-}
-
-impl<SD: SocketData> IntoRawFd for StreamingSocketFileDescriptor<SD>
-{
-	#[inline(always)]
-	fn into_raw_fd(self) -> RawFd
-	{
-		self.0.into_raw_fd()
 	}
 }
 
@@ -32,6 +51,7 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 	/// * `WouldBlock`
 	/// * `Interrupted`
 	/// * `Other` (which is for when the kernel reports `ENOMEM`, ie it is out of memory).
+	/// * `ConnectionReset` (seems to be posible in some circumstances for Unix domain sockets).
 	#[inline(always)]
 	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>
 	{
@@ -66,12 +86,13 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 						{
 							EAGAIN => WouldBlock,
 							EINTR => Interrupted,
-							EBADF => panic!("The argument `sockfd` is an invalid descriptor"),
-							// Can be mapped to `ConnectionRefused`, but should not happen.
+							ENOMEM => Other,
+							ECONNRESET => ConnectionReset,
+							// Can be mapped to `ConnectionRefused`, but should not happen for a socket that is now connected.
 							ECONNREFUSED => panic!("A remote host refused to allow the network connection (typically because it is not running the requested service)"),
+							EBADF => panic!("The argument `sockfd` is an invalid descriptor"),
 							EFAULT => panic!("The receive buffer pointer(s) point outside the process's address space"),
 							EINVAL => panic!("Invalid argument passed"),
-							ENOMEM => Other,
 							ENOTCONN => panic!("The socket is associated with a connection-oriented protocol and has not been connected"),
 							ENOTSOCK => panic!("The argument `sockfd` does not refer to a socket"),
 							EOPNOTSUPP => panic!("Some flags in the `flags` argument are inappropriate for the socket type"),
@@ -139,18 +160,18 @@ impl<SD: SocketData> Write for StreamingSocketFileDescriptor<SD>
 						{
 							EAGAIN => WouldBlock,
 							EINTR => Interrupted,
+							ENOMEM | ENOBUFS => Other,
+							EPIPE => BrokenPipe,
+							EACCES => PermissionDenied,
+							ECONNRESET => ConnectionReset,
 							EBADF => panic!("The argument `sockfd` is an invalid descriptor"),
 							EFAULT => panic!("The receive buffer pointer(s) point outside the process's address space"),
 							EINVAL => panic!("Invalid argument passed"),
-							ENOMEM | ENOBUFS => Other,
 							ENOTCONN => panic!("The socket is associated with a connection-oriented protocol and has not been connected"),
 							ENOTSOCK => panic!("The argument `sockfd` does not refer to a socket"),
 							EOPNOTSUPP => panic!("Some flags in the `flags` argument are inappropriate for the socket type"),
 							EMSGSIZE => panic!("The socket type requires that message be sent atomically, and the size of the message to be sent made this impossible"),
 							EISCONN => panic!("The connection-mode socket was connected already but a recipient was specified"),
-							EPIPE => BrokenPipe,
-							EACCES => PermissionDenied,
-							ECONNRESET => ConnectionReset,
 							EDESTADDRREQ => panic!("The socket is not connection-mode, and no peer address is set"),
 							_ => unreachable!(),
 						}

@@ -76,6 +76,7 @@ include!("NewSocketServerListenerError.rs");
 include!("recvfrom.rs");
 include!("ServerListenerSocketFileDescriptor.rs");
 include!("ServerListenerSocketFileDescriptorEnum.rs");
+include!("shutdown.rs");
 include!("socket.rs");
 include!("sockaddr_in.rs");
 include!("sockaddr_in6.rs");

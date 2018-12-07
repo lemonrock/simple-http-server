@@ -31,19 +31,3 @@ impl AsRawFd for StreamingSocketFileDescriptorEnum
 		}
 	}
 }
-
-impl IntoRawFd for StreamingSocketFileDescriptorEnum
-{
-	#[inline(always)]
-	fn into_raw_fd(self) -> RawFd
-	{
-		use self::StreamingSocketFileDescriptorEnum::*;
-
-		match self
-		{
-			InternetProtocolVersion4(streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.into_raw_fd(),
-			InternetProtocolVersion6(streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.into_raw_fd(),
-			UnixDomain(streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.into_raw_fd(),
-		}
-	}
-}

@@ -26,6 +26,7 @@ extern "C"
 	///
 	/// Whilst not documented, it seems possible that `EOPNOTSUPP` could occur (eg because some flags in the `flags` argument are inappropriate for the socket type).
 	///
+	/// Additionally, [this stack overflow question](https://stackoverflow.com/questions/10387082/unix-ipc-socket-closing-one-end-without-reading-from-it) seems to imply that `ECONNRESET` can occur for Unix domain sockets.
 	pub(crate) fn recvfrom(sockfd: RawFd, buf: *const c_void, len: size_t, flags: c_int, addr: *const sockaddr_storage, addrlen: *mut socklen_t) -> ssize_t;
 }
 
