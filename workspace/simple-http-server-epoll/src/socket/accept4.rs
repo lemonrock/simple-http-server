@@ -23,6 +23,8 @@ extern "C"
 	/// On success, returns a nonnegative integer that is a descriptor for the accepted socket.
 	/// On error, `-1` is returned, and `errno` is set appropriately.
 	///
+	/// The known errors that can be set in `errno` are:-
+	///
 	/// * `EAGAIN`: The socket is marked nonblocking and no connections are present to be accepted. POSIX.1-2001 allows either error to be returned for this case, and does not require these constants to have the same value, so a portable application should check for both possibilities.
 	/// * `EBADF`: The descriptor is invalid.
 	/// * `ECONNABORTED`: A connection has been aborted.

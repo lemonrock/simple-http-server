@@ -8,6 +8,7 @@
 #![deny(missing_docs)]
 #![deny(unreachable_patterns)]
 #![feature(core_intrinsics)]
+#![feature(read_initializer)]
 
 
 //! #simple-http-server-epoll
