@@ -9,7 +9,7 @@
 pub struct epoll_event
 {
 	/// The events member is a bit mask composed by ORing together zero or more of the following available event types (`EPOLL*` constants).
-	pub events: uint32_t,
+	pub(crate) events: uint32_t,
 
 	/// An union containing the data associated when epoll_ctl was called.
 	pub(crate) data: epoll_data_t,
@@ -145,6 +145,13 @@ impl epoll_event
 	/// Valid on Linux.
 	/// Valid on Solaris.
 	pub const EPOLLET: uint32_t = 1 << 31;
+
+	/// Returns readiness flags.
+	#[inline(always)]
+	pub fn flags(&self) -> u32
+	{
+		self.events
+	}
 
 	/// Token.
 	#[inline(always)]

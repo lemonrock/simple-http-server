@@ -75,6 +75,18 @@ impl EPollFileDescriptor
 		}
 	}
 
+	// Make events into a bitflags.
+	pub fn wait_until_ready(&self, events: &mut [epoll_event], epoll_time_out: EPollTimeOut, ready_event_handler: impl FnMut(&self, u64, u32)) -> Result<(), EPollWaitError>
+	{
+		for ready_event in self.wait(events, epoll_time_out)?
+		{
+			let (flags, token) = ready_event.flags_and_token(ready_events, index);
+			ready_event_handler(self, ready_event.token(), ready_event.flags())
+		}
+
+		Ok(())
+	}
+
 	/// Adds a file descriptor to an EPoll instance.
 	#[inline(always)]
 	pub fn add(&self, fd: RawFd, events: u32, token: u64) -> Result<(), EPollAddError>

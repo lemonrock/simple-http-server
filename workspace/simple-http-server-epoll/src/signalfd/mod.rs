@@ -6,6 +6,7 @@ use super::*;
 
 
 include!("SignalCreationError.rs");
+include!("SignalEPollRegistrationError.rs");
 include!("SignalFileDescriptor.rs");
 include!("SignalReadError.rs");
 include!("signalfd.rs");
