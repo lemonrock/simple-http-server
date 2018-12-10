@@ -79,7 +79,7 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 	// stop processing;
 	// remove this instance (or can we do this for ourselves?)
 	// restart the application loop (re-configured)
-	pub fn react(&mut self, _epoll_file_descriptor: &EPollFileDescriptor, _token: u64, flags: u32)
+	pub fn react(&mut self, _epoll_file_descriptor: &EPollFileDescriptor, _token: u64, flags: u32) -> Result<(), ()>
 	{
 		debug_assert_eq!(flags, epoll_event::EPOLLIN, "flags contained a flag other than `EPOLLIN`");
 
@@ -89,7 +89,7 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 
 		match self.signal_file_descriptor.read(&mut signals)
 		{
-			Err(WouldBlock) => return,
+			Err(WouldBlock) => (),
 
 			Err(Cancelled) => panic!("Signal file descriptor was interrupted"),
 
@@ -97,8 +97,10 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 
 			Ok(signals) => for signal in signals
 			{
-				signal.handle_signal(&self.signal_handler)
+				signal.handle_signal(&self.signal_handler)?
 			}
 		}
+
+		Ok(())
 	}
 }

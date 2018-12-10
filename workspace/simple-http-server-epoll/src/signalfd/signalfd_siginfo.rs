@@ -77,7 +77,7 @@ pub struct signalfd_siginfo
 impl signalfd_siginfo
 {
 	#[inline(always)]
-	pub(crate) fn handle_signal(&self, signal_handler: &impl SignalHandler)
+	pub(crate) fn handle_signal(&self, signal_handler: &impl SignalHandler) -> Result<(), ()>
 	{
 		#[cfg(any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))] const SIGEMT: c_int = 7;
 
@@ -85,7 +85,12 @@ impl signalfd_siginfo
 
 		match self.ssi_signo as i32
 		{
-			SIGABRT => signal_handler.handle_sigabrt(self.generic()),
+			SIGABRT =>
+			{
+				signal_handler.handle_sigabrt(self.generic());
+				unsafe { raise(SIGKILL); }
+				unreachable!()
+			}
 
 			SIGALRM => signal_handler.handle_sigalrm(self.generic()),
 

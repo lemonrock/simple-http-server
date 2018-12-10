@@ -20,16 +20,16 @@ pub trait SignalHandler
 {
 	/// Generic functionality for exiting; exists to allow easy customization of handling of a number of non-fatal signals.
 	#[inline(always)]
-	fn terminate(&self)
+	fn terminate(&self) -> Result<(), ()>
 	{
-		exit(1);
+		exit(1)
 	}
 	
 	/// Generic functionality for aborting; exists to allow easy customization of handling of a number of non-fatal signals.
 	#[inline(always)]
-	fn abort(&self)
+	fn abort(&self) -> Result<(), ()>
 	{
-		abort();
+		abort()
 	}
 
 	/// A POSIX real-time signal.
@@ -40,8 +40,9 @@ pub trait SignalHandler
 	/// * `signal_data`: Whilst realtime signals are supposed to have associated data, in practice, it simply isn't trustworthy.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigrt(&self, signal_number: u32, signal_data: GenericSignalData)
+	fn handle_sigrt(&self, signal_number: u32, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// An illegal signal number.
@@ -53,8 +54,9 @@ pub trait SignalHandler
 	/// In this event, the `signal_number` could be zero or a value greater than `SIGRTMAX`.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_illegal_signal(&self, signal_number: u32, signal_data: GenericSignalData)
+	fn handle_illegal_signal(&self, signal_number: u32, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// A POSIX real-time signal which should not have been received.
@@ -67,13 +69,16 @@ pub trait SignalHandler
 	/// * `signal_data`: Whilst realtime signals are supposed to have associated data, in practice, it simply isn't trustworthy.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_illegal_sigrt(&self, signal_number: u32, signal_data: GenericSignalData)
+	fn handle_illegal_sigrt(&self, signal_number: u32, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGABRT` signal (also known as `SIGIOT`).
 	///
-	/// By default calls libc `raise(SIGKILL);` to replicate the original action.
+	/// By default does nothing but the following code always calls libc `raise(SIGKILL);` to replicate the original action.
+	///
+	/// Unlike all the other methods does not return a `Result`.
 	///
 	/// The `SIGABRT` signal is sent to a process to tell it to abort, ie to terminate.
 	/// The signal is usually initiated by the process itself when it calls `abort()` function of the C Standard Library, but it can be sent to the process from outside like any other signal.
@@ -81,17 +86,16 @@ pub trait SignalHandler
 	#[allow(unused_variables)]
 	fn handle_sigabrt(&self, signal_data: GenericSignalData)
 	{
-		unsafe { raise(SIGKILL); };
 	}
 
 	/// Handle the `SIGALRM` signal.
 	///
-	/// By default panics, as `SIGALRM` is an ancient approach using timers.
+	/// By default does nothing.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigalrm(&self, signal_data: GenericSignalData)
+	fn handle_sigalrm(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
-		panic!("Signal `SIGALRM` received; no modern code should be using timers")
+		Ok(())
 	}
 
 	/// Handle the `SIGBUS` signal.
@@ -102,7 +106,7 @@ pub trait SignalHandler
 	/// The conditions that lead to the signal being sent are, for example, incorrect memory access alignment or non-existent physical address.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigbus(&self, signal_data: SpecificSignalData<BusCode>)
+	fn handle_sigbus(&self, signal_data: SpecificSignalData<BusCode>) -> Result<(), ()>
 	{
 		self.abort()
 	}
@@ -115,8 +119,9 @@ pub trait SignalHandler
 	/// One common usage of the signal is to instruct the operating system to clean up the resources used by a child process after its termination without an explicit call to the wait system call.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigchld(&self, signal_data: SpecificSignalData<ChildCode>)
+	fn handle_sigchld(&self, signal_data: SpecificSignalData<ChildCode>) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGCONT` signal.
@@ -127,8 +132,9 @@ pub trait SignalHandler
 	/// One important use of this signal is in job control in the Unix shell.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigcont(&self, signal_data: GenericSignalData)
+	fn handle_sigcont(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGEMT` signal.
@@ -140,7 +146,7 @@ pub trait SignalHandler
 	/// This signal only occurs for the Alpha, MIPS and SPARC architectures (but Alpha isn't supported by Rust).
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigemt(&self, signal_data: SpecificSignalData<EmulatorTrapCode>)
+	fn handle_sigemt(&self, signal_data: SpecificSignalData<EmulatorTrapCode>) -> Result<(), ()>
 	{
 		#[cfg(any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))]
 		{
@@ -160,7 +166,7 @@ pub trait SignalHandler
 	/// The `SIGFPE` signal is sent to a process when it executes an erroneous arithmetic operation, such as division by zero (the name "FPE", standing for floating-point exception, is a misnomer as the signal covers integer-arithmetic errors as well).
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigfpe(&self, signal_data: SpecificSignalData<ArithmeticErrorCode>)
+	fn handle_sigfpe(&self, signal_data: SpecificSignalData<ArithmeticErrorCode>) -> Result<(), ()>
 	{
 		self.abort()
 	}
@@ -175,7 +181,7 @@ pub trait SignalHandler
 	/// Many daemons will reload their configuration files and reopen their logfiles instead of exiting when receiving this signal.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sighup(&self, signal_data: GenericSignalData)
+	fn handle_sighup(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -187,7 +193,7 @@ pub trait SignalHandler
 	/// The `SIGILL` signal is sent to a process when it attempts to execute an illegal, malformed, unknown, or privileged instruction.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigill(&self, signal_data: SpecificSignalData<IllegalInstructionCode>)
+	fn handle_sigill(&self, signal_data: SpecificSignalData<IllegalInstructionCode>) -> Result<(), ()>
 	{
 		self.abort()
 	}
@@ -200,21 +206,21 @@ pub trait SignalHandler
 	/// This is typically initiated by pressing `Ctrl+C`.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigint(&self, signal_data: GenericSignalData)
+	fn handle_sigint(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
 
-	/// Handle the `SIGIO` signal.(also known as `SIGPOLL`).
+	/// Handle the `SIGIO` signal (also known as `SIGPOLL`).
 	///
-	/// By default panics, as `SIGIO` is an ancient approach to waiting for I/O to become ready.
+	/// By default does nothing.
 	///
 	/// The `SIGIO` signal is sent when an I/O event occurred on an explicitly watched file descriptor.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigio(&self, signal_data: SpecificSignalData<PollCode>)
+	fn handle_sigio(&self, signal_data: SpecificSignalData<PollCode>) -> Result<(), ()>
 	{
-		panic!("Signal `SIGIO` received; no modern code should be using this")
+		Ok(())
 	}
 
 	/// Handle the `SIGPIPE` signal.
@@ -224,7 +230,7 @@ pub trait SignalHandler
 	/// The `SIGPIPE` signal is sent to a process when it attempts to write to a pipe without a process connected to the other end, or when a socket's remote peer has shutdown.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigpipe(&self, signal_data: GenericSignalData)
+	fn handle_sigpipe(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -237,7 +243,7 @@ pub trait SignalHandler
 	/// Unsurprisingly, this is often during profiling.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigprof(&self, signal_data: GenericSignalData)
+	fn handle_sigprof(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -249,7 +255,7 @@ pub trait SignalHandler
 	/// The `SIGPWR` signal is sent to a process when the system experiences a power failure.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigpwr(&self, signal_data: GenericSignalData)
+	fn handle_sigpwr(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -262,7 +268,7 @@ pub trait SignalHandler
 	/// It is commonly initiated by the user pressing `Ctrl+\`.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigquit(&self, signal_data: GenericSignalData)
+	fn handle_sigquit(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -281,22 +287,20 @@ pub trait SignalHandler
 	/// * `trap_number`: The trap number of the fault (only valid on the Alpha, MIPS and SPARC architectures; Rust does not support the Alpha architecture).
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigsegv(&self, signal_data: SpecificSignalData<SegmentationFaultCode>)
+	fn handle_sigsegv(&self, signal_data: SpecificSignalData<SegmentationFaultCode>) -> Result<(), ()>
 	{
 		self.abort()
 	}
 
 	/// Handle the `SIGSTKFLT` signal.
 	///
-	/// By default panics, as it should not occur.
-	///
 	/// The `SIGSTKFLT` signal is sent to a process when the coprocessor experiences a stack fault (ie popping when the stack is empty or pushing when it is full).
 	/// It is defined by, but not used on Linux, where a x87 coprocessor stack fault will generate `SIGFPE` instead.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigstkflt(&self, signal_data: GenericSignalData)
+	fn handle_sigstkflt(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
-		panic!("Signal `SIGSTKFLT` received from kernel; this should not occur on Linux")
+		Ok(())
 	}
 
 	/// Handle the `SIGSYS` signal (equivalent to `SIGUNUSED` on Linux, which is now considered a legacy definition).
@@ -311,7 +315,7 @@ pub trait SignalHandler
 	/// * `architecture`: The system call architecture (see Linux's `AUDIT_ARCH_*`).
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigsys(&self, signal_data: SpecificSignalData<SystemCallCode>)
+	fn handle_sigsys(&self, signal_data: SpecificSignalData<SystemCallCode>) -> Result<(), ()>
 	{
 		abort()
 	}
@@ -326,7 +330,7 @@ pub trait SignalHandler
 	/// It is typically used by daemon management tools to ask for a graceful process termination.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigterm(&self, signal_data: GenericSignalData)
+	fn handle_sigterm(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -342,7 +346,7 @@ pub trait SignalHandler
 	/// * `trap_number`: The trap number of the fault (only valid on the Alpha, MIPS and SPARC architectures; Rust does not support the Alpha architecture).
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigtrap(&self, signal_data: SpecificSignalData<TrapCode>)
+	fn handle_sigtrap(&self, signal_data: SpecificSignalData<TrapCode>) -> Result<(), ()>
 	{
 		self.abort()
 	}
@@ -356,8 +360,9 @@ pub trait SignalHandler
 	/// Unlike `SIGSTOP`, the process can register a signal handler for or ignore the signal.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigtstp(&self, signal_data: GenericSignalData)
+	fn handle_sigtstp(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGTTIN` signal.
@@ -368,8 +373,9 @@ pub trait SignalHandler
 	/// Typically, these signals are received only by processes under job control; daemons do not have controlling terminals and, therefore, should never receive these signals.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigttin(&self, signal_data: GenericSignalData)
+	fn handle_sigttin(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGTTOU` signal.
@@ -380,40 +386,41 @@ pub trait SignalHandler
 	/// Typically, these signals are received only by processes under job control; daemons do not have controlling terminals and, therefore, should never receive these signals.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigttou(&self, signal_data: GenericSignalData)
+	fn handle_sigttou(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGURG` signal.
 	///
-	/// By default panics, as `SIGURG` is an ancient approach to accessing TCP's deprecated out-of-band data.
+	/// By default ignored.
 	///
 	/// The `SIGURG` signal is sent to a process when a socket has urgent or out-of-band data available to read.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigurg(&self, signal_data: GenericSignalData)
+	fn handle_sigurg(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
-		panic!("Signal `SIGALRM` received; no modern code should be accessing TCP's deprecated out-of-band data using signals")
+		Ok(())
 	}
 
 	/// Handle the `SIGUSR1` signal.
 	///
-	/// By default panics, as this signal should not be sent by the kernel.
+	/// By default ignored.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigusr1(&self, signal_data: GenericSignalData)
+	fn handle_sigusr1(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
-		panic!("Signal `SIGUSR1` received from kernel; this should not occur on Linux")
+		Ok(())
 	}
 
 	/// Handle the `SIGSUSR2` signal.
 	///
-	/// By default panics, as this signal should not be sent by the kernel.
+	/// By default ignored.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigusr2(&self, signal_data: GenericSignalData)
+	fn handle_sigusr2(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
-		panic!("Signal `SIGUSR2` received from kernel; this should not occur on Linux")
+		Ok(())
 	}
 
 	/// Handle the `SIGVTALRM` signal.
@@ -423,7 +430,7 @@ pub trait SignalHandler
 	/// The `SIGVTALRM` signal is sent when CPU time used by the process elapses.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigvtalrm(&self, signal_data: GenericSignalData)
+	fn handle_sigvtalrm(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -435,8 +442,9 @@ pub trait SignalHandler
 	/// The `SIGWINCH` signal is sent to a process when its controlling terminal changes its size (a `WIN`dow `CH`ange).
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigwinch(&self, signal_data: GenericSignalData)
+	fn handle_sigwinch(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
+		Ok(())
 	}
 
 	/// Handle the `SIGXCPU` signal.
@@ -447,7 +455,7 @@ pub trait SignalHandler
 	/// The arrival of a `SIGXCPU` signal provides the receiving process a chance to quickly save any intermediate results and to exit gracefully, before it is terminated by the operating system using the `SIGKILL` signal.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigxcpu(&self, signal_data: GenericSignalData)
+	fn handle_sigxcpu(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
@@ -459,7 +467,7 @@ pub trait SignalHandler
 	/// The `SIGXFSZ` signal is sent to a process when it grows a file that exceeds than the maximum allowed size.
 	#[inline(always)]
 	#[allow(unused_variables)]
-	fn handle_sigxfsz(&self, signal_data: GenericSignalData)
+	fn handle_sigxfsz(&self, signal_data: GenericSignalData) -> Result<(), ()>
 	{
 		self.terminate()
 	}
