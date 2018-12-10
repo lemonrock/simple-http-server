@@ -137,6 +137,8 @@ impl SignalFileDescriptor
 						EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
 						EISDIR => panic!("`fd` refers to a directory"),
 
+						// ERESTARTSYS is possible but should not occur.
+
 						_ => panic!("Unexpected error `{}`", error_number),
 					}
 				}

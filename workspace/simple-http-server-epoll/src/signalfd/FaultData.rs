@@ -2,22 +2,28 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::std::cmp::Ordering;
-use ::std::hash::Hash;
-use ::std::hash::Hasher;
+/// Contains fault data relevant to certain signals.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct FaultData
+{
+	/// The address of the fault.
+	pub address: u64,
 
+	/// The trap number of the fault (only supported on the Alpha, MIPS and SPARC architectures; Rust does not support the Alpha architecture).
+	///
+	/// Where not supported the value is zero.
+	pub trap_number: u32,
+}
 
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
-include!("EPollAddError.rs");
-include!("EPollCreationError.rs");
-include!("EPollDeleteError.rs");
-include!("EPollFileDescriptor.rs");
-include!("EPollModifyError.rs");
-include!("EPollTimeOut.rs");
-include!("EPollWaitError.rs");
+impl FaultData
+{
+	#[inline(always)]
+	pub(crate) fn new(ssi: &signalfd_siginfo) -> Self
+	{
+		Self
+		{
+			address: ssi.ssi_addr,
+			trap_number: ssi.ssi_trapno,
+		}
+	}
+}

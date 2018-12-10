@@ -2,22 +2,32 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::std::cmp::Ordering;
-use ::std::hash::Hash;
-use ::std::hash::Hasher;
+/// Contains data relevant to the `SIGSYS` signal (also known as the `SIGUNKNOWN` signal).
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct SystemCallData
+{
+	/// The system call number.
+	pub system_call_number: i32,
 
+	/// The address of the fault.
+	pub address: u64,
 
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
-include!("EPollAddError.rs");
-include!("EPollCreationError.rs");
-include!("EPollDeleteError.rs");
-include!("EPollFileDescriptor.rs");
-include!("EPollModifyError.rs");
-include!("EPollTimeOut.rs");
-include!("EPollWaitError.rs");
+	/// The system call architecture.
+	///
+	/// Where not supported the value is zero.
+	pub architecture: u32,
+}
+
+impl SystemCallData
+{
+	#[inline(always)]
+	pub(crate) fn new(ssi: &signalfd_siginfo) -> Self
+	{
+		Self
+		{
+			system_call_number: ssi.ssi_syscall,
+			address: ssi.ssi_call_addr,
+			architecture: ssi.ssi_arch,
+		}
+	}
+}

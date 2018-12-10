@@ -2,22 +2,17 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::std::cmp::Ordering;
-use ::std::hash::Hash;
-use ::std::hash::Hasher;
+/// Potentially specific signal data.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum SpecificSignalData<C: Code>
+{
+	/// Generic signal data.
+	Generic(GenericSignalData),
 
-
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
-include!("EPollAddError.rs");
-include!("EPollCreationError.rs");
-include!("EPollDeleteError.rs");
-include!("EPollFileDescriptor.rs");
-include!("EPollModifyError.rs");
-include!("EPollTimeOut.rs");
-include!("EPollWaitError.rs");
+	/// For some signals, such as `SIGBUS`, the data will have a code and some valid fields.
+	///
+	/// These signals originate within the kernel and the data is safe to rely upon.
+	///
+	/// The first field is data, the second is a signal code (not the same thing as a signal number).
+	Specific(C::Data, C),
+}

@@ -2,22 +2,28 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::std::cmp::Ordering;
-use ::std::hash::Hash;
-use ::std::hash::Hasher;
+/// Contains data relevant to the `SIGIO` signal (also known as the `SIGPOLL` signal).
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct PollData
+{
+	/// Equivalent to the `revents` field in the struct `pollfd` (see `man 2 poll`).
+	///
+	/// Also known as `ssi_band` and `si_band`.
+	pub revents: u32,
 
+	/// The file descriptor for which the events are appropriate.
+	pub file_descriptor: RawFd,
+}
 
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
-include!("EPollAddError.rs");
-include!("EPollCreationError.rs");
-include!("EPollDeleteError.rs");
-include!("EPollFileDescriptor.rs");
-include!("EPollModifyError.rs");
-include!("EPollTimeOut.rs");
-include!("EPollWaitError.rs");
+impl PollData
+{
+	#[inline(always)]
+	pub(crate) fn new(ssi: &signalfd_siginfo) -> Self
+	{
+		Self
+		{
+			revents: ssi.ssi_band,
+			file_descriptor: ssi.ssi_fd as RawFd,
+		}
+	}
+}

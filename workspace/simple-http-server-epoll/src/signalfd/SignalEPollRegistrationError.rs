@@ -6,8 +6,10 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SignalEPollRegistrationError
 {
+	/// Error on creation.
 	Creation(SignalCreationError),
 
+	/// Error during registration.
 	Registration(EPollAddError),
 }
 

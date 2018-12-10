@@ -57,8 +57,6 @@ use ::std::net::SocketAddrV6;
 use ::std::ops::Deref;
 use ::std::ops::DerefMut;
 use ::std::os::unix::ffi::OsStrExt;
-use ::std::ptr::null;
-use ::std::ptr::null_mut;
 
 
 include!("accept4.rs");
@@ -95,10 +93,10 @@ include!("StreamingSocketFileDescriptorEnum.rs");
 
 
 /// MIPS and SPARC were early ports of Linux and so often differ in details that they shouldn't.
-#[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc", target_arch = "sparc64")))] pub(crate) const SO_REUSEADDR: c_int = 0x0004;
-#[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc", target_arch = "sparc64")))] pub(crate) const SO_REUSEPORT: c_int = 0x0200;
+#[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64")))] pub(crate) const SO_REUSEADDR: c_int = 0x0004;
+#[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64")))] pub(crate) const SO_REUSEPORT: c_int = 0x0200;
 
 /// Everything except MIPS.
-#[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc", target_arch = "sparc64"))))] pub(crate) const SO_REUSEADDR: c_int = 2;
-#[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc", target_arch = "sparc64"))))] pub(crate) const SO_REUSEPORT: c_int = 15;
+#[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))))] pub(crate) const SO_REUSEADDR: c_int = 2;
+#[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))))] pub(crate) const SO_REUSEPORT: c_int = 15;
 
