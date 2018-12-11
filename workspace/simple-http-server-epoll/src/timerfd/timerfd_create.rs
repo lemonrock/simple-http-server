@@ -25,10 +25,10 @@ extern "C"
 }
 
 /// A settable system-wide real-time clock.
-pub const CLOCK_REALTIME: c_int = 0;
+pub(crate) const CLOCK_REALTIME: c_int = 0;
 
 /// A nonsettable monotonically increasing clock that measures time from some unspecified point in the past that does not change after system startup.
-pub const CLOCK_MONOTONIC: c_int = 1;
+pub(crate) const CLOCK_MONOTONIC: c_int = 1;
 
 /// Like `CLOCK_MONOTONIC`, this is a monotonically increasing clock.
 ///
@@ -37,21 +37,21 @@ pub const CLOCK_MONOTONIC: c_int = 1;
 /// `CLOCK_REALTIME` is not suitable for such applications, since that clock is affected by discontinuous changes to the system clock.
 ///
 /// Since Linux 3.15.
-pub const CLOCK_BOOTTIME: c_int = 7;
+pub(crate) const CLOCK_BOOTTIME: c_int = 7;
 
 /// This clock is like `CLOCK_REALTIME`, but will wake the system if it is suspended.
 ///
 /// The caller must have the `CAP_WAKE_ALARM` capability in order to set a timer against this clock.
 ///
 /// Since Linux 3.11.
-pub const CLOCK_REALTIME_ALARM: c_int = 8;
+pub(crate) const CLOCK_REALTIME_ALARM: c_int = 8;
 
 /// This clock is like `CLOCK_BOOTTIME`, but will wake the system if it is suspended.
 ///
 /// The caller must have the `CAP_WAKE_ALARM` capability in order to set a timer against this clock.
 ///
 /// Since Linux 3.11.
-pub const CLOCK_BOOTTIME_ALARM: c_int = 9;
+pub(crate) const CLOCK_BOOTTIME_ALARM: c_int = 9;
 
 /// Sets the `O_NONBLOCK` file status flag on the newly opened timerfd file description.
 ///

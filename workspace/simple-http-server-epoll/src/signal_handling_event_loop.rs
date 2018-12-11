@@ -18,6 +18,76 @@
 
 // More space efficient to have multiple arenas.
 
+/*
+
+TODO: TcpFastOpen, MSG_ZEROCOPY
+
+TODO: Linux abstract unix domain sockets.
+
+abstract: an abstract socket address is distinguished (from a
+          pathname socket) by the fact that sun_path[0] is a null byte
+          ('\0').  The socket's address in this namespace is given by the
+          additional bytes in sun_path that are covered by the specified
+          length of the address structure.  (Null bytes in the name have no
+          special significance.)  The name has no connection with filesystem
+          pathnames.  When the address of an abstract socket is returned,
+          the returned addrlen is greater than sizeof(sa_family_t) (i.e.,
+          greater than 2), and the name of the socket is contained in the
+          first (addrlen - sizeof(sa_family_t)) bytes of sun_path.
+
+Linux also supports an 'autobind'.
+
+The SO_SNDBUF socket option does have an effect for UNIX domain sock‐
+       ets, but the SO_RCVBUF option does not.  For datagram sockets, the
+       SO_SNDBUF value imposes an upper limit on the size of outgoing data‐
+       grams.  This limit is calculated as the doubled (see socket(7))
+       option value less 32 bytes used for overhead.
+
+ Ancillary messages
+       Ancillary data is sent and received using sendmsg(2) and recvmsg(2).
+       For historical reasons the ancillary message types listed below are
+       specified with a SOL_SOCKET type even though they are AF_UNIX spe‐
+       cific.  To send them set the cmsg_level field of the struct cmsghdr
+       to SOL_SOCKET and the cmsg_type field to the type.  For more informa‐
+       tion see cmsg(3).
+
+       SCM_RIGHTS
+              Send or receive a set of open file descriptors from another
+              process.  The data portion contains an integer array of the
+              file descriptors.  The passed file descriptors behave as
+              though they have been created with dup(2).
+
+       SCM_CREDENTIALS
+              Send or receive UNIX credentials.  This can be used for
+              authentication.  The credentials are passed as a struct ucred
+              ancillary message.  Thus structure is defined in
+              <sys/socket.h> as follows:
+
+                  struct ucred {
+                      pid_t pid;    /* process ID of the sending process */
+                      uid_t uid;    /* user ID of the sending process */
+                      gid_t gid;    /* group ID of the sending process */
+                  };
+
+              Since glibc 2.8, the _GNU_SOURCE feature test macro must be
+              defined (before including any header files) in order to obtain
+              the definition of this structure.
+
+              The credentials which the sender specifies are checked by the
+              kernel.  A process with effective user ID 0 is allowed to
+              specify values that do not match its own.  The sender must
+              specify its own process ID (unless it has the capability
+              CAP_SYS_ADMIN), its real user ID, effective user ID, or saved
+              set-user-ID (unless it has CAP_SETUID), and its real group ID,
+              effective group ID, or saved set-group-ID (unless it has
+              CAP_SETGID).  To receive a struct ucred message the SO_PASS‐
+              CRED option must be enabled on the socket.
+
+
+*/
+
+
+
 
 
 // TODO: terminate.

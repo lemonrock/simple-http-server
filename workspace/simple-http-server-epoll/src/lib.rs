@@ -13,22 +13,24 @@
 
 //! #simple-http-server-epoll
 //! 
-//! A wrapper around epoll for a simple HTTPS server in Rust which supports client authentication.
+//! A wrapper around epoll ('Event Poll') for a simple HTTPS server in Rust which supports client authentication.
 //!
 //! Fully functional on Android and Linux.
 //!
-//! Mostly functional supported by Fuschia.
+//! Mostly functional on Fuschia.
 //!
-//! Mostly functional supported by Illumos, a Solaris fork.
+//! Mostly functional on Illumos, a Solaris fork.
 //!
-//! Mostly functional supported by uclibc and emscripten.
+//! Mostly functional on uclibc and emscripten.
 //!
 //!
 //! ## Supported File Descriptors
 //!
-//! * Sockets.
 //! * eventfd.
+//! * fanotify.
+//! * inotify.
 //! * signalfd.
+//! * sockets (TCP, UDP and the equivalent over Unix domain sockets).
 //! * timerfd.
 //!
 //!
@@ -117,6 +119,11 @@ pub mod eventfd;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
 /// inotify file descriptors.
 pub mod inotify;
+
+
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
+/// fanotify file descriptors.
+pub mod fanotify;
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]

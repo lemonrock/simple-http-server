@@ -22,14 +22,14 @@ extern "C"
 /// Provide semaphore-like semantics for reads from the new file descriptor.
 ///
 /// Since Linux 2.6.30.
-pub const EFD_SEMAPHORE: c_int = 1;
+pub(crate) const EFD_SEMAPHORE: c_int = 1;
 
 /// Set the close-on-exec (`FD_CLOEXEC`) flag on the new file descriptor.
 ///
 /// Since Linux 2.6.27.
-pub const EFD_CLOEXEC: c_int = O_CLOEXEC;
+pub(crate) const EFD_CLOEXEC: c_int = O_CLOEXEC;
 
 /// Set the `O_NONBLOCK` file status flag on the new file descriptor.
 ///
 /// Since Linux 2.6.27.
-pub const EFD_NONBLOCK: c_int = O_NONBLOCK;
+pub(crate) const EFD_NONBLOCK: c_int = O_NONBLOCK;

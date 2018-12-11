@@ -24,10 +24,12 @@ extern "C"
 }
 
 /// Half-close read.
-pub const SHUT_RD: c_int = 0;
+#[allow(dead_code)]
+pub(crate) const SHUT_RD: c_int = 0;
 
 /// Half-close write.
-pub const SHUT_WR: c_int = 1;
+#[allow(dead_code)]
+pub(crate) const SHUT_WR: c_int = 1;
 
 /// Close read and write.
-pub const SHUT_RDWR: c_int = 2;
+pub(crate) const SHUT_RDWR: c_int = 2;

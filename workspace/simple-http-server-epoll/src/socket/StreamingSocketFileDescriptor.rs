@@ -63,8 +63,7 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 			return Ok(0)
 		}
 
-		const Flags: c_int = 0;
-		let result = unsafe { recvfrom(self.as_raw_fd(), buf.as_mut_ptr() as *mut c_void, length, Flags, null(), null_mut()) };
+		let result = unsafe { recvfrom(self.as_raw_fd(), buf.as_mut_ptr() as *mut c_void, length, ReceiveFlags::empty().bits, null(), null_mut()) };
 
 		if likely!(result > 0)
 		{
@@ -138,7 +137,7 @@ impl<SD: SocketData> Write for StreamingSocketFileDescriptor<SD>
 			return Ok(0)
 		}
 
-		let result = unsafe { send(self.as_raw_fd(), buf.as_ptr() as *const c_void, buf.len(), MSG_NOSIGNAL) };
+		let result = unsafe { send(self.as_raw_fd(), buf.as_ptr() as *const c_void, buf.len(), SendFlags::NoSigPipeSignal.bits) };
 
 		if likely!(result > 0)
 		{

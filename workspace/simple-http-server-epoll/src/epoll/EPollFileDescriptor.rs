@@ -76,7 +76,7 @@ impl EPollFileDescriptor
 	}
 
 	/// Wait until some events are ready.
-	pub fn wait_until_ready(&self, events: &mut [epoll_event], epoll_time_out: EPollTimeOut, mut event_handler: impl FnMut(&Self, u64, u32)) -> Result<(), EPollWaitError>
+	pub fn wait_until_ready(&self, events: &mut [epoll_event], epoll_time_out: EPollTimeOut, mut event_handler: impl FnMut(&Self, u64, EPollEventFlags)) -> Result<(), EPollWaitError>
 	{
 		for event in self.wait(events, epoll_time_out)?
 		{
@@ -88,11 +88,11 @@ impl EPollFileDescriptor
 
 	/// Adds a file descriptor to an EPoll instance.
 	#[inline(always)]
-	pub fn add(&self, fd: RawFd, events: u32, token: u64) -> Result<(), EPollAddError>
+	pub fn add(&self, fd: RawFd, flags: EPollAddFlags, token: u64) -> Result<(), EPollAddError>
 	{
 		let mut event = epoll_event
 		{
-			events,
+			events: flags.bits,
 			data: epoll_data_t
 			{
 				u64: token,
@@ -129,11 +129,11 @@ impl EPollFileDescriptor
 
 	/// Modifies a file descriptor in an EPoll instance.
 	#[inline(always)]
-	pub fn modify(&self, fd: RawFd, events: u32, token: u64) -> Result<(), EPollModifyError>
+	pub fn modify(&self, fd: RawFd, flags: EPollModifyFlags, token: u64) -> Result<(), EPollModifyError>
 	{
 		let mut event = epoll_event
 		{
-			events,
+			events: flags.bits,
 			data: epoll_data_t
 			{
 				u64: token,
@@ -149,7 +149,7 @@ impl EPollFileDescriptor
 				ENOMEM => Err(EPollModifyError::ThereWasInsufficientKernelMemory),
 
 				EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
-				EINVAL => panic!("Supplied file descriptor was not usable or there was the presence or absence of `EPOLLEXCLUSIVE` when required"),
+				EINVAL => panic!("Supplied file descriptor was not usable or there was the presence or absence of `Exclusive` when required"),
 				ENOENT => panic!("The supplied file descriptor is not registered with this epoll instance"),
 				EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
 

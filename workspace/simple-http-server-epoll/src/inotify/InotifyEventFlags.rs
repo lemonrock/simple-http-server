@@ -5,7 +5,7 @@
 bitflags!
 {
 	/// inotify event flags.
-	pub struct InotifyEventFlags: uint32_t
+	pub struct InotifyEventFlags: u32
 	{
 		/// File was accessed (read).
 		///

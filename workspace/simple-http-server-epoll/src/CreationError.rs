@@ -18,6 +18,9 @@ pub enum CreationError
 
 	/// Kernel would be out of memory.
 	KernelWouldBeOutOfMemory,
+
+	/// Only currently occurs for fanotify if the caller lacks the `CAP_SYS_ADMIN` capability.
+	PermissionDenied,
 }
 
 impl Display for CreationError

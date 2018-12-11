@@ -24,7 +24,7 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 
 		Self::block_signals(&signal_mask);
 
-		epoll_file_descriptor.add(signal_file_descriptor.as_raw_fd(), epoll_event::EPOLLIN | epoll_event::EPOLLET, signal_token)?;
+		epoll_file_descriptor.add(signal_file_descriptor.as_raw_fd(), EPollAddFlags::EdgeTriggeredInput, signal_token)?;
 
 		Ok
 		(
@@ -79,7 +79,7 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 	/// If an error is returned then all activity is cut short; any dequeued events not yet 'reacted' to are discarded.
 	pub fn react(&mut self, _epoll_file_descriptor: &EPollFileDescriptor, _token: u64, flags: u32) -> Result<(), ()>
 	{
-		debug_assert_eq!(flags, epoll_event::EPOLLIN, "flags contained a flag other than `EPOLLIN`");
+		debug_assert_eq!(flags, EPOLLIN, "flags contained a flag other than `EPOLLIN`");
 
 		use self::StructReadError::*;
 

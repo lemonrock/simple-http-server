@@ -23,9 +23,9 @@ extern "C"
 /// Set the close-on-exec (`FD_CLOEXEC`) flag on the new file descriptor.
 ///
 /// Since Linux 2.6.27.
-pub const IN_CLOEXEC: c_int = O_CLOEXEC;
+pub(crate) const IN_CLOEXEC: c_int = O_CLOEXEC;
 
 /// Set the `O_NONBLOCK` file status flag on the new file descriptor.
 ///
 /// Since Linux 2.6.27.
-pub const IN_NONBLOCK: c_int = O_NONBLOCK;
+pub(crate) const IN_NONBLOCK: c_int = O_NONBLOCK;

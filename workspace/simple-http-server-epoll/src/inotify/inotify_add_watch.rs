@@ -40,7 +40,7 @@ extern "C"
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_ACCESS: uint32_t = 0x00000001;
+pub(crate) const IN_ACCESS: uint32_t = 0x00000001;
 
 /// File was modified.
 ///
@@ -48,7 +48,7 @@ pub const IN_ACCESS: uint32_t = 0x00000001;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_MODIFY: uint32_t = 0x00000002;
+pub(crate) const IN_MODIFY: uint32_t = 0x00000002;
 
 /// Metadata changed.
 ///
@@ -59,7 +59,7 @@ pub const IN_MODIFY: uint32_t = 0x00000002;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_ATTRIB: uint32_t = 0x00000004;
+pub(crate) const IN_ATTRIB: uint32_t = 0x00000004;
 
 /// File opened for writing was closed.
 ///
@@ -67,7 +67,7 @@ pub const IN_ATTRIB: uint32_t = 0x00000004;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_CLOSE_WRITE: uint32_t = 0x00000008;
+pub(crate) const IN_CLOSE_WRITE: uint32_t = 0x00000008;
 
 /// File not opened for writing was closed.
 ///
@@ -75,7 +75,7 @@ pub const IN_CLOSE_WRITE: uint32_t = 0x00000008;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_CLOSE_NOWRITE: uint32_t = 0x00000010;
+pub(crate) const IN_CLOSE_NOWRITE: uint32_t = 0x00000010;
 
 /// File was opened.
 ///
@@ -83,7 +83,7 @@ pub const IN_CLOSE_NOWRITE: uint32_t = 0x00000010;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_OPEN: uint32_t = 0x00000020;
+pub(crate) const IN_OPEN: uint32_t = 0x00000020;
 
 /// File moved out of watched directory.
 ///
@@ -91,7 +91,7 @@ pub const IN_OPEN: uint32_t = 0x00000020;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_MOVED_FROM: uint32_t = 0x00000040;
+pub(crate) const IN_MOVED_FROM: uint32_t = 0x00000040;
 
 /// File moved into watched directory.
 ///
@@ -99,7 +99,7 @@ pub const IN_MOVED_FROM: uint32_t = 0x00000040;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_MOVED_TO: uint32_t = 0x00000080;
+pub(crate) const IN_MOVED_TO: uint32_t = 0x00000080;
 
 /// File/directory created in watched directory.
 ///
@@ -107,7 +107,7 @@ pub const IN_MOVED_TO: uint32_t = 0x00000080;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_CREATE: uint32_t = 0x00000100;
+pub(crate) const IN_CREATE: uint32_t = 0x00000100;
 
 /// File/directory deleted from watched directory.
 ///
@@ -115,48 +115,48 @@ pub const IN_CREATE: uint32_t = 0x00000100;
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_DELETE: uint32_t = 0x00000200;
+pub(crate) const IN_DELETE: uint32_t = 0x00000200;
 
 /// Watched file/directory was itself deleted.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_DELETE_SELF: uint32_t = 0x00000400;
+pub(crate) const IN_DELETE_SELF: uint32_t = 0x00000400;
 
 /// Watched file/directory was itself moved.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument.
 /// Can be set in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_MOVE_SELF: uint32_t = 0x00000800;
+pub(crate) const IN_MOVE_SELF: uint32_t = 0x00000800;
 
 /// This is equivalent to `IN_ACCESS` | `IN_ATTRIB` | `IN_CLOSE_WRITE` | `IN_CLOSE_NOWRITE` | `IN_CREATE` | `IN_DELETE` | `IN_DELETE_SELF` | `IN_MODIFY` | `IN_MOVE_SELF` | `IN_MOVED_FROM` | `IN_MOVED_TO` | `IN_OPEN`.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
-pub const IN_ALL_EVENTS: uint32_t = IN_ACCESS | IN_ATTRIB | IN_CLOSE_WRITE | IN_CLOSE_NOWRITE | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE_SELF | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN;
+pub(crate) const IN_ALL_EVENTS: uint32_t = IN_ACCESS | IN_ATTRIB | IN_CLOSE_WRITE | IN_CLOSE_NOWRITE | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE_SELF | IN_MOVED_FROM | IN_MOVED_TO | IN_OPEN;
 
 /// This is equivalent to `IN_MOVED_FROM` | `IN_MOVED_TO`.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
-pub const IN_MOVE: uint32_t = IN_MOVED_FROM | IN_MOVED_TO;
+pub(crate) const IN_MOVE: uint32_t = IN_MOVED_FROM | IN_MOVED_TO;
 
 /// This is equivalent to `IN_CLOSE_WRITE` | `IN_CLOSE_NOWRITE`.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
-pub const IN_CLOSE: uint32_t = IN_CLOSE_WRITE | IN_CLOSE_NOWRITE;
+pub(crate) const IN_CLOSE: uint32_t = IN_CLOSE_WRITE | IN_CLOSE_NOWRITE;
 
 /// Only watch `pathname` if it is a directory.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
 ///
 /// Since Linux 2.6.15.
-pub const IN_ONLYDIR: uint32_t = 0x01000000;
+pub(crate) const IN_ONLYDIR: uint32_t = 0x01000000;
 
 /// Don't dereference `pathname` if it is a symbolic link.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
 ///
 /// Since Linux 2.6.15.
-pub const IN_DONT_FOLLOW: uint32_t = 0x02000000;
+pub(crate) const IN_DONT_FOLLOW: uint32_t = 0x02000000;
 
 /// By default, when watching events on the children of a directory, events are generated for children even after they have been unlinked from the directory.
 ///
@@ -166,39 +166,38 @@ pub const IN_DONT_FOLLOW: uint32_t = 0x02000000;
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
 ///
 /// Since Linux 2.6.36.
-pub const IN_EXCL_UNLINK: uint32_t = 0x04000000;
+pub(crate) const IN_EXCL_UNLINK: uint32_t = 0x04000000;
 
 /// Add (`or`) events to watch `mask` for this `pathname` if it already exists (instead of replacing `mask`).
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
-pub const IN_MASK_ADD: uint32_t = 0x20000000;
+pub(crate) const IN_MASK_ADD: uint32_t = 0x20000000;
 
 /// Monitor `pathname` for one event, then remove from watch list.
 ///
 /// Valid for `inotify_add_watch()`'s `mask` argument only.
-pub const IN_ONESHOT: uint32_t = 0x80000000;
+pub(crate) const IN_ONESHOT: uint32_t = 0x80000000;
 
 /// File system containing watched object was unmounted.
 ///
 /// Valid only in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_UNMOUNT: uint32_t = 0x00002000;
+pub(crate) const IN_UNMOUNT: uint32_t = 0x00002000;
 
 /// Event queue overflowed.
 ///
 /// `wd` is `-1` for this event.
 ///
 /// Valid only in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_Q_OVERFLOW: uint32_t = 0x00004000;
+pub(crate) const IN_Q_OVERFLOW: uint32_t = 0x00004000;
 
 /// Watch was removed.
 ///
 /// This can have been done explicitly using `inotify_rm_watch()` or automatically because the file was deleted, or its file system was unmounted.
 ///
 /// Valid only in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_IGNORED: uint32_t = 0x00008000;
+pub(crate) const IN_IGNORED: uint32_t = 0x00008000;
 
 /// Subject of this event is a directory.
 ///
 /// Valid only in the `mask` field of the `inotify_event` structure returned from `read()`.
-pub const IN_ISDIR: uint32_t = 0x40000000;
-
+pub(crate) const IN_ISDIR: uint32_t = 0x40000000;

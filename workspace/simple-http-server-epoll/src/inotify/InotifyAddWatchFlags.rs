@@ -5,7 +5,7 @@
 bitflags!
 {
 	/// inotify add watch flags.
-	pub struct InotifyAddWatchFlags: uint32_t
+	pub struct InotifyAddWatchFlags: u32
 	{
 		/// File was accessed (read).
 		///

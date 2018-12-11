@@ -3,22 +3,20 @@
 
 
 use super::*;
+use ::libc::c_uint;
+use ::libc::O_APPEND;
+use ::libc::O_CLOEXEC;
+use ::libc::O_DSYNC;
+use ::libc::O_LARGEFILE;
+use ::libc::O_NOATIME;
+use ::libc::O_NONBLOCK;
+use ::libc::O_RDONLY;
+use ::libc::O_RDWR;
+use ::libc::O_SYNC;
+use ::libc::O_WRONLY;
+use ::libc::ENOSYS;
 
 
-include!("EPOLL.rs");
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
-include!("EPollAddError.rs");
-include!("EPollDeleteError.rs");
-include!("EPollAddFlags.rs");
-include!("EPollEventFlags.rs");
-include!("EPollFileDescriptor.rs");
-include!("EPollModifyError.rs");
-include!("EPollModifyFlags.rs");
-include!("EPollRegistrationError.rs");
-include!("EPollTimeOut.rs");
-include!("EPollWaitError.rs");
+include!("fanotify_init.rs");
+include!("FanotifyFileDescriptor.rs");
+include!("FileStatusFlags.rs");
