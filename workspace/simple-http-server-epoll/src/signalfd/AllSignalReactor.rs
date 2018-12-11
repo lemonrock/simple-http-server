@@ -16,7 +16,7 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 	///
 	/// Starts blocking signals at this point.
 	#[inline(always)]
-	pub fn register_with_epoll(signal_handler: SH, epoll_file_descriptor: &EPollFileDescriptor, signal_token: u64) -> Result<Self, SignalEPollRegistrationError>
+	pub fn register_with_epoll(signal_handler: SH, epoll_file_descriptor: &EPollFileDescriptor, signal_token: u64) -> Result<Self, EPollRegistrationError>
 	{
 		let signal_mask = Self::new_filled_signal_mask();
 

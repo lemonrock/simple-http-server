@@ -58,7 +58,6 @@ include!("PollCode.rs");
 include!("PollData.rs");
 include!("SegmentationFaultCode.rs");
 include!("SI_.rs");
-include!("SignalEPollRegistrationError.rs");
 include!("SignalFileDescriptor.rs");
 include!("SignalHandler.rs");
 include!("SignalReadError.rs");

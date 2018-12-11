@@ -18,5 +18,6 @@ include!("EPollAddError.rs");
 include!("EPollDeleteError.rs");
 include!("EPollFileDescriptor.rs");
 include!("EPollModifyError.rs");
+include!("EPollRegistrationError.rs");
 include!("EPollTimeOut.rs");
 include!("EPollWaitError.rs");

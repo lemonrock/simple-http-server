@@ -2,9 +2,9 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during registration of a signal instance with epoll.
+/// An error that can occur during registration with epoll.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SignalEPollRegistrationError
+pub enum EPollRegistrationError
 {
 	/// Error on creation.
 	Creation(CreationError),
@@ -13,21 +13,21 @@ pub enum SignalEPollRegistrationError
 	Registration(EPollAddError),
 }
 
-impl Display for SignalEPollRegistrationError
+impl Display for EPollRegistrationError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<SignalEPollRegistrationError as Debug>::fmt(self, f)
+		<EPollRegistrationError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for SignalEPollRegistrationError
+impl error::Error for EPollRegistrationError
 {
 	#[inline(always)]
 	fn source(&self) ->  Option<&(error::Error + 'static)>
 	{
-		use self::SignalEPollRegistrationError::*;
+		use self::EPollRegistrationError::*;
 
 		match self
 			{
@@ -37,20 +37,20 @@ impl error::Error for SignalEPollRegistrationError
 	}
 }
 
-impl From<CreationError> for SignalEPollRegistrationError
+impl From<CreationError> for EPollRegistrationError
 {
 	#[inline(always)]
 	fn from(error: CreationError) -> Self
 	{
-		SignalEPollRegistrationError::Creation(error)
+		EPollRegistrationError::Creation(error)
 	}
 }
 
-impl From<EPollAddError> for SignalEPollRegistrationError
+impl From<EPollAddError> for EPollRegistrationError
 {
 	#[inline(always)]
 	fn from(error: EPollAddError) -> Self
 	{
-		SignalEPollRegistrationError::Registration(error)
+		EPollRegistrationError::Registration(error)
 	}
 }
