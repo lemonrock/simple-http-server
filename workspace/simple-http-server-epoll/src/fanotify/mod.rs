@@ -21,6 +21,7 @@ use ::libc::O_WRONLY;
 use ::std::fs::File;
 
 
+include!("EventFlags.rs");
 include!("fanotify_event_metadata.rs");
 include!("fanotify_init.rs");
 include!("fanotify_mark.rs");

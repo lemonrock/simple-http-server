@@ -55,7 +55,7 @@ impl fanotify_event_metadata
 	///
 	/// Takes `self` by value because the lifetime of the `File` needs to be managed, making this method inconvenient to use.
 	#[inline(always)]
-	pub fn move_out(self) -> (Option<File>, u64, pid_t)
+	pub fn move_out(self) -> (Option<File>, EventFlags, pid_t)
 	{
 		debug_assert!(self.is_valid(), "Is not valid");
 
@@ -67,7 +67,7 @@ impl fanotify_event_metadata
 		{
 			Some(unsafe { File::from_raw_fd(self.fd) })
 		};
-		(file, self.mask, self.pid)
+		(file, unsafe { transmute(self.mask) }, self.pid)
 	}
 
 	#[inline(always)]
