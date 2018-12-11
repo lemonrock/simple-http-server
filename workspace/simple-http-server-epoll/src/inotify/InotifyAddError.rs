@@ -2,29 +2,34 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during read of a timer instance.
+/// An error that can occur during binding of a socket instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum TimerReadError
+pub enum InotifyAddError
 {
-	/// There are no timer events to read at this time.
-	WouldBlock,
+	/// Permission denied.
+	PermissionDenied,
 
-	/// Timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
-	Cancelled,
+	/// Kernel would be out of memory.
+	KernelWouldBeOutOfMemory,
 
-	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
-	Interrupted,
+	/// A directory component in `pathname` does not exist or is a dangling symbolic link.
+	FilePathInvalid,
+
+	/// The limit on the maximum number of watches would be exceeded, or the kernel is lacking a resource required.
+	///
+	/// The maximum number of open (added) watch descriptors is specified in `/proc/sys/fs/inotify/max_user_watches`.
+	MaximumNumberOfWatchesWouldBeExceeded,
 }
 
-impl Display for TimerReadError
+impl Display for InotifyAddError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<TimerReadError as Debug>::fmt(self, f)
+		<InotifyAddError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for TimerReadError
+impl error::Error for InotifyAddError
 {
 }

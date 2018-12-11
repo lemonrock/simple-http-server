@@ -4,27 +4,27 @@
 
 /// An error that can occur during read of a timer instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SignalReadError
+pub enum StructReadError
 {
-	/// There are no signals to read at this time.
+	/// There are no timer events to read at this time.
 	WouldBlock,
 
-	/// Signal was cancelled; it is not obvious whether this can actually ever occur.
+	/// Timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
 	Cancelled,
 
 	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
 	Interrupted,
 }
 
-impl Display for SignalReadError
+impl Display for StructReadError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<SignalReadError as Debug>::fmt(self, f)
+		<StructReadError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for SignalReadError
+impl error::Error for StructReadError
 {
 }

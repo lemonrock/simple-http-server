@@ -3,6 +3,19 @@
 
 
 use super::*;
+use ::libc::c_char;
+use ::std::ffi::CStr;
+use ::std::ffi::CString;
+use ::std::rc::Rc;
+use ::std::rc::Weak;
 
 
+include!("inotify_add_watch.rs");
+include!("inotify_event.rs");
 include!("inotify_init1.rs");
+include!("inotify_rm_watch.rs");
+include!("InotifyAddError.rs");
+include!("InotifyAddWatchFlags.rs");
+include!("InotifyEventFlags.rs");
+include!("InotifyFileDescriptor.rs");
+include!("InotifyWatchDescriptor.rs");

@@ -7,7 +7,6 @@ use ::libc::AF_INET;
 use ::libc::AF_INET6;
 use ::libc::AF_UNIX;
 use ::libc::c_char;
-use ::libc::EACCES;
 use ::libc::EADDRINUSE;
 use ::libc::EADDRNOTAVAIL;
 use ::libc::EALREADY;
@@ -56,7 +55,6 @@ use ::std::net::SocketAddrV4;
 use ::std::net::SocketAddrV6;
 use ::std::ops::Deref;
 use ::std::ops::DerefMut;
-use ::std::os::unix::ffi::OsStrExt;
 
 
 include!("accept4.rs");

@@ -81,7 +81,7 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 	{
 		debug_assert_eq!(flags, epoll_event::EPOLLIN, "flags contained a flag other than `EPOLLIN`");
 
-		use self::SignalReadError::*;
+		use self::StructReadError::*;
 
 		let mut signals: [signalfd_siginfo; 32] = unsafe { uninitialized() };
 

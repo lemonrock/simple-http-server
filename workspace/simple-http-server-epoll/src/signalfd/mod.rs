@@ -60,7 +60,6 @@ include!("SegmentationFaultCode.rs");
 include!("SI_.rs");
 include!("SignalFileDescriptor.rs");
 include!("SignalHandler.rs");
-include!("SignalReadError.rs");
 include!("signalfd.rs");
 include!("signalfd_siginfo.rs");
 include!("SIGRT.rs");

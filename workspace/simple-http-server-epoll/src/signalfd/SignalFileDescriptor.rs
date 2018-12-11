@@ -105,9 +105,9 @@ impl SignalFileDescriptor
 	///
 	/// Use this only after a read-ready event notification is received (using edge-triggered events).
 	#[inline(always)]
-	pub fn read<'a>(&self, signals: &'a mut [signalfd_siginfo]) -> Result<&'a [signalfd_siginfo], SignalReadError>
+	pub fn read<'a>(&self, signals: &'a mut [signalfd_siginfo]) -> Result<&'a [signalfd_siginfo], StructReadError>
 	{
-		use self::SignalReadError::*;
+		use self::StructReadError::*;
 
 		const SizeOfRead: usize = size_of::<signalfd_siginfo>();
 

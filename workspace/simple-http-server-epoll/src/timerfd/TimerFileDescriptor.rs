@@ -67,9 +67,9 @@ impl TimerFileDescriptor
 	///
 	/// Use this only after a read-ready event notification is received (using edge-triggered events).
 	#[inline(always)]
-	pub fn read(&self) -> Result<u64, TimerReadError>
+	pub fn read(&self) -> Result<u64, StructReadError>
 	{
-		use self::TimerReadError::*;
+		use self::StructReadError::*;
 
 		let mut value: u64 = unsafe { uninitialized() };
 

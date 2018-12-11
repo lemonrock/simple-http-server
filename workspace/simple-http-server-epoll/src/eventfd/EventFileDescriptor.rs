@@ -92,9 +92,9 @@ impl EventFileDescriptor
 	/// * If this is not a semaphore, it is set to 0;
 	/// * If this is a semaphore, it is decremented by 1.
 	#[inline(always)]
-	pub fn read(&self) -> Result<u64, EventReadError>
+	pub fn read(&self) -> Result<u64, StructReadError>
 	{
-		use self::EventReadError::*;
+		use self::StructReadError::*;
 
 		let mut value: u64 = unsafe { uninitialized() };
 

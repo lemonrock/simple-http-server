@@ -9,7 +9,6 @@ use ::libc::timespec;
 include!("itimerspec.rs");
 include!("TimerClock.rs");
 include!("TimerFileDescriptor.rs");
-include!("TimerReadError.rs");
 include!("TimerSetChoices.rs");
 include!("timerfd_create.rs");
 include!("timerfd_settime.rs");

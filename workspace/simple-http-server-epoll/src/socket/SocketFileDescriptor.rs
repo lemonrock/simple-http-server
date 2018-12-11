@@ -218,12 +218,12 @@ impl SocketFileDescriptor<sockaddr_un>
 	fn unix_domain_socket_data(path: impl AsRef<Path>) -> sockaddr_un
 	{
 		let mut socket_data = sockaddr_un
-			{
-				sun_family: AF_UNIX as sa_family_t,
-				sun_path: unsafe { zeroed() },
-			};
+		{
+			sun_family: AF_UNIX as sa_family_t,
+			sun_path: unsafe { zeroed() },
+		};
 
-		let path_bytes = path.as_ref().as_os_str().as_bytes();
+		let path_bytes = path_bytes_without_trailing_nul(&path);
 		let path_bytes_length = path_bytes.len();
 		debug_assert!(path_bytes_length <= socket_data.sun_path.len(), "Path converted to bytes is more than 108-bytes long");
 		unsafe { socket_data.sun_path.as_mut_ptr().copy_from_nonoverlapping(path_bytes.as_ptr() as *const _, path_bytes_length) };

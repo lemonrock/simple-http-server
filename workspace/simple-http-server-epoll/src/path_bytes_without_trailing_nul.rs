@@ -2,19 +2,8 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-
-
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
-include!("EPollAddError.rs");
-include!("EPollDeleteError.rs");
-include!("EPollFileDescriptor.rs");
-include!("EPollModifyError.rs");
-include!("EPollRegistrationError.rs");
-include!("EPollTimeOut.rs");
-include!("EPollWaitError.rs");
+#[inline(always)]
+pub(crate) fn path_bytes_without_trailing_nul<'a>(path: &'a impl AsRef<Path>) -> &'a [u8]
+{
+	path.as_ref().as_os_str().as_bytes()
+}
