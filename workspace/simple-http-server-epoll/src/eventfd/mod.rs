@@ -6,6 +6,5 @@ use super::*;
 
 
 include!("EventFileDescriptor.rs");
-include!("EventWriteError.rs");
 include!("eventfd.rs");
 include!("eventfd_t.rs");

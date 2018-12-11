@@ -4,7 +4,7 @@
 
 /// An error that can occur during read of a timer instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum EventWriteError
+pub enum StructWriteError
 {
 	/// It is not possible to write events at this time.
 	///
@@ -18,15 +18,15 @@ pub enum EventWriteError
 	Interrupted,
 }
 
-impl Display for EventWriteError
+impl Display for StructWriteError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<EventWriteError as Debug>::fmt(self, f)
+		<StructWriteError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for EventWriteError
+impl error::Error for StructWriteError
 {
 }

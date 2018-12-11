@@ -82,119 +82,230 @@ impl FanotifyFileDescriptor
 		}
 	}
 
-//	/// Calls `add_watch()` after first converting the path.
-//	///
-//	/// Inefficient as makes a copy of the bytes in path and appends a trailing ASCII NUL (blame Rust for a poor design for Path and OsString).
-//	///
-//	/// Panics if `path` can not be so converted.
-//	pub fn add_watch_inefficient(this: &Rc<Self>, path: impl AsRef<Path>, flags: InotifyAddWatchFlags, adjust: bool) -> Result<InotifyWatchDescriptor, InotifyAddError>
-//	{
-//		let path = CString::new(path_bytes_without_trailing_nul(&path)).unwrap();
-//		Self::add_watch(this, &path, flags, adjust)
-//	}
-//
-//	/// `adjust`, if true, assumes a watch already exists and adds the specified `flags` to it.
-//	///
-//	/// The maximum number of open (added) watch descriptors is specified in `/proc/sys/fs/inotify/max_user_watches`.
-//	pub fn add_watch(this: &Rc<Self>, path: &CStr, flags: InotifyAddWatchFlags, adjust: bool) -> Result<InotifyWatchDescriptor, InotifyAddError>
-//	{
-//		debug_assert_ne!(flags, InotifyAddWatchFlags::empty(), "flags must not be empty");
-//
-//		let flags = if unlikely!(adjust)
-//		{
-//			flags.add_bitmask()
-//		}
-//		else
-//		{
-//			flags.set_bitmask()
-//		};
-//
-//		let result = unsafe { inotify_add_watch(this.0, path.as_ptr(), flags) };
-//
-//		if likely!(result >= 0)
-//		{
-//			Ok
-//			(
-//				InotifyWatchDescriptor
-//				{
-//					parent: Rc::downgrade(this),
-//					watch_descriptor: result,
-//				}
-//			)
-//		}
-//		else if likely!(result == -1)
-//		{
-//			use self::InotifyAddError::*;
-//
-//			Err
-//			(
-//				match errno().0
-//				{
-//					EACCES => PermissionDenied,
-//					ENOMEM => KernelWouldBeOutOfMemory,
-//					ENOENT => FilePathInvalid,
-//					ENOSPC => MaximumNumberOfWatchesWouldBeExceeded,
-//
-//					EBADF => panic!("`fd` is not a valid file descriptor"),
-//					EFAULT => panic!("`pathname` points outside of the process's accessible address space"),
-//					EINVAL => panic!("The given event `mask` contains no valid events; or `fd` is not an inotify file descriptor"),
-//
-//					_ => unreachable!(),
-//				}
-//			)
-//		}
-//		else
-//		{
-//			unreachable!()
-//		}
-//	}
-//
-//	/// Reads an inotify event.
-//	///
-//	/// Only one-at-a-time can be (straightforwardly) read as the underlying structure is variable in size.
-//	///
-//	/// Use this only after a read-ready event notification is received (using edge-triggered events).
-//	#[inline(always)]
-//	pub fn read(&self) -> Result<inotify_event, StructReadError>
-//	{
-//		use self::StructReadError::*;
-//
-//		let mut value: inotify_event = inotify_event::unpopulated();
-//
-//		const SizeOfRead: usize = size_of::<inotify_event>();
-//
-//		let result = unsafe { read(self.0, &mut value as *mut _ as *mut _, SizeOfRead) };
-//
-//		if likely!(result == SizeOfRead as isize)
-//		{
-//			Ok(value)
-//		}
-//		else
-//		{
-//			match result
-//			{
-//				-1 =>
-//				{
-//					let error_number = errno();
-//					match error_number.0
-//					{
-//						EAGAIN => Err(WouldBlock),
-//						ECANCELED => Err(Cancelled),
-//						EINTR => Err(Interrupted),
-//						EIO => Err(Cancelled),
-//						EBADF => panic!("`fd` is not a valid file descriptor or is not open for reading"),
-//						EFAULT => panic!("`buf` is outside your accessible address space"),
-//						EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
-//						EISDIR => panic!("`fd` refers to a directory"),
-//
-//						_ => panic!("Unexpected error `{}`", error_number),
-//					}
-//				}
-//
-//				0 => panic!("End of file but we haven't closed the file descriptor"),
-//
-//				_ => unreachable!(),
-//			}
-//		}
-//	}
+	/// Adds a mark.
+	#[inline(always)]
+	pub fn add_mark<'a>(&self, mark_flags: MarkFlags, mark_event_flags: MarkEventFlags, mark_path: &MarkPath<'a>) -> Result<(), FanotifyMarkError>
+	{
+		let (dirfd, pathname) = mark_path.to_dirfd_and_pathname();
+
+		let result = unsafe { fanotify_mark(self.0, mark_flags.bits | FAN_MARK_ADD, mark_event_flags.bits, dirfd, pathname) };
+
+		if likely!(result == 0)
+		{
+			Ok(())
+		}
+		else if likely!(result == -1)
+		{
+			use self::FanotifyMarkError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EBADF => panic!("An invalid file descriptor was passed in `fanotify_fd`"),
+					EINVAL => panic!("An invalid value was passed in `flags` or `mask`, or `fanotify_fd` was not an fanotify file descriptor, or the fanotify file descriptor was opened with `FAN_CLASS_NOTIF` and mask contains a flag for permission events (`FAN_OPEN_PERM` or `FAN_ACCESS_PERM`)"),
+					ENOENT | ENOTDIR => FilePathInvalid,
+					ENOMEM | ENOSPC => KernelWouldBeOutOfMemory,
+					ENOSYS => panic!("This kernel does not implement `fanotify_mark()`. The fanotify API is available only if the kernel was configured with `CONFIG_FANOTIFY`"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!();
+		}
+	}
+
+	/// Remove a mark.
+	#[inline(always)]
+	pub fn remove_mark<'a>(&self, mark_flags: MarkFlags, mark_event_flags: MarkEventFlags, mark_path: &MarkPath<'a>) -> Result<(), FanotifyMarkError>
+	{
+		let (dirfd, pathname) = mark_path.to_dirfd_and_pathname();
+
+		let result = unsafe { fanotify_mark(self.0, mark_flags.bits | FAN_MARK_REMOVE, mark_event_flags.bits, dirfd, pathname) };
+
+		if likely!(result == 0)
+		{
+			Ok(())
+		}
+		else if likely!(result == -1)
+		{
+			use self::FanotifyMarkError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EBADF => panic!("An invalid file descriptor was passed in `fanotify_fd`"),
+					EINVAL => panic!("An invalid value was passed in `flags` or `mask`, or `fanotify_fd` was not an fanotify file descriptor, or the fanotify file descriptor was opened with `FAN_CLASS_NOTIF` and mask contains a flag for permission events (`FAN_OPEN_PERM` or `FAN_ACCESS_PERM`)"),
+					ENOENT | ENOTDIR => FilePathInvalid,
+					ENOMEM | ENOSPC => KernelWouldBeOutOfMemory,
+					ENOSYS => panic!("This kernel does not implement `fanotify_mark()`. The fanotify API is available only if the kernel was configured with `CONFIG_FANOTIFY`"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!();
+		}
+	}
+
+	/// Remove all.
+	#[inline(always)]
+	pub fn remove_all_mount_or_non_mount_marks<'a>(&self, remove_mount: bool, mark_event_flags: MarkEventFlags, mark_path: &MarkPath<'a>) -> Result<(), FanotifyMarkError>
+	{
+		let mark_flags = if remove_mount
+		{
+			FAN_MARK_MOUNT
+		}
+		else
+		{
+			0
+		};
+
+		let (dirfd, pathname) = mark_path.to_dirfd_and_pathname();
+
+		let result = unsafe { fanotify_mark(self.0, mark_flags | FAN_MARK_FLUSH, mark_event_flags.bits, dirfd, pathname) };
+
+		if likely!(result == 0)
+		{
+			Ok(())
+		}
+		else if likely!(result == -1)
+		{
+			use self::FanotifyMarkError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EBADF => panic!("An invalid file descriptor was passed in `fanotify_fd`"),
+					EINVAL => panic!("An invalid value was passed in `flags` or `mask`, or `fanotify_fd` was not an fanotify file descriptor, or the fanotify file descriptor was opened with `FAN_CLASS_NOTIF` and mask contains a flag for permission events (`FAN_OPEN_PERM` or `FAN_ACCESS_PERM`)"),
+					ENOENT | ENOTDIR => FilePathInvalid,
+					ENOMEM | ENOSPC => KernelWouldBeOutOfMemory,
+					ENOSYS => panic!("This kernel does not implement `fanotify_mark()`. The fanotify API is available only if the kernel was configured with `CONFIG_FANOTIFY`"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!();
+		}
+	}
+
+	/// Reads a fanotify event.
+	///
+	/// Use this only after a read-ready event notification is received (using edge-triggered events).
+	///
+	/// Returns the number of items read; adds read items starting at `read_into.len()` up to `read_into.capacity()`.
+	#[inline(always)]
+	pub fn read(&self, read_into: &mut Vec<fanotify_event_metadata>) -> Result<usize, StructReadError>
+	{
+		use self::StructReadError::*;
+
+		const SizeOfRead: usize = size_of::<fanotify_event_metadata>();
+
+		let length = read_into.len();
+
+		let starting_at = unsafe { read_into.as_mut_ptr().add(length) };
+		let extra_items = read_into.capacity() - length;
+
+		if unlikely!(extra_items == 0)
+		{
+			return Ok(0)
+		}
+
+		let result = unsafe { read(self.0, starting_at as *mut _, extra_items * SizeOfRead) };
+
+		if likely!(result > 0)
+		{
+			let items_read = (result as usize) / SizeOfRead;
+			unsafe { read_into.set_len(length + items_read) };
+			Ok(items_read)
+		}
+		else
+		{
+			match result
+			{
+				-1 =>
+				{
+					let error_number = errno();
+					match error_number.0
+					{
+						EAGAIN => Err(WouldBlock),
+						ECANCELED => Err(Cancelled),
+						EINTR => Err(Interrupted),
+						EIO => Err(Cancelled),
+						EBADF => panic!("`fd` is not a valid file descriptor or is not open for reading"),
+						EFAULT => panic!("`buf` is outside your accessible address space"),
+						EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
+						EISDIR => panic!("`fd` refers to a directory"),
+
+						_ => panic!("Unexpected error `{}`", error_number),
+					}
+				}
+
+				0 => panic!("End of file but we haven't closed the file descriptor"),
+
+				_ => unreachable!(),
+			}
+		}
+	}
+
+	/// For permission events, the application must write responses.
+	///
+	/// Returns the number of responses written.
+	///
+	/// For extremely efficient handling, the `responses` slice should be backed by a virtual ring buffer (mirror buffer).
+	#[inline(always)]
+	pub fn write_permission(&self, responses: &[fanotify_response]) -> Result<usize, StructWriteError>
+	{
+		use self::StructWriteError::*;
+
+		const SizeOfWrite: usize = size_of::<fanotify_response>();
+
+		let result = unsafe { write(self.0, responses.as_ptr() as *const _, responses.len() * SizeOfWrite) };
+
+		if likely!(result > 0)
+		{
+			let items_written = (result as usize) / SizeOfWrite;
+			Ok(items_written)
+		}
+		else
+		{
+			match result
+			{
+				-1 =>
+				{
+					let error_number = errno();
+					match error_number.0
+					{
+						EAGAIN => Err(WouldBlock),
+						ECANCELED => Err(Cancelled),
+						EINTR => Err(Interrupted),
+						EIO | EPIPE => Err(Cancelled),
+						EBADF => panic!("`fd` is not a valid file descriptor or is not open for reading"),
+						EFAULT => panic!("`buf` is outside your accessible address space"),
+						EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
+						ENOSPC => panic!("out of space"),
+						EDQUOT => panic!("out of quota"),
+						EDESTADDRREQ => panic!("EDESTADDRREQ!"),
+						EFBIG => panic!("EFBIG!"),
+
+						_ => panic!("Unexpected error `{}`", error_number),
+					}
+				}
+
+				0 => panic!("End of file but we haven't closed the file descriptor"),
+
+				_ => unreachable!(),
+			}
+		}
+	}
 }

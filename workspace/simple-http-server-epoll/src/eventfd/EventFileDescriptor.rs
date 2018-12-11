@@ -137,11 +137,11 @@ impl EventFileDescriptor
 
 	/// Write an event increment.
 	#[inline(always)]
-	pub fn write(&self, increment: &u64) -> Result<(), EventWriteError>
+	pub fn write(&self, increment: &u64) -> Result<(), StructWriteError>
 	{
 		debug_assert_ne!(*increment, ::std::u64::MAX, "increment may not be ::std::u64::MAX");
 
-		use self::EventWriteError::*;
+		use self::StructWriteError::*;
 
 		const SizeOfWrite: usize = size_of::<u64>();
 

@@ -5,6 +5,8 @@
 bitflags!
 {
 	/// Flags control the status of a newly opened file descriptor by fanotify.
+	///
+	/// Before Linux 3.18 the features these flags imply was very buggily implemented.
 	pub struct FileStatusFlags: u32
 	{
 		/// This value allows only read access.

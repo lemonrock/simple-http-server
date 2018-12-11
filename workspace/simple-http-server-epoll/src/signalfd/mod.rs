@@ -3,7 +3,6 @@
 
 
 use super::*;
-use ::libc::pid_t;
 use ::libc::pthread_sigmask;
 use ::libc::raise;
 use ::libc::SIG_BLOCK;

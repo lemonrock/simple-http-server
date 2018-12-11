@@ -3,6 +3,10 @@
 
 
 use super::*;
+use ::libc::AT_FDCWD;
+use ::libc::c_uchar;
+use ::libc::c_ushort;
+use ::libc::c_ulonglong;
 use ::libc::c_uint;
 use ::libc::O_APPEND;
 use ::libc::O_CLOEXEC;
@@ -14,9 +18,16 @@ use ::libc::O_RDONLY;
 use ::libc::O_RDWR;
 use ::libc::O_SYNC;
 use ::libc::O_WRONLY;
-use ::libc::ENOSYS;
+use ::std::fs::File;
 
 
+include!("fanotify_event_metadata.rs");
 include!("fanotify_init.rs");
+include!("fanotify_mark.rs");
+include!("fanotify_response.rs");
 include!("FanotifyFileDescriptor.rs");
+include!("FanotifyMarkError.rs");
 include!("FileStatusFlags.rs");
+include!("MarkEventFlags.rs");
+include!("MarkFlags.rs");
+include!("MarkPath.rs");
