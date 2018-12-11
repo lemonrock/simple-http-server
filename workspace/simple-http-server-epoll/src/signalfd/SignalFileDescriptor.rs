@@ -44,7 +44,7 @@ impl SignalFileDescriptor
 	///
 	/// The `initial_value` can not be `::std::u64::MAX`.
 	#[inline(always)]
-	pub fn new(signal_mask: &sigset_t) -> Result<Self, SignalCreationError>
+	pub fn new(signal_mask: &sigset_t) -> Result<Self, CreationError>
 	{
 		let result = unsafe { signalfd(-1, signal_mask, SFD_NONBLOCK | SFD_CLOEXEC) };
 		if likely!(result != -1)
@@ -53,7 +53,7 @@ impl SignalFileDescriptor
 		}
 		else
 		{
-			use self::SignalCreationError::*;
+			use self::CreationError::*;
 
 			Err
 			(
@@ -74,7 +74,7 @@ impl SignalFileDescriptor
 	///
 	/// The `initial_value` can not be `::std::u64::MAX`.
 	#[inline(always)]
-	pub fn update_mask(&self, signal_mask: &sigset_t) -> Result<(), SignalCreationError>
+	pub fn update_mask(&self, signal_mask: &sigset_t) -> Result<(), CreationError>
 	{
 		let result = unsafe { signalfd(self.0, signal_mask, SFD_NONBLOCK | SFD_CLOEXEC) };
 		if likely!(result != -1)
@@ -83,7 +83,7 @@ impl SignalFileDescriptor
 		}
 		else
 		{
-			use self::SignalCreationError::*;
+			use self::CreationError::*;
 
 			Err
 			(

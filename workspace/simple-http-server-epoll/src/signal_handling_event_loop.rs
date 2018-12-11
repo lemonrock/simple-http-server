@@ -7,7 +7,23 @@
 // EPOLLEXCLUSIVE
 // setsockopt(http->fd, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val));
 
-pub fn signal_handling_event_loop(terminate: Terminate, time_out_milliseconds: u16) -> Result<(), EPollCreationError_or_SignalEPollRegistrationError>
+
+// NEXT: eventfd reactors
+// NEXT: timerfd reactor
+// NEXT: socket reactors
+// TODO: posix message queues and fanotify
+
+
+// We need an enum to handle all the different types.
+
+// More space efficient to have multiple arenas.
+
+
+
+// TODO: terminate.
+
+
+pub fn event_loop(terminate: Terminate, time_out_milliseconds: u16) -> Result<(), EPollCreationError_or_SignalEPollRegistrationError>
 {
 	let epoll_file_descriptor = EPollFileDescriptor::new()?;
 

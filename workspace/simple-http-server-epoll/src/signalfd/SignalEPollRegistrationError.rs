@@ -7,7 +7,7 @@
 pub enum SignalEPollRegistrationError
 {
 	/// Error on creation.
-	Creation(SignalCreationError),
+	Creation(CreationError),
 
 	/// Error during registration.
 	Registration(EPollAddError),
@@ -37,10 +37,10 @@ impl error::Error for SignalEPollRegistrationError
 	}
 }
 
-impl From<SignalCreationError> for SignalEPollRegistrationError
+impl From<CreationError> for SignalEPollRegistrationError
 {
 	#[inline(always)]
-	fn from(error: SignalCreationError) -> Self
+	fn from(error: CreationError) -> Self
 	{
 		SignalEPollRegistrationError::Creation(error)
 	}

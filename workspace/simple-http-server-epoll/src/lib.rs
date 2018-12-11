@@ -112,4 +112,5 @@
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] mod timerfd;
 
 
+include!("CreationError.rs");
 include!("RawFdExt.rs");

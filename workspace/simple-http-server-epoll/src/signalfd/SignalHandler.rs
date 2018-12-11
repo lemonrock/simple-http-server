@@ -4,6 +4,13 @@
 
 /// Allows for customization of responses to signals.
 ///
+/// Most of these methods return a `Result<(), ()`.
+///
+/// Use this to control what should happen after handling the signal:-
+///
+/// * `Ok(())`: Continue processing signals and then return to the application event loop.
+/// * `Err(())`: Immediately stop processing signals, including those already dequeued, and then immediately return with an error to the application event loop.
+///
 /// Signals can be raised by the kernel or by user space; they can even be raised 'internally' by the libc.
 ///
 /// When raised by user space, they are not necessarily populated with the same data.

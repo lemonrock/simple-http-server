@@ -5,7 +5,6 @@
 use super::*;
 
 
-include!("EventCreationError.rs");
 include!("EventFileDescriptor.rs");
 include!("EventReadError.rs");
 include!("EventWriteError.rs");

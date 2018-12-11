@@ -348,44 +348,44 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	}
 
 	#[inline(always)]
-	fn new_transmission_control_protocol_over_internet_protocol_version_4() -> Result<Self, SocketCreationError>
+	fn new_transmission_control_protocol_over_internet_protocol_version_4() -> Result<Self, CreationError>
 	{
 		Self::new(AF_INET, SOCK_STREAM, IPPROTO_TCP)
 	}
 
 	#[inline(always)]
-	fn new_transmission_control_protocol_over_internet_protocol_version_6() -> Result<Self, SocketCreationError>
+	fn new_transmission_control_protocol_over_internet_protocol_version_6() -> Result<Self, CreationError>
 	{
 		Self::new(AF_INET6, SOCK_STREAM, IPPROTO_TCP)
 	}
 
 	#[inline(always)]
-	fn new_user_datagram_protocol_over_internet_protocol_version_4() -> Result<Self, SocketCreationError>
+	fn new_user_datagram_protocol_over_internet_protocol_version_4() -> Result<Self, CreationError>
 	{
 		Self::new(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
 	}
 
 	#[inline(always)]
-	fn new_user_datagram_protocol_over_internet_protocol_version_6() -> Result<Self, SocketCreationError>
+	fn new_user_datagram_protocol_over_internet_protocol_version_6() -> Result<Self, CreationError>
 	{
 		Self::new(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)
 	}
 
 	#[inline(always)]
-	fn new_streaming_unix_domain_socket() -> Result<Self, SocketCreationError>
+	fn new_streaming_unix_domain_socket() -> Result<Self, CreationError>
 	{
 		Self::new(AF_UNIX, SOCK_STREAM, 0)
 	}
 
 	#[inline(always)]
-	fn new_datagram_unix_domain_socket() -> Result<Self, SocketCreationError>
+	fn new_datagram_unix_domain_socket() -> Result<Self, CreationError>
 	{
 		Self::new(AF_UNIX, SOCK_DGRAM, 0)
 	}
 
 	/// Creates a new instance.
 	#[inline(always)]
-	fn new(domain: c_int, type_: c_int, ethernet_protocol: c_int) -> Result<Self, SocketCreationError>
+	fn new(domain: c_int, type_: c_int, ethernet_protocol: c_int) -> Result<Self, CreationError>
 	{
 		const Flags: c_int = SOCK_NONBLOCK | SOCK_CLOEXEC;
 
@@ -396,7 +396,7 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 		}
 		else
 		{
-			use self::SocketCreationError::*;
+			use self::CreationError::*;
 
 			Err
 			(

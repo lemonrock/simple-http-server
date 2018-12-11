@@ -2,11 +2,13 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during creation of a signal instance.
+/// An error that can occur during creation of a timer instance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SignalCreationError
+pub enum CreationError
 {
-	/// The per-process limit on the number of open file descriptors would be exceeded
+	/// The per-process limit on the number of open file descriptors would be exceeded.
+	///
+	/// For epoll creation, this can also be because the per-user limit on the number of epoll instances imposed by `/proc/sys/fs/epoll/max_user_instances` would be exceeded.
 	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
 
 	/// The system-wide limit on the total number of open files would be exceeded.
@@ -16,15 +18,15 @@ pub enum SignalCreationError
 	KernelWouldBeOutOfMemory,
 }
 
-impl Display for SignalCreationError
+impl Display for CreationError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<SignalCreationError as Debug>::fmt(self, f)
+		<CreationError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for SignalCreationError
+impl error::Error for CreationError
 {
 }

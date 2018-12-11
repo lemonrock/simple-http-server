@@ -6,7 +6,7 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SocketAcceptError
 {
-	/// The per-process limit on the number of open file descriptors would be exceeded
+	/// The per-process limit on the number of open file descriptors would be exceeded.
 	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
 
 	/// The system-wide limit on the total number of open files would be exceeded.

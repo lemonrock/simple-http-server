@@ -15,7 +15,6 @@ include!("epoll_event.rs");
 include!("epoll_pwait.rs");
 include!("epoll_wait.rs");
 include!("EPollAddError.rs");
-include!("EPollCreationError.rs");
 include!("EPollDeleteError.rs");
 include!("EPollFileDescriptor.rs");
 include!("EPollModifyError.rs");

@@ -37,7 +37,7 @@ impl TimerFileDescriptor
 {
 	/// Creates a new instance.
 	#[inline(always)]
-	pub fn new(clock: TimerClock) -> Result<Self, TimerCreationError>
+	pub fn new(clock: TimerClock) -> Result<Self, CreationError>
 	{
 		let result = unsafe { timerfd_create(clock as i32, TFD_NONBLOCK | TFD_CLOEXEC) };
 		if likely!(result != -1)
@@ -46,7 +46,7 @@ impl TimerFileDescriptor
 		}
 		else
 		{
-			use self::TimerCreationError::*;
+			use self::CreationError::*;
 
 			Err
 			(

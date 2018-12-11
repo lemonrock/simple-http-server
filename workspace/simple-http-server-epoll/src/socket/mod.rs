@@ -84,7 +84,6 @@ include!("SocketAcceptError.rs");
 include!("SocketAddress.rs");
 include!("SocketBindError.rs");
 include!("SocketConnectError.rs");
-include!("SocketCreationError.rs");
 include!("SocketData.rs");
 include!("SocketFileDescriptor.rs");
 include!("SocketListenError.rs");

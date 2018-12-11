@@ -42,9 +42,9 @@ impl EPollFileDescriptor
 {
 	/// Creates a new instance.
 	#[inline(always)]
-	pub fn new() -> Result<Self, EPollCreationError>
+	pub fn new() -> Result<Self, CreationError>
 	{
-		use self::EPollCreationError::*;
+		use self::CreationError::*;
 
 		let result = unsafe { epoll_create1(EPOLL_CLOEXEC) };
 		if likely!(result >= 0)
@@ -57,7 +57,7 @@ impl EPollFileDescriptor
 			(
 				match errno().0
 				{
-					EMFILE => PerUseLimitOnNumberOfEpollInstancesOrPerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
+					EMFILE => PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
 
 					ENFILE => SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
 

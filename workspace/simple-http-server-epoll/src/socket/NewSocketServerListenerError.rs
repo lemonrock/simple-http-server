@@ -7,7 +7,7 @@
 pub enum NewSocketServerListenerError
 {
 	/// Creation.
-	Creation(SocketCreationError),
+	Creation(CreationError),
 
 	/// Bind.
 	Bind(SocketBindError),
@@ -41,10 +41,10 @@ impl error::Error for NewSocketServerListenerError
 	}
 }
 
-impl From<SocketCreationError> for NewSocketServerListenerError
+impl From<CreationError> for NewSocketServerListenerError
 {
 	#[inline(always)]
-	fn from(error: SocketCreationError) -> Self
+	fn from(error: CreationError) -> Self
 	{
 		NewSocketServerListenerError::Creation(error)
 	}

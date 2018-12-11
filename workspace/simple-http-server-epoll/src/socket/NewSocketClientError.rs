@@ -7,7 +7,7 @@
 pub enum NewSocketClientError
 {
 	/// Creation.
-	Creation(SocketCreationError),
+	Creation(CreationError),
 
 	/// Connect.
 	Connect(SocketConnectError),
@@ -37,10 +37,10 @@ impl error::Error for NewSocketClientError
 	}
 }
 
-impl From<SocketCreationError> for NewSocketClientError
+impl From<CreationError> for NewSocketClientError
 {
 	#[inline(always)]
-	fn from(error: SocketCreationError) -> Self
+	fn from(error: CreationError) -> Self
 	{
 		NewSocketClientError::Creation(error)
 	}

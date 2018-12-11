@@ -2,11 +2,11 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Represents an event instance.
+/// Represents an inotify instance.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct EventFileDescriptor(RawFd);
+pub struct InotifyFileDescriptor(RawFd);
 
-impl Drop for EventFileDescriptor
+impl Drop for InotifyFileDescriptor
 {
 	#[inline(always)]
 	fn drop(&mut self)
@@ -15,7 +15,7 @@ impl Drop for EventFileDescriptor
 	}
 }
 
-impl AsRawFd for EventFileDescriptor
+impl AsRawFd for InotifyFileDescriptor
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -24,7 +24,7 @@ impl AsRawFd for EventFileDescriptor
 	}
 }
 
-impl IntoRawFd for EventFileDescriptor
+impl IntoRawFd for InotifyFileDescriptor
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -33,31 +33,15 @@ impl IntoRawFd for EventFileDescriptor
 	}
 }
 
-impl EventFileDescriptor
+impl InotifyFileDescriptor
 {
-	/// Creates a new instance.
-	///
-	/// The `initial_value` can not be `::std::u64::MAX`.
 	#[inline(always)]
-	pub fn new(initial_value: u64, use_as_a_semaphore: bool) -> Result<Self, CreationError>
+	pub fn new() -> Result<Self, CreationError>
 	{
-		debug_assert_ne!(initial_value, ::std::u64::MAX, "initial_value can not be ::std::u64::MAX");
-
-		const CommonFlags: c_int = EFD_NONBLOCK | EFD_CLOEXEC;
-
-		let flags = if use_as_a_semaphore
-		{
-			CommonFlags | EFD_SEMAPHORE
-		}
-		else
-		{
-			CommonFlags
-		};
-
-		let result = unsafe { eventfd(initial_value, flags) };
+		let result = unsafe { inotify_init1(initial_value, IN_NONBLOCK | IN_CLOEXEC) };
 		if likely!(result != -1)
 		{
-			Ok(EventFileDescriptor(result))
+			Ok(InotifyFileDescriptor(result))
 		}
 		else
 		{
@@ -71,7 +55,6 @@ impl EventFileDescriptor
 					ENFILE => SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
 					ENOMEM => KernelWouldBeOutOfMemory,
 					EINVAL => panic!("Invalid arguments"),
-					ENODEV => panic!("Could not mount (internal) anonymous inode device"),
 					_ => unreachable!(),
 				}
 			)

@@ -75,10 +75,8 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 	}
 
 	/// React to events becoming ready.
-	// React needs to tell the loop:-
-	// stop processing;
-	// remove this instance (or can we do this for ourselves?)
-	// restart the application loop (re-configured)
+	///
+	/// If an error is returned then all activity is cut short; any dequeued events not yet 'reacted' to are discarded.
 	pub fn react(&mut self, _epoll_file_descriptor: &EPollFileDescriptor, _token: u64, flags: u32) -> Result<(), ()>
 	{
 		debug_assert_eq!(flags, epoll_event::EPOLLIN, "flags contained a flag other than `EPOLLIN`");
