@@ -2,21 +2,17 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::ENAMETOOLONG;
-use ::libc::EEXIST;
-use ::libc::mode_t;
-use ::libc::O_CREAT;
-use ::libc::O_EXCL;
-use ::libc::S_IRUSR;
-use ::libc::S_IWUSR;
+/// Read, write or read and write?
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+#[repr(u32)]
+pub enum FanotifyReadOrWrite
+{
+	/// Only read.
+	Read = O_RDONLY as u32 | O_CLOEXEC as u32 | O_NONBLOCK as u32,
 
+	/// Only write.
+	Write = O_WRONLY as u32 | O_CLOEXEC as u32 | O_NONBLOCK as u32,
 
-include!("mq_attr.rs");
-include!("mqd_t.rs");
-include!("mq_open.rs");
-include!("MessageQueueCreateReadOrWrite.rs");
-include!("MessageQueueCreateSettings.rs");
-include!("MessageQueueFileDescriptor.rs");
-include!("OpenOrCreateMessageQueue.rs");
-include!("OptionalMessageQueueCreateSettings.rs");
+	/// Read and write.
+	ReadAndWrite = O_RDWR as u32 | O_CLOEXEC as u32 | O_NONBLOCK as u32,
+}

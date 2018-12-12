@@ -41,7 +41,7 @@ impl FanotifyFileDescriptor
 	///
 	/// The `Notification` class is always enabled.
 	#[inline(always)]
-	pub fn new(use_precontent_class: bool, use_content_class: bool, file_status_flags: FileStatusFlags) -> Result<Self, CreationError>
+	pub fn new(use_precontent_class: bool, use_content_class: bool, read_or_write: FanotifyReadOrWrite, file_status_flags: FileStatusFlags) -> Result<Self, CreationError>
 	{
 		let mut classes = FAN_CLASS_NOTIF;
 		if likely!(use_precontent_class)
@@ -53,7 +53,9 @@ impl FanotifyFileDescriptor
 			classes |= FAN_CLASS_CONTENT;
 		}
 
-		let result = unsafe { fanotify_init(FAN_CLOEXEC | FAN_NONBLOCK | classes | FAN_UNLIMITED_QUEUE | FAN_UNLIMITED_MARKS, file_status_flags.bits) };
+		let flags = read_or_write as u32 | file_status_flags.bits;
+
+		let result = unsafe { fanotify_init(FAN_CLOEXEC | FAN_NONBLOCK | classes | FAN_UNLIMITED_QUEUE | FAN_UNLIMITED_MARKS, flags) };
 		if likely!(result >= 0)
 		{
 			Ok(FanotifyFileDescriptor(result))

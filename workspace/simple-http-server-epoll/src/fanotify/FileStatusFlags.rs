@@ -9,27 +9,12 @@ bitflags!
 	/// Before Linux 3.18 the features these flags imply was very buggily implemented.
 	pub struct FileStatusFlags: u32
 	{
-		/// This value allows only read access.
-		const ReadOnly = O_RDONLY as u32;
-
-		/// This value allows only write access.
-		const WriteOnly = O_WRONLY as u32;
-
-		/// This value allows read and write access.
-		const ReadAndWrite = O_RDWR as u32;
-
 		/// Enable support for files exceeding 2 GB.
 		///
 		/// Failing to set this flag will result in an `EOVERFLOW` error when trying to open a large file which is monitored by an fanotify group on a 32-bit system.
 		///
 		/// Note that this value differs widely across architectures, and even is the same as `ReadOnly` on x86-64.
 		const LargeFile = O_LARGEFILE as u32;
-
-		/// Enable the close-on-exec flag for the file descriptor.
-		const CloseOnExce = O_CLOEXEC as u32;
-
-		/// Enable the non-blocking flag.
-		const NonBlocking = O_NONBLOCK as u32;
 
 		/// Enable append.
 		const Append = O_APPEND as u32;

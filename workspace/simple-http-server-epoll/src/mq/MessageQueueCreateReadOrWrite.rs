@@ -2,9 +2,6 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Exactly one of `O_RDONLY`, `O_WRONLY` or `O_RDWR` must be specified in `oflag`.
-/// In addition, one or more of the following may be bitwise or-ed into `oflag`: `O_CLOEXEC`, `O_CREAT`, `O_EXCL` and `O_NONBLOCK`.
-
 /// Read, write or read and write?
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 #[repr(i32)]
@@ -16,7 +13,7 @@ pub enum MessageQueueCreateReadOrWrite
 	/// Only write.
 	Write = O_WRONLY | O_CLOEXEC | O_NONBLOCK,
 
-	/// Read and write
+	/// Read and write.
 	ReadAndWrite = O_RDWR | O_CLOEXEC | O_NONBLOCK,
 }
 

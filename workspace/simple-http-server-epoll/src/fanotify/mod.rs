@@ -23,6 +23,7 @@ include!("fanotify_mark.rs");
 include!("fanotify_response.rs");
 include!("FanotifyFileDescriptor.rs");
 include!("FanotifyMarkError.rs");
+include!("FanotifyReadOrWrite.rs");
 include!("FileStatusFlags.rs");
 include!("MarkEventFlags.rs");
 include!("MarkFlags.rs");
