@@ -2,23 +2,17 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::ENAMETOOLONG;
-use ::libc::EEXIST;
-use ::libc::mode_t;
-use ::libc::O_CREAT;
-use ::libc::O_EXCL;
-use ::libc::S_IRUSR;
-use ::libc::S_IWUSR;
-
-
-include!("mq_attr.rs");
-include!("mqd_t.rs");
-include!("mq_getattr.rs");
-include!("mq_open.rs");
-include!("mq_unlink.rs");
-include!("MessageQueueCreateReadOrWrite.rs");
-include!("MessageQueueCreateSettings.rs");
-include!("MessageQueueFileDescriptor.rs");
-include!("OpenOrCreateMessageQueue.rs");
-include!("OptionalMessageQueueCreateSettings.rs");
+extern "C"
+{
+	/// `mq_unlink()` removes the specified message queue name `name`.
+	///
+	/// The message queue name `name` is removed immediately.
+	/// The queue itself is destroyed once any other processes that have the queue open close their descriptors referring to the queue.
+	///
+	/// Errors documented to be returned from `mq_unlink()` in `errno`:-
+	///
+	/// * `EACCES`: The caller does not have permission to unlink this message queue.
+	/// * `ENAMETOOLONG`: `name` was too long.
+	/// * `ENOENT`: There is no message queue with the given `name`.
+	pub(crate) fn mq_unlink(name: *const c_char) -> c_int;
+}

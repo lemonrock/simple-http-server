@@ -21,19 +21,7 @@ impl OpenOrCreateMessageQueue
 	#[inline(always)]
 	pub(crate) fn invoke_mq_open(&self, read_or_write: MessageQueueCreateReadOrWrite, name: &CStr) -> Result<MessageQueueFileDescriptor, CreationError>
 	{
-		if cfg!(debug_assertions)
-		{
-			let bytes = name.to_bytes();
-			let length = bytes.len();
-			debug_assert!(length > 1, "name must be 2 bytes or more long (excluding the trailing NUL)");
-			debug_assert!(length < 256, "name must be 255 bytes or less long (excluding the trailing NUL)");
-
-			debug_assert_eq!(bytes[0], b'/', "name must start with a slash");
-			for byte in name.to_bytes()[ 1 .. ].iter()
-			{
-				debug_assert_ne!(byte, &b'/', "name contains more than one slash");
-			}
-		}
+		MessageQueueFileDescriptor::guard_name(name);
 
 		use self::OpenOrCreateMessageQueue::*;
 

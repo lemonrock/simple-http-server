@@ -2,23 +2,16 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::ENAMETOOLONG;
-use ::libc::EEXIST;
-use ::libc::mode_t;
-use ::libc::O_CREAT;
-use ::libc::O_EXCL;
-use ::libc::S_IRUSR;
-use ::libc::S_IWUSR;
-
-
-include!("mq_attr.rs");
-include!("mqd_t.rs");
-include!("mq_getattr.rs");
-include!("mq_open.rs");
-include!("mq_unlink.rs");
-include!("MessageQueueCreateReadOrWrite.rs");
-include!("MessageQueueCreateSettings.rs");
-include!("MessageQueueFileDescriptor.rs");
-include!("OpenOrCreateMessageQueue.rs");
-include!("OptionalMessageQueueCreateSettings.rs");
+extern "C"
+{
+	/// Retrieve the attributes of the message queue referred to by the message queue descriptor `mqdes`.
+	///
+	/// On success `mq_getattr()` returns `0`
+	/// On error, `-1` is returned, with `errno` set to indicate the error.
+	///
+	/// Errors documented to be returned from `mq_getattr()` in `errno`:-
+	///
+	/// * `EBADF`: The message queue descriptor specified in `mqdes` is invalid.
+	/// * `EINVAL`: `newattr.mq_flags` contained set bits other than `O_NONBLOCK`.
+	pub(crate) fn mq_getattr(mqdes: mqd_t, attr: *mut mq_attr) -> c_int;
+}
