@@ -14,12 +14,16 @@ pub enum CreationError
 	PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
 
 	/// The system-wide limit on the total number of open files would be exceeded.
+	///
+	/// For POSIX message queues, this can also be caused if a process would exceed `/proc/sys/fs/mqueue/queues_max` and does not have the capability `CAP_SYS_RESOURCE`.
 	SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
 
 	/// Kernel would be out of memory.
 	KernelWouldBeOutOfMemory,
 
-	/// Only currently occurs for fanotify if the caller lacks the `CAP_SYS_ADMIN` capability.
+	/// Occurs for fanotify if the caller lacks the `CAP_SYS_ADMIN` capability.
+	///
+	/// Occurs for the opening or creation of POSIX message queues, either because of file mode permissions or because the settings for creation (eg maximum message size) are too large (or, on Linux before 3.5, too small).
 	PermissionDenied,
 }
 

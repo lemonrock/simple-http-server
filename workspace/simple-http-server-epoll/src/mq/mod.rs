@@ -3,27 +3,22 @@
 
 
 use super::*;
-use ::libc::AT_FDCWD;
-use ::libc::c_uchar;
-use ::libc::c_ushort;
-use ::libc::c_ulonglong;
-use ::libc::c_uint;
-use ::libc::O_APPEND;
-use ::libc::O_DSYNC;
-use ::libc::O_LARGEFILE;
-use ::libc::O_NOATIME;
-use ::libc::O_SYNC;
-use ::std::fs::File;
+use ::libc::ENAMETOOLONG;
+use ::libc::EEXIST;
+use ::libc::mode_t;
+use ::libc::O_CREAT;
+use ::libc::O_EXCL;
+use ::libc::S_IRUSR;
+use ::libc::S_IWUSR;
 
 
-include!("EventFlags.rs");
-include!("fanotify_event_metadata.rs");
-include!("fanotify_init.rs");
-include!("fanotify_mark.rs");
-include!("fanotify_response.rs");
-include!("FanotifyFileDescriptor.rs");
-include!("FanotifyMarkError.rs");
-include!("FileStatusFlags.rs");
-include!("MarkEventFlags.rs");
-include!("MarkFlags.rs");
-include!("MarkPath.rs");
+include!("mq_attr.rs");
+include!("mqd_t.rs");
+include!("mq_open.rs");
+include!("MessageQueueCreateReadOrWrite.rs");
+include!("MessageQueueCreateSettings.rs");
+include!("MessageQueueFileDescriptor.rs");
+include!("OpenOrCreateMessageQueue.rs");
+include!("OptionalMessageQueueCreateSettings.rs");
+
+// TODO: Insist of one of RDONLY, WRONLY or RDWR for fanotify.

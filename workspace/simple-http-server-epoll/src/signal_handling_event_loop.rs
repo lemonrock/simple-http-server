@@ -20,9 +20,31 @@
 
 /*
 
+TODO: POSIX message queues.
+
 TODO: TcpFastOpen, MSG_ZEROCOPY
 
 TODO: Linux abstract unix domain sockets.
+
+TODO: ?socketpair() (anonymous Unix domain sockets)
+	- has a read-write datagram / stream socket
+	- has a read-write datagram / stream channel
+
+TODO: ?pipe2() - unidirectional anonymous stream-like, can be epoll monitored?
+	- has a read-only stream pipe.
+	- has a write-only stream pipe.
+	- splice(), tee(), vmsplice().
+
+socket options
+
+connecting client streaming sockets and turning into indistinbuishable streaming ones
+
+TODO: ARENA(s) and an enum pattern.
+	- enum pattern could include an 'arena number'?
+
+TODO: memfd
+
+TODO: userfaultfd
 
 abstract: an abstract socket address is distinguished (from a
           pathname socket) by the fact that sun_path[0] is a null byte

@@ -2,28 +2,4 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::AT_FDCWD;
-use ::libc::c_uchar;
-use ::libc::c_ushort;
-use ::libc::c_ulonglong;
-use ::libc::c_uint;
-use ::libc::O_APPEND;
-use ::libc::O_DSYNC;
-use ::libc::O_LARGEFILE;
-use ::libc::O_NOATIME;
-use ::libc::O_SYNC;
-use ::std::fs::File;
-
-
-include!("EventFlags.rs");
-include!("fanotify_event_metadata.rs");
-include!("fanotify_init.rs");
-include!("fanotify_mark.rs");
-include!("fanotify_response.rs");
-include!("FanotifyFileDescriptor.rs");
-include!("FanotifyMarkError.rs");
-include!("FileStatusFlags.rs");
-include!("MarkEventFlags.rs");
-include!("MarkFlags.rs");
-include!("MarkPath.rs");
+pub(crate) type mqd_t = RawFd;
