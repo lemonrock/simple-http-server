@@ -2,24 +2,26 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-use super::*;
-use ::libc::ENAMETOOLONG;
-use ::libc::EEXIST;
-use ::libc::mode_t;
-use ::libc::O_CREAT;
-use ::libc::O_EXCL;
-use ::libc::S_IRUSR;
-use ::libc::S_IWUSR;
+/// An error that can occur during binding of a socket instance.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum MessageQueueUnlinkError
+{
+	/// Permission denied.
+	PermissionDenied,
 
+	/// Does not exist.
+	DoesNotExist,
+}
 
-include!("mq_attr.rs");
-include!("mqd_t.rs");
-include!("mq_getattr.rs");
-include!("mq_open.rs");
-include!("mq_unlink.rs");
-include!("MessageQueueCreateReadOrWrite.rs");
-include!("MessageQueueCreateSettings.rs");
-include!("MessageQueueFileDescriptor.rs");
-include!("MessageQueueUnlinkError.rs");
-include!("OpenOrCreateMessageQueue.rs");
-include!("OptionalMessageQueueCreateSettings.rs");
+impl Display for MessageQueueUnlinkError
+{
+	#[inline(always)]
+	fn fmt(&self, f: &mut Formatter) -> fmt::Result
+	{
+		<MessageQueueUnlinkError as Debug>::fmt(self, f)
+	}
+}
+
+impl error::Error for MessageQueueUnlinkError
+{
+}

@@ -40,9 +40,9 @@ impl MessageQueueFileDescriptor
 	/// The message queue name `name` is removed immediately.
 	/// The queue itself is destroyed once any other processes that have the queue open close their descriptors referring to the queue.
 	///
-	/// Failure is caused by the queue existing or by not having permission.
+	/// Failure is caused by the queue not existing or by not having permission.
 	#[inline(always)]
-	pub fn unlink(name: &CStr) -> Result<(), ()>
+	pub fn unlink(name: &CStr) -> Result<(), MessageQueueUnlinkError>
 	{
 		Self::guard_name(name);
 
@@ -53,13 +53,15 @@ impl MessageQueueFileDescriptor
 		}
 		else if likely!(result == -1)
 		{
+			use self::MessageQueueUnlinkError::*;
+
 			Err
 			(
 				match errno().0
 				{
-					EACCES => (),
+					EACCES => PermissionDenied,
 
-					ENOENT => (),
+					ENOENT => DoesNotExist,
 
 					ENAMETOOLONG => panic!("`name` was too long"),
 
