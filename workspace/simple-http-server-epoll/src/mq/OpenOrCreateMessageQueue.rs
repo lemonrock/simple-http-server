@@ -19,13 +19,13 @@ pub enum OpenOrCreateMessageQueue
 impl OpenOrCreateMessageQueue
 {
 	#[inline(always)]
-	pub(crate) fn invoke_mq_open(&self, read_or_write: MessageQueueCreateReadOrWrite, name: &CStr) -> Result<MessageQueueFileDescriptor, CreationError>
+	pub(crate) fn invoke_mq_open(&self, send_or_receive: MessageQueueCreateSendOrReceive, name: &CStr) -> Result<MessageQueueFileDescriptor, CreationError>
 	{
 		MessageQueueFileDescriptor::guard_name(name);
 
 		use self::OpenOrCreateMessageQueue::*;
 
-		let oflag = read_or_write as i32;
+		let oflag = send_or_receive as i32;
 
 		let name_pointer = name.as_ptr();
 

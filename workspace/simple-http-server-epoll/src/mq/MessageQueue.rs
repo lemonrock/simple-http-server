@@ -1,0 +1,92 @@
+// This file is part of simple-http-server. It is subject to the license terms in the COPYRIGHT file found in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT. No part of simple-http-server, including this file, may be copied, modified, propagated, or distributed except according to the terms contained in the COPYRIGHT file.
+// Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
+
+
+/// Represents a message queue file descriptor for reading, writing or both.
+pub trait MessageQueue: AsRawFd + IntoRawFd + Sized
+{
+	/// Creates a new instance.
+	fn new(name: &CStr, open_or_create: &OpenOrCreateMessageQueue) -> Result<Self, CreationError>;
+
+	/// Removes and destroys a queue.
+	///
+	/// The message queue name `name` is removed immediately.
+	/// The queue itself is destroyed once any other processes that have the queue open close their descriptors referring to the queue.
+	///
+	/// Failure is caused by the queue not existing or by not having permission.
+	#[inline(always)]
+	fn unlink(name: &CStr) -> Result<(), MessageQueueUnlinkError>
+	{
+		MessageQueueFileDescriptor::guard_name(name);
+
+		let result = unsafe { mq_unlink(name.as_ptr()) };
+		if likely!(result == 0)
+		{
+			Ok(())
+		}
+		else if likely!(result == -1)
+		{
+			use self::MessageQueueUnlinkError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EACCES => PermissionDenied,
+
+					ENOENT => DoesNotExist,
+
+					ENAMETOOLONG => panic!("`name` was too long"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!()
+		}
+	}
+
+	/// The maximum number of enqueued messages.
+	///
+	/// Will never change; extremely efficient to use.
+	fn maximum_number_of_enqueued_messages(&self) -> usize;
+
+	/// The maximum message size in bytes.
+	///
+	/// Will never change; extremely efficient to use.
+	fn maximum_message_size_in_bytes(&self) -> usize;
+
+	/// The number of unread messages in the queue.
+	///
+	/// Requires a syscall into the kernel.
+	fn queue_depth(&self) -> usize;
+
+	/// Is the queue full?
+	///
+	/// Requires a syscall into the kernel.
+	#[inline(always)]
+	fn queue_is_full(&self) -> bool
+	{
+		self.queue_depth() == self.maximum_message_size_in_bytes()
+	}
+
+	/// Is the queue empty?
+	///
+	/// Requires a syscall into the kernel.
+	#[inline(always)]
+	fn queue_is_empty(&self) -> bool
+	{
+		self.queue_depth() == 0
+	}
+
+	/// How many messages can be enqueued before the queue is full?
+	///
+	/// Requires a syscall into the kernel.
+	#[inline(always)]
+	fn remaining_space(&self) -> usize
+	{
+		self.maximum_number_of_enqueued_messages() - self.queue_depth()
+	}
+}

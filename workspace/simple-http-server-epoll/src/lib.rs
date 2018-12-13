@@ -9,6 +9,7 @@
 #![deny(unreachable_patterns)]
 #![feature(core_intrinsics)]
 #![feature(read_initializer)]
+#![feature(try_from)]
 
 
 //! #simple-http-server-epoll

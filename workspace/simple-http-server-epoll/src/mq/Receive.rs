@@ -2,26 +2,11 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Read, write or read and write?
-#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-#[repr(i32)]
-pub enum MessageQueueCreateReadOrWrite
+/// Receive a message from a queue.
+pub trait Receive: MessageQueue
 {
-	/// Only read.
-	Read = O_RDONLY | O_CLOEXEC | O_NONBLOCK,
-
-	/// Only write.
-	Write = O_WRONLY | O_CLOEXEC | O_NONBLOCK,
-
-	/// Read and write.
-	ReadAndWrite = O_RDWR | O_CLOEXEC | O_NONBLOCK,
-}
-
-impl Default for MessageQueueCreateReadOrWrite
-{
-	#[inline(always)]
-	fn default() -> Self
-	{
-		MessageQueueCreateReadOrWrite::ReadAndWrite
-	}
+	/// Returns a tuple of `(message_size, message_priority)`.
+	///
+	/// Fails with a panic if the `message_buffer` is too small for the queue's configured message size (use `MessageQueue::queue_attributes()` to find this).
+	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, MessagePriority), StructReadError>;
 }

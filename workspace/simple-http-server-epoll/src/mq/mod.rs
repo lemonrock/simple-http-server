@@ -3,23 +3,38 @@
 
 
 use super::*;
+use ::libc::c_uint;
 use ::libc::ENAMETOOLONG;
 use ::libc::EEXIST;
+use ::libc::EMSGSIZE;
+use ::libc::ETIMEDOUT;
 use ::libc::mode_t;
 use ::libc::O_CREAT;
 use ::libc::O_EXCL;
 use ::libc::S_IRUSR;
 use ::libc::S_IWUSR;
+use ::libc::ssize_t;
+use ::libc::timespec;
+use ::std::convert::TryFrom;
 
 
 include!("mq_attr.rs");
 include!("mqd_t.rs");
 include!("mq_getattr.rs");
 include!("mq_open.rs");
+include!("mq_timedreceive.rs");
+include!("mq_timedsend.rs");
 include!("mq_unlink.rs");
-include!("MessageQueueCreateReadOrWrite.rs");
+include!("MessagePriority.rs");
+include!("MessageQueue.rs");
+include!("MessageQueueCreateSendOrReceive.rs");
 include!("MessageQueueCreateSettings.rs");
 include!("MessageQueueFileDescriptor.rs");
 include!("MessageQueueUnlinkError.rs");
 include!("OpenOrCreateMessageQueue.rs");
 include!("OptionalMessageQueueCreateSettings.rs");
+include!("Receive.rs");
+include!("ReceiveMessageQueueFileDescriptor.rs");
+include!("Send.rs");
+include!("SendAndReceiveMessageQueueFileDescriptor.rs");
+include!("SendMessageQueueFileDescriptor.rs");
