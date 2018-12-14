@@ -1,0 +1,171 @@
+// This file is part of simple-http-server. It is subject to the license terms in the COPYRIGHT file found in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT. No part of simple-http-server, including this file, may be copied, modified, propagated, or distributed except according to the terms contained in the COPYRIGHT file.
+// Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
+
+
+#[cfg(target_pointer_width = "32")]
+#[repr(C)]
+pub(crate) struct cmsghdr
+{
+	cmsg_len: socklen_t,
+	cmsg_level: c_int,
+	cmsg_type: c_int,
+	data: PhantomData<u8>,
+}
+
+#[cfg(target_pointer_width = "64")]
+#[repr(C)]
+pub(crate) struct cmsghdr
+{
+	#[cfg(endian = "little")] cmsg_len: socklen_t,
+	#[cfg(endian = "little")] __pad1: u32,
+	#[cfg(endian = "big")] __pad1: u32,
+	#[cfg(endian = "big")] cmsg_len: socklen_t,
+	cmsg_level: c_int,
+	cmsg_type: c_int,
+	data: PhantomData<u8>,
+}
+
+impl cmsghdr
+{
+	#[inline(always)]
+	pub(crate) fn initialize<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T])
+	{
+		let cmsg_len = Self::CMSG_LEN(size_of::<T>() * array.len());
+
+		unsafe
+		{
+			write(&mut self.cmsg_level, cmsg_level);
+			write(&mut self.cmsg_type, cmsg_type);
+			write(&mut self.cmsg_len, cmsg_len);
+		}
+
+		self.initialize_payload(array);
+	}
+
+	#[inline(always)]
+	fn initialize_payload<T: Sized>(&mut self, array: &[T])
+	{
+		let destination = self.CMSG_DATA() as *mut T;
+		unsafe { array.as_ptr().copy_to_nonoverlapping(destination, array.len()) }
+	}
+
+	/// Equivalent to the lib c macro `CMSG_DATA()`.
+	#[inline(always)]
+	pub(crate) fn data(&self) -> &[u8]
+	{
+		unsafe { from_raw_parts(&self.data as *const PhantomData<u8> as *const u8, self.length()) }
+	}
+
+	/// Equivalent to the lib c macro `CMSG_DATA()`.
+	#[inline(always)]
+	pub(crate) fn data_mut(&mut self) -> &mut [u8]
+	{
+		unsafe { from_raw_parts(&mut self.data as *mut PhantomData<u8> as *mut u8, self.length()) }
+	}
+
+	const Size: c_uint = size_of::<Self>() as c_uint;
+
+	/// Equivalent to the lib c macro `CMSG_SPACE()`.
+	pub(crate) const fn space(length: c_uint) -> c_uint
+	{
+		const PadCUint: c_uint = Self::pad as c_uint;
+
+		Self::Size + ((length + PadCUint) & !PadCUint)
+	}
+
+	#[inline(always)]
+	fn is_last(&self, parent: &msghdr) -> bool
+	{
+		cmsg.cmsg_len < Size || self.__CMSG_LEN() + size_of::<Self>() >= parent.end() - (self as *const Self as usize)
+	}
+
+	/// Equivalent to the lib c macro `CMSG_NXTHDR()`.
+	#[inline(always)]
+	pub(crate) fn next(&self, parent: &msghdr) -> Option<&Self>
+	{
+		if likely!(self.is_last(parent))
+		{
+			None
+		}
+		else
+		{
+			Some(unsafe { & * (self.__CMSG_NEXT()) })
+		}
+	}
+
+	/// Equivalent to the lib c macro `CMSG_NXTHDR()`.
+	#[inline(always)]
+	pub(crate) fn next_mut(&mut self, parent: &msghdr) -> Option<&mut Self>
+	{
+		if likely!(self.is_last(parent))
+		{
+			None
+		}
+		else
+		{
+			Some(unsafe { & * (self.__CMSG_NEXT_mut()) })
+		}
+	}
+
+	#[inline(always)]
+	fn length(&self) -> usize
+	{
+		self.cmsg_len as usize
+	}
+
+	#[inline(always)]
+	fn __CMSG_LEN(&self) -> usize
+	{
+		Self::CMSG_ALIGN(self.length())
+	}
+
+	#[inline(always)]
+	fn __CMSG_NEXT(&self) -> *const Self
+	{
+		(self as *mut Self as usize + self.__CMSG_LEN()) as *const Self
+	}
+
+	#[inline(always)]
+	fn __CMSG_NEXT_mut(&mut self) -> *mut Self
+	{
+		(self as *mut Self as usize + self.__CMSG_LEN()) as *mut Self
+	}
+
+	#[inline(always)]
+	fn CMSG_NXTHDR(&mut self, mhdr: &msghdr) -> *mut Self
+	{
+		if self.is_last()
+		{
+			null_mut()
+		}
+		else
+		{
+			self.__CMSG_NEXT()
+		}
+	}
+
+	#[inline(always)]
+	fn CMSG_DATA(&mut self) -> *mut c_uchar
+	{
+		(unsafe { (self as *mut Self).add(1) }) as *mut c_uchar
+	}
+
+	#[inline(always)]
+	const fn CMSG_ALIGN(length: usize) -> usize
+	{
+		// This rounds up `length` to the nearest size of `usize`.
+		(length + size_of::<usize>() - 1) & !(size_of::<usize>() - 1)
+	}
+
+	#[inline(always)]
+	const fn CMSG_SPACE(length: usize) -> usize
+	{
+		Self::CMSG_ALIGN(length) + Self::CMSG_ALIGN(size_of::<Self>())
+	}
+
+	#[inline(always)]
+	const fn CMSG_LEN(length: usize) -> usize
+	{
+		length + Self::CMSG_ALIGN(size_of::<Self>())
+	}
+}

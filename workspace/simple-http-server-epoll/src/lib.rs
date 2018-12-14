@@ -31,133 +31,141 @@
 //! * fanotify.
 //! * inotify.
 //! * signalfd.
-//! * sockets (TCP, UDP and the equivalent over Unix domain sockets).
+//! * sockets (TCP, UDP and the equivalent over Unix Domain Sockets).
 //! * timerfd.
+//! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
 //!
 //!
 //! ## Unsupported for now
 //!
-//! * userfaultd.
-//! * memfd.
-//! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
+//! * pipes
+//! * socketpair
+//! * anonymous Unix Domain Sockets.
+//! * Passing file descriptors and credentials over Unix Domain Sockets: see <https://keithp.com/blogs/fd-passing/> or <https://stackoverflow.com/questions/28003921/sending-file-descriptor-by-linux-socket>. Essentially, the code is complex, ugly and only useful for inter-process communication; it is almost always going to be far simpler to use FIFOs, Unix Domain Sockets with actual file paths or POSIX message queues.
+//! * Linux abstract Unix Domain Sockets.
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[macro_use] extern crate bitflags;
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[macro_use] extern crate cfg_if;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate errno;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate libc;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[macro_use] extern crate likely;
 
-
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use self::epoll::*;
-#[cfg(unix)] use ::libc::close;
-#[cfg(unix)] use ::std::os::unix::io::RawFd;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::errno::errno;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::c_char;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::c_int;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::c_void;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::ffi::CStr;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EACCES;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EAGAIN;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EBADF;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ECANCELED;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EDESTADDRREQ;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EDQUOT;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EEXIST;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EFAULT;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EFBIG;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EINTR;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EINVAL;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EIO;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EISDIR;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ELOOP;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EMFILE;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENFILE;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENODEV;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENOENT;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENOMEM;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENOSPC;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENOSYS;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::ENOTDIR;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EPERM;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::EPIPE;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::O_CLOEXEC;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::O_NONBLOCK;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::O_RDONLY;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::O_RDWR;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::O_WRONLY;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::int32_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::pid_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::read;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::sigset_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::size_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::uint8_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::uint16_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::uint32_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::uint64_t;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::libc::write;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::cmp::Ordering;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::hash::Hash;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::hash::Hasher;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::error;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::fmt;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::fmt::Debug;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::fmt::Display;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::fmt::Formatter;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::mem::size_of;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::mem::transmute;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::mem::uninitialized;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::mem::zeroed;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::os::unix::ffi::OsStrExt;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::os::unix::io::AsRawFd;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[allow(unused_imports)] use ::std::os::unix::io::FromRawFd;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::os::unix::io::IntoRawFd;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::path::Path;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::ptr::null;
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] use ::std::ptr::null_mut;
-
-
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]
-/// EPoll file descriptors.
-pub mod epoll;
+cfg_if!
+{
+	if #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]
+	{
+		use self::epoll::*;
+		use ::errno::errno;
+		use ::libc::c_char;
+		use ::libc::c_int;
+		use ::libc::c_void;
+		use ::std::ffi::CStr;
+		use ::libc::EACCES;
+		use ::libc::EAGAIN;
+		use ::libc::EBADF;
+		use ::libc::ECANCELED;
+		use ::libc::EDESTADDRREQ;
+		use ::libc::EDQUOT;
+		use ::libc::EEXIST;
+		use ::libc::EFAULT;
+		use ::libc::EFBIG;
+		use ::libc::EINTR;
+		use ::libc::EINVAL;
+		use ::libc::EIO;
+		use ::libc::EISDIR;
+		use ::libc::ELOOP;
+		use ::libc::EMFILE;
+		use ::libc::ENFILE;
+		use ::libc::ENODEV;
+		use ::libc::ENOENT;
+		use ::libc::ENOMEM;
+		use ::libc::ENOSPC;
+		use ::libc::ENOSYS;
+		use ::libc::ENOTDIR;
+		use ::libc::EPERM;
+		use ::libc::EPIPE;
+		use ::libc::O_CLOEXEC;
+		use ::libc::O_NONBLOCK;
+		use ::libc::O_RDONLY;
+		use ::libc::O_RDWR;
+		use ::libc::O_WRONLY;
+		use ::libc::int32_t;
+		use ::libc::pid_t;
+		use ::libc::read;
+		use ::libc::sigset_t;
+		use ::libc::size_t;
+		use ::libc::uint8_t;
+		use ::libc::uint16_t;
+		use ::libc::uint32_t;
+		use ::libc::uint64_t;
+		use ::libc::write;
+		use ::std::cmp::Ordering;
+		use ::std::hash::Hash;
+		use ::std::hash::Hasher;
+		use ::std::error;
+		use ::std::fmt;
+		use ::std::fmt::Debug;
+		use ::std::fmt::Display;
+		use ::std::fmt::Formatter;
+		use ::std::mem::size_of;
+		use ::std::mem::transmute;
+		use ::std::mem::uninitialized;
+		use ::std::mem::zeroed;
+		use ::std::os::unix::ffi::OsStrExt;
+		use ::std::os::unix::io::AsRawFd;
+		#[allow(unused_imports)] use ::std::os::unix::io::FromRawFd;
+		use ::std::os::unix::io::IntoRawFd;
+		use ::std::path::Path;
+		use ::std::ptr::null;
+		use ::std::ptr::null_mut;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]
-/// Event file descriptors.
-pub mod eventfd;
+		#[cfg(unix)] use ::libc::close;
+		#[cfg(unix)] use ::std::os::unix::io::RawFd;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
-/// inotify file descriptors.
-pub mod inotify;
+		/// EPoll file descriptors.
+		pub mod epoll;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
-/// POSIX message queue file descriptors.
-pub mod mq;
+		/// Event file descriptors.
+		pub mod eventfd;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
-/// fanotify file descriptors.
-pub mod fanotify;
+		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
+		/// inotify file descriptors.
+		pub mod inotify;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]
-/// Signal file descriptors.
-pub mod signalfd;
+		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
+		/// POSIX message queue file descriptors.
+		pub mod mq;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
-/// Socket file descriptors.
-pub mod socket;
+		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
+		/// fanotify file descriptors.
+		pub mod fanotify;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]
-/// Timer file descriptors.
-pub mod timerfd;
+		/// Signal file descriptors.
+		pub mod signalfd;
 
 
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] include!("CreationError.rs");
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] include!("path_bytes_without_trailing_nul.rs");
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] include!("RawFdExt.rs");
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] include!("StructReadError.rs");
-#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] include!("StructWriteError.rs");
+		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
+		/// Socket file descriptors.
+		pub mod socket;
+
+
+		/// Timer file descriptors.
+		pub mod timerfd;
+
+
+		include!("CreationError.rs");
+		include!("path_bytes_without_trailing_nul.rs");
+		include!("RawFdExt.rs");
+		include!("StructReadError.rs");
+		include!("StructWriteError.rs");
+	}
+}
+

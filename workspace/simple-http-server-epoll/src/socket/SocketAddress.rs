@@ -22,7 +22,7 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 	///
 	/// `back_log` is ignored for Unix domain sockets.
 	#[inline(always)]
-	pub fn new_streaming_server_listener(&self, back_log: u32) -> Result<ServerListenerSocketFileDescriptorEnum, NewSocketServerListenerError>
+	pub fn new_streaming_server_listener(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16, back_log: u32) -> Result<ServerListenerSocketFileDescriptorEnum, NewSocketServerListenerError>
 	{
 		use self::ServerListenerSocketFileDescriptorEnum::*;
 		use self::SocketAddr::*;
@@ -32,55 +32,55 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 		(
 			match self
 			{
-				&InternetProtocol(V4(socket_address)) => InternetProtocolVersion4(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address, back_log)?),
-				&InternetProtocol(V6(socket_address)) => InternetProtocolVersion6(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address, back_log)?),
-				&Unix(ref file_path) => UnixDomain(SocketFileDescriptor::new_streaming_unix_domain_socket_server_listener(file_path)?),
+				&InternetProtocol(V4(socket_address)) => InternetProtocolVersion4(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits, back_log)?),
+				&InternetProtocol(V6(socket_address)) => InternetProtocolVersion6(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits, back_log)?),
+				&Unix(ref file_path) => UnixDomain(SocketFileDescriptor::new_streaming_unix_domain_socket_server_listener(file_path, send_buffer_size_in_bytes)?),
 			}
 		)
 	}
 
 	/// New streaming client.
 	#[inline(always)]
-	pub fn new_streaming_client(&self) -> Result<(), NewSocketClientError>
+	pub fn new_streaming_client(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<(), NewSocketClientError>
 	{
 		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
 		match self
 		{
-			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address),
-			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address),
-			&Unix(ref file_path) => SocketFileDescriptor::new_streaming_unix_domain_socket_client(file_path),
+			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits),
+			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits),
+			&Unix(ref file_path) => SocketFileDescriptor::new_streaming_unix_domain_socket_client(file_path, send_buffer_size_in_bytes),
 		}
 	}
 
 	/// New datagram server listener.
 	#[inline(always)]
-	pub fn new_datagram_server_listener(&self) -> Result<(), NewSocketServerListenerError>
+	pub fn new_datagram_server_listener(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize) -> Result<(), NewSocketServerListenerError>
 	{
 		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
 		match self
 		{
-			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address),
-			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address),
-			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_server_listener(file_path),
+			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
+			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
+			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_server_listener(file_path, send_buffer_size_in_bytes),
 		}
 	}
 
 	/// New datagram client.
 	#[inline(always)]
-	pub fn new_datagram_client(&self) -> Result<(), NewSocketClientError>
+	pub fn new_datagram_client(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize) -> Result<(), NewSocketClientError>
 	{
 		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
 		match self
 		{
-			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address),
-			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address),
-			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_client(file_path),
+			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
+			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
+			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_client(file_path, send_buffer_size_in_bytes),
 		}
 	}
 }

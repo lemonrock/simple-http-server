@@ -55,8 +55,6 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 	#[inline(always)]
 	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>
 	{
-		use self::ErrorKind::*;
-
 		let length = buf.len();
 		if unlikely!(length == 0)
 		{
@@ -71,6 +69,8 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 		}
 		else
 		{
+			use self::ErrorKind::*;
+
 			Err
 			(
 				io::Error::from
@@ -128,8 +128,6 @@ impl<SD: SocketData> Write for StreamingSocketFileDescriptor<SD>
 	#[inline(always)]
 	fn write(&mut self, buf: &[u8]) -> io::Result<usize>
 	{
-		use self::ErrorKind::*;
-
 		let length = buf.len();
 
 		if unlikely!(length == 0)
@@ -145,6 +143,8 @@ impl<SD: SocketData> Write for StreamingSocketFileDescriptor<SD>
 		}
 		else
 		{
+			use self::ErrorKind::*;
+
 			Err
 			(
 				io::Error::from
@@ -191,61 +191,6 @@ impl<SD: SocketData> Write for StreamingSocketFileDescriptor<SD>
 	}
 }
 
-
-//TODO: setsockopt // pub const SOL_SOCKET 1
-
-/*
-
- pub fn set_read_timeout(&self, dur: Option<Duration>) -> io::Result<()> {
- self.inner.set_timeout(dur, c::SO_RCVTIMEO)
- }
-
- pub fn set_write_timeout(&self, dur: Option<Duration>) -> io::Result<()> {
- self.inner.set_timeout(dur, c::SO_SNDTIMEO)
+impl StreamingSocketFileDescriptor<sockaddr_un>
+{
 }
-
- pub fn peek(&self, buf: &mut [u8]) -> io::Result<usize> {
- self.inner.peek(buf)
-}
-
- pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
- let len = cmp::min(buf.len(), <wrlen_t>::max_value() as usize) as wrlen_t;
- let ret = cvt(unsafe {
- c::send(*self.inner.as_inner(),
- buf.as_ptr() as *const c_void,
- len,
- MSG_NOSIGNAL)
- })?;
- Ok(ret as usize)
-}
-
- pub fn set_nodelay(&self, nodelay: bool) -> io::Result<()> {
- self.inner.set_nodelay(nodelay)
-}
-
- pub fn set_ttl(&self, ttl: u32) -> io::Result<()> {
- setsockopt(&self.inner, c::IPPROTO_IP, c::IP_TTL, ttl as c_int)
-}
-
-SO_NOSIGPIPE for apple (ios, macos)
-
-
- fn recv_with_flags(&self, buf: &mut [u8], flags: c_int) -> io::Result<usize> {
- let ret = cvt(unsafe {
- libc::recv(self.0.raw(),
- buf.as_mut_ptr() as *mut c_void,
- buf.len(),
- flags)
- })?;
- Ok(ret as usize)
- }
-
- pub fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
- self.recv_with_flags(buf, 0)
- }
-
- pub fn peek(&self, buf: &mut [u8]) -> io::Result<usize> {
- self.recv_with_flags(buf, MSG_PEEK)
-}
-
-*/

@@ -55,12 +55,15 @@ use ::std::net::SocketAddrV4;
 use ::std::net::SocketAddrV6;
 use ::std::ops::Deref;
 use ::std::ops::DerefMut;
+use ::std::slice::from_raw_parts;
+use ::std::slice::from_raw_parts_mut;
 
 
 include!("accept4.rs");
 include!("AcceptedConnection.rs");
 include!("AcceptedConnectionEnum.rs");
 include!("bind.rs");
+include!("cmsghdr.rs");
 include!("connect.rs");
 include!("ConnectionFailedReason.rs");
 include!("ErrorFlags.rs");
@@ -68,20 +71,26 @@ include!("FilePathInvalidReason.rs");
 include!("in_addr.rs");
 include!("in6_addr.rs");
 include!("listen.rs");
+include!("MessageHeadersIterator.rs");
 include!("MSG_.rs");
+include!("msghdr.rs");
+include!("MutableMessageHeadersIterator.rs");
 include!("NewSocketClientError.rs");
 include!("NewSocketServerListenerError.rs");
 include!("ReceiveFlags.rs");
 include!("recvfrom.rs");
+include!("SCM_.rs");
 include!("SendFlags.rs");
 include!("ServerListenerSocketFileDescriptor.rs");
 include!("ServerListenerSocketFileDescriptorEnum.rs");
+include!("setsockopt.rs");
 include!("shutdown.rs");
-include!("socket.rs");
+include!("SO_.rs");
 include!("sockaddr_in.rs");
 include!("sockaddr_in6.rs");
 include!("sockaddr_un.rs");
 include!("sockaddr_storage.rs");
+include!("socket.rs");
 include!("SocketAcceptError.rs");
 include!("SocketAddress.rs");
 include!("SocketBindError.rs");
@@ -89,15 +98,7 @@ include!("SocketConnectError.rs");
 include!("SocketData.rs");
 include!("SocketFileDescriptor.rs");
 include!("SocketListenError.rs");
+include!("SOL_.rs");
 include!("StreamingSocketFileDescriptor.rs");
 include!("StreamingSocketFileDescriptorEnum.rs");
-
-
-/// MIPS and SPARC were early ports of Linux and so often differ in details that they shouldn't.
-#[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64")))] pub(crate) const SO_REUSEADDR: c_int = 0x0004;
-#[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64")))] pub(crate) const SO_REUSEPORT: c_int = 0x0200;
-
-/// Everything except MIPS.
-#[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))))] pub(crate) const SO_REUSEADDR: c_int = 2;
-#[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))))] pub(crate) const SO_REUSEPORT: c_int = 15;
-
+include!("TCP_.rs");
