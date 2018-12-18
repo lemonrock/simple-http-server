@@ -19,8 +19,11 @@ impl<'a> Iterator for MutableMessageHeadersIterator<'a>
 		if let Some(next_message_header) = next_message_header
 		{
 			self.next = next_message_header.next_mut(self.parent);
+			Some(next_message_header)
 		}
-
-		next_message_header
+		else
+		{
+			None
+		}
 	}
 }

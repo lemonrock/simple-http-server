@@ -180,22 +180,27 @@ impl SocketFileDescriptor<sockaddr_un>
 
 		let mut message = msghdr::new(null_mut(), 0, &mut nothing_ptr, NothingLength as u32, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len() as u32, 0);
 
-		let first_header = message.first_header().as_mut().unwrap();
-		first_header.initialize_known_fields(SOL_SOCKET, SCM_RIGHTS, size_of::<RawFd>() * maximum_file_descriptors_to_receive);
 
-		// Insert a magic value of `-1` to detect where sent file descriptors stop; no length is received.
 		const InvalidFileDescriptorSentinel: RawFd = -1;
 
-		let mut file_descriptor_current_pointer = first_header.CMSG_DATA() as *mut RawFd;
-		let file_descriptor_end_pointer = unsafe { file_descriptor_current_pointer.add(maximum_file_descriptors_to_receive) };
-		while file_descriptor_current_pointer != file_descriptor_end_pointer
+		// Insert a magic value of `-1` to detect where sent file descriptors stop as no length is specified in the data set by `recvmsg()`.
+		let file_descriptor_end_pointer =
 		{
-			unsafe
+			let mut first_header = message.first_header();
+			let mut first_header = first_header.as_mut().unwrap();
+			first_header.initialize_known_fields(SOL_SOCKET, SCM_RIGHTS, size_of::<RawFd>() * maximum_file_descriptors_to_receive);
+			let mut file_descriptor_current_pointer = first_header.CMSG_DATA_mut() as *mut RawFd;
+			let file_descriptor_end_pointer = unsafe { file_descriptor_current_pointer.add(maximum_file_descriptors_to_receive) };
+			while file_descriptor_current_pointer != file_descriptor_end_pointer
 			{
-				*file_descriptor_current_pointer = InvalidFileDescriptorSentinel;
-				file_descriptor_current_pointer = file_descriptor_current_pointer.add(1)
+				unsafe
+				{
+					*file_descriptor_current_pointer = InvalidFileDescriptorSentinel;
+					file_descriptor_current_pointer = file_descriptor_current_pointer.add(1)
+				}
 			}
-		}
+			file_descriptor_end_pointer
+		};
 
 		let result = unsafe { recvmsg(self.0, &mut message, 0) };
 
@@ -312,10 +317,14 @@ impl SocketFileDescriptor<sockaddr_un>
 		let mut ancillary_data_buffer: Vec<u8> = Vec::with_capacity(cmsghdr::CMSG_SPACE(size_of::<T>() * array.len()));
 
 		let mut msg = msghdr::new(null_mut(), 0, null_mut(), 0, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len() as u32, 0);
-		let cmsg = msg.initialize_first_header(level, type_, array);
 
+		let control_length =
+		{
+			let cmsg = msg.initialize_first_header(level, type_, array);
+			cmsg.cmsg_len
+		};
 		// Sum of the length of all control messages in the buffer.
-		msg.msg_controllen = cmsg.cmsg_len;
+		msg.msg_controllen = control_length;
 
 		let result = unsafe { sendmsg(self.0, &msg, SendFlags::NoSigPipeSignal.bits) };
 
@@ -435,8 +444,9 @@ impl SocketFileDescriptor<sockaddr_un>
 			use self::FilePathInvalidReason::*;
 
 			// NOTE: canonicalize(), metadata(), set_permissions() and directory creation is not done atomically.
+			let canonical_path = socket_file_path.canonicalize().map_err(|io_error| FilePathInvalid(CanonicalizationOfPathFailed(io_error)))?;
 
-			let parent_folder_path = socket_file_path.canonicalize().map_err(|io_error| FilePathInvalid(CanonicalizationOfPathFailed(io_error)))?.parent().ok_or(FilePathInvalid(DoesNotHaveAParentFolder))?;
+			let parent_folder_path = canonical_path.parent().ok_or(FilePathInvalid(DoesNotHaveAParentFolder))?;
 
 			match parent_folder_path.metadata()
 			{

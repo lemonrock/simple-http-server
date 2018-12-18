@@ -143,9 +143,15 @@ impl cmsghdr
 	}
 
 	#[inline(always)]
-	fn CMSG_DATA(&mut self) -> *mut c_uchar
+	fn CMSG_DATA_mut(&mut self) -> *mut c_uchar
 	{
 		(unsafe { (self as *mut Self).add(1) }) as *mut c_uchar
+	}
+
+	#[inline(always)]
+	fn CMSG_DATA(&self) -> *const c_uchar
+	{
+		(unsafe { (self as *const Self).add(1) }) as *const c_uchar
 	}
 
 	#[inline(always)]
