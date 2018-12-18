@@ -3,7 +3,7 @@
 
 
 /// An explanation of the `FilePathInvalid` error that can occur during binding of a socket instance.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 pub enum FilePathInvalidReason
 {
 	/// In preparing the parent folder, canonicalization of the supplied path failed.

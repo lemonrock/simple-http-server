@@ -16,10 +16,10 @@ pub(crate) struct cmsghdr
 #[repr(C)]
 pub(crate) struct cmsghdr
 {
-	#[cfg(endian = "little")] cmsg_len: socklen_t,
-	#[cfg(endian = "little")] __pad1: u32,
-	#[cfg(endian = "big")] __pad1: u32,
-	#[cfg(endian = "big")] cmsg_len: socklen_t,
+	#[cfg(target_endian = "little")] cmsg_len: socklen_t,
+	#[cfg(target_endian = "little")] __pad1: u32,
+	#[cfg(target_endian = "big")] __pad1: u32,
+	#[cfg(target_endian = "big")] cmsg_len: socklen_t,
 	cmsg_level: c_int,
 	cmsg_type: c_int,
 	data: PhantomData<u8>,
@@ -28,15 +28,15 @@ pub(crate) struct cmsghdr
 impl cmsghdr
 {
 	#[inline(always)]
-	pub(crate) fn initialize_known_fields<T: Sized>(&mut self, cmsg_level: c_int, data_size: usize)
+	pub(crate) fn initialize_known_fields(&mut self, cmsg_level: c_int, cmsg_type: c_int, data_size: usize)
 	{
 		let cmsg_len = Self::CMSG_LEN(data_size);
 
 		unsafe
 		{
-			write(&mut self.cmsg_level, cmsg_level);
-			write(&mut self.cmsg_type, cmsg_type);
-			write(&mut self.cmsg_len, cmsg_len);
+			::std::ptr::write(&mut self.cmsg_level, cmsg_level);
+			::std::ptr::write(&mut self.cmsg_type, cmsg_type);
+			::std::ptr::write(&mut self.cmsg_len, cmsg_len as u32);
 		}
 	}
 
@@ -66,23 +66,15 @@ impl cmsghdr
 	#[inline(always)]
 	pub(crate) fn data_mut(&mut self) -> &mut [u8]
 	{
-		unsafe { from_raw_parts(&mut self.data as *mut PhantomData<u8> as *mut u8, self.length()) }
+		unsafe { from_raw_parts_mut(&mut self.data as *mut PhantomData<u8> as *mut u8, self.length()) }
 	}
 
 	const Size: c_uint = size_of::<Self>() as c_uint;
 
-	/// Equivalent to the lib c macro `CMSG_SPACE()`.
-	pub(crate) const fn space(length: c_uint) -> c_uint
-	{
-		const PadCUint: c_uint = Self::pad as c_uint;
-
-		Self::Size + ((length + PadCUint) & !PadCUint)
-	}
-
 	#[inline(always)]
 	fn is_last(&self, parent: &msghdr) -> bool
 	{
-		cmsg.cmsg_len < Size || self.__CMSG_LEN() + size_of::<Self>() >= parent.end() - (self as *const Self as usize)
+		self.cmsg_len < Self::Size || self.__CMSG_LEN() + size_of::<Self>() >= parent.end() - (self as *const Self as usize)
 	}
 
 	/// Equivalent to the lib c macro `CMSG_NXTHDR()`.
@@ -109,7 +101,7 @@ impl cmsghdr
 		}
 		else
 		{
-			Some(unsafe { & * (self.__CMSG_NEXT_mut()) })
+			Some(unsafe { & mut * (self.__CMSG_NEXT_mut()) })
 		}
 	}
 
@@ -128,7 +120,7 @@ impl cmsghdr
 	#[inline(always)]
 	fn __CMSG_NEXT(&self) -> *const Self
 	{
-		(self as *mut Self as usize + self.__CMSG_LEN()) as *const Self
+		(self as *const Self as usize + self.__CMSG_LEN()) as *const Self
 	}
 
 	#[inline(always)]
@@ -140,13 +132,13 @@ impl cmsghdr
 	#[inline(always)]
 	fn CMSG_NXTHDR(&mut self, mhdr: &msghdr) -> *mut Self
 	{
-		if self.is_last()
+		if self.is_last(mhdr)
 		{
 			null_mut()
 		}
 		else
 		{
-			self.__CMSG_NEXT()
+			self.__CMSG_NEXT() as *mut _
 		}
 	}
 

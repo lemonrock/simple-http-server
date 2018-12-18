@@ -8,9 +8,16 @@ use ::std::path::Path;
 
 
 /// Represents socket data.
-pub trait SocketData: Sized
+pub trait SocketData: Sized + Default
 {
 	/// Socket family (eg `AF_UNIX`).
 	#[inline(always)]
 	fn family(&self) -> sa_family_t;
+
+	#[doc(hidden)]
+	#[inline(always)]
+	fn specialized_drop(socket_file_descriptor: &mut SocketFileDescriptor<Self>)
+	{
+		socket_file_descriptor.0.close()
+	}
 }

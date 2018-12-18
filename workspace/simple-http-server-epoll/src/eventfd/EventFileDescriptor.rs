@@ -123,7 +123,7 @@ impl EventFileDescriptor
 						EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
 						EISDIR => panic!("`fd` refers to a directory"),
 
-						_ => panic!("Unexpected error `{}`", error_number),
+						_ => panic!("Unexpected error `{}`", errno()),
 					}
 				}
 

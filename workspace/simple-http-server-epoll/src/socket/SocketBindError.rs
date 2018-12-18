@@ -3,7 +3,7 @@
 
 
 /// An error that can occur during binding of a socket instance.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 pub enum SocketBindError
 {
 	/// Permission denied.

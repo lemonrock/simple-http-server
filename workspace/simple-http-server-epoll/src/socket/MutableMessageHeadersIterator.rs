@@ -16,7 +16,7 @@ impl<'a> Iterator for MutableMessageHeadersIterator<'a>
 	fn next(&mut self) -> Option<Self::Item>
 	{
 		let next_message_header = self.next.take();
-		if let Some(next) = next_message_header
+		if let Some(next_message_header) = next_message_header
 		{
 			self.next = next_message_header.next_mut(self.parent);
 		}

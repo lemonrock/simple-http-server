@@ -24,12 +24,12 @@ impl<SD: SocketData> IntoRawFd for SocketFileDescriptor<SD>
 	}
 }
 
-impl Drop for SocketFileDescriptor<sockaddr_in>
+impl<SD: SocketData> Drop for SocketFileDescriptor<SD>
 {
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		self.0.close()
+		SD::specialized_drop(self)
 	}
 }
 
@@ -81,7 +81,7 @@ impl SocketFileDescriptor<sockaddr_in>
 	#[inline(always)]
 	fn connect_internet_protocol_version_4_socket(&self, socket_address: SocketAddrV4) -> Result<(), SocketConnectError>
 	{
-		self.connect(&Self::internet_protocol_version_4_socket_data(socket_address), size_of::<>(sockaddr_in))
+		self.connect(&Self::internet_protocol_version_4_socket_data(socket_address), size_of::<sockaddr_in>())
 	}
 
 	#[inline(always)]
@@ -94,15 +94,6 @@ impl SocketFileDescriptor<sockaddr_in>
 	fn internet_protocol_version_4_socket_data(socket_address: SocketAddrV4) -> sockaddr_in
 	{
 		unsafe { transmute(socket_address) }
-	}
-}
-
-impl Drop for SocketFileDescriptor<sockaddr_in6>
-{
-	#[inline(always)]
-	fn drop(&mut self)
-	{
-		self.0.close()
 	}
 }
 
@@ -154,7 +145,7 @@ impl SocketFileDescriptor<sockaddr_in6>
 	#[inline(always)]
 	fn connect_internet_protocol_version_6_socket(&self, socket_address: SocketAddrV6) -> Result<(), SocketConnectError>
 	{
-		self.connect(&Self::internet_protocol_version_6_socket_data(socket_address), size_of::<>(sockaddr_in6))
+		self.connect(&Self::internet_protocol_version_6_socket_data(socket_address), size_of::<sockaddr_in6>())
 	}
 
 	#[inline(always)]
@@ -170,62 +161,6 @@ impl SocketFileDescriptor<sockaddr_in6>
 	}
 }
 
-impl Drop for SocketFileDescriptor<sockaddr_un>
-{
-	#[inline(always)]
-	fn drop(&mut self)
-	{
-		let local_address = self.local_address();
-
-		self.0.close();
-
-		fn unlink_socket_file_path(local_address: &sockaddr_un, length: usize)
-		{
-			let is_unnamed = length <= size_of::<sa_family_t>();
-			if unlikely!(is_unnamed)
-			{
-				return
-			}
-
-			const AsciiNull: i8 = 0;
-
-			let is_abstract = unsafe { local_address.sun_path.get_unchecked(0) } == AsciiNull;
-			if unlikely!(is_abstract)
-			{
-				return
-			}
-
-			let last_byte = unsafe { local_address.sun_path.get_unchecked(sockaddr_un::PathLength - 1) };
-			let last_byte_is_zero_terminated = last_byte == AsciiNull;
-			if likely!(last_byte_is_zero_terminated)
-			{
-				unsafe
-				{
-					// NOTE: Result ignored; nothing we can do about it.
-					unlink(&local_address.sun_path);
-				}
-			}
-			else
-			{
-				unsafe
-				{
-					let mut copy: [c_char; sockaddr_un::PathLength + 1] = uninitialized();
-					copy.as_mut_ptr().copy_from_nonoverlapping(&local_address.sun_path, sockaddr_un::PathLength);
-					*copy.get_unchecked_mut(sockaddr_un::PathLength) = AsciiNull;
-
-					// NOTE: Result ignored; nothing we can do about it.
-					unlink(&copy)
-				}
-			}
-		}
-
-		if let Ok((local_address, length)) = local_address
-		{
-			unlink_socket_file_path(local_address, length)
-		}
-	}
-}
-
 impl SocketFileDescriptor<sockaddr_un>
 {
 	pub fn receive_file_descriptors(&self, maximum_file_descriptors_to_receive: usize) -> Result<Vec<RawFd>, ReceiveFileDescriptorsError>
@@ -236,16 +171,16 @@ impl SocketFileDescriptor<sockaddr_un>
 
 		const NothingLength: usize = 1;
 
-		let mut nothing: c_char = b'A';
+		let mut nothing = b'A';
 		let mut nothing_ptr = iovec
 		{
-			iov_base: &mut nothing,
+			iov_base: &mut nothing as *mut _ as *mut _,
 			iov_len: NothingLength,
 		};
 
-		let mut msgh = msghdr::new(null_mut(), 0, &nothing_ptr, NothingLength, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len(), 0);
+		let mut message = msghdr::new(null_mut(), 0, &mut nothing_ptr, NothingLength as u32, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len() as u32, 0);
 
-		let first_header = msgh.first_header().as_mut().unwrap();
+		let first_header = message.first_header().as_mut().unwrap();
 		first_header.initialize_known_fields(SOL_SOCKET, SCM_RIGHTS, size_of::<RawFd>() * maximum_file_descriptors_to_receive);
 
 		// Insert a magic value of `-1` to detect where sent file descriptors stop; no length is received.
@@ -262,7 +197,7 @@ impl SocketFileDescriptor<sockaddr_un>
 			}
 		}
 
-		let result = unsafe { recvmsg(self.0, &msgh, 0) };
+		let result = unsafe { recvmsg(self.0, &mut message, 0) };
 
 		use self::ReceiveFileDescriptorsError::*;
 
@@ -281,24 +216,25 @@ impl SocketFileDescriptor<sockaddr_un>
 				EINVAL => panic!("`fd` is attached to an object which is unsuitable for reading OR was created via a call to `timerfd_create()` and the wrong size buffer was given to `read()`"),
 				EISDIR => panic!("`fd` refers to a directory"),
 
-				_ => panic!("Unexpected error `{}`", error_number),
+				_ => panic!("Unexpected error `{}`", errno()),
 			};
-			Err(Read(read_error))
+
+			return Err(Read(read_error))
 		}
 		else if unlikely!(result < -1)
 		{
 			unreachable!();
 		}
 
-		match msgh.first_header()
+		match message.first_header()
 		{
-			None => Ok(None),
+			None => Ok(vec![]),
 
 			Some(first_header) =>
 			{
-				if unlikely!(first_header.next().is_some())
+				if unlikely!(first_header.next(&message).is_some())
 				{
-					Err(MoreThanOneHeader)
+					return Err(MoreThanOneHeader)
 				}
 
 				match first_header.cmsg_level
@@ -375,7 +311,7 @@ impl SocketFileDescriptor<sockaddr_un>
 	{
 		let mut ancillary_data_buffer: Vec<u8> = Vec::with_capacity(cmsghdr::CMSG_SPACE(size_of::<T>() * array.len()));
 
-		let mut msg = msghdr::new(null_mut(), 0, null_mut(), 0, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len(), 0);
+		let mut msg = msghdr::new(null_mut(), 0, null_mut(), 0, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len() as u32, 0);
 		let cmsg = msg.initialize_first_header(level, type_, array);
 
 		// Sum of the length of all control messages in the buffer.
@@ -491,9 +427,9 @@ impl SocketFileDescriptor<sockaddr_un>
 
 	/// `parent_folder_mode` is a octal mode, eg 0o0755.
 	#[inline(always)]
-	fn bind_unix_domain_socket(&self, socket_file_path: impl AsRef<Path>, parent_folder_mode: u32) -> Result<(), SocketBindError>
+	fn bind_unix_domain_socket(&self, unix_socket_address: &UnixSocketAddress<impl AsRef<Path>>) -> Result<(), SocketBindError>
 	{
-		fn ensure_parent_folder_exists_with_correct_permissions(socket_file_path: &Path) -> Result<(), SocketBindError>
+		fn ensure_parent_folder_exists_with_correct_permissions(socket_file_path: &Path, parent_folder_mode: u32) -> Result<(), SocketBindError>
 		{
 			use self::SocketBindError::FilePathInvalid;
 			use self::FilePathInvalidReason::*;
@@ -510,9 +446,9 @@ impl SocketFileDescriptor<sockaddr_un>
 					{
 						return Err(FilePathInvalid(ParentExistsAndIsNotAFolder))
 					}
-					let permissions = metadata.permissions();
+					let mut permissions = metadata.permissions();
 					permissions.set_mode(parent_folder_mode);
-					set_permissions(&parent_folder_path).map_err(|io_error| FilePathInvalid(SetParentFolderPermissions(io_error)))
+					set_permissions(&parent_folder_path, permissions).map_err(|io_error| FilePathInvalid(SetParentFolderPermissions(io_error)))
 				}
 
 				Err(_) => DirBuilder::new().recursive(true).mode(parent_folder_mode).create(&parent_folder_path).map_err(|io_error| FilePathInvalid(ParentFolderRecursiveCreationFailed(io_error))),
@@ -543,11 +479,11 @@ impl SocketFileDescriptor<sockaddr_un>
 
 		let (local_address, length) = match unix_socket_address
 		{
-			&File { ref socket_file_path, .. } =>
+			&File { ref socket_file_path, parent_folder_mode } =>
 			{
-				ensure_parent_folder_exists_with_correct_permissions(socket_file_path.as_ref())?;
+				ensure_parent_folder_exists_with_correct_permissions(socket_file_path.as_ref(), parent_folder_mode)?;
 				remove_if_previously_abandoned_socket_file_path(socket_file_path.as_ref())?;
-				Self::unix_domain_socket_data_from_socket_file_path(socket_file_path);
+				Self::unix_domain_socket_data_from_socket_file_path(socket_file_path)
 			}
 
 			&Abstract { ref abstract_name } => Self::unix_domain_socket_data_from_abstract_name(&abstract_name[..]),
@@ -567,7 +503,7 @@ impl SocketFileDescriptor<sockaddr_un>
 		unsafe { socket_data.sun_path.as_mut_ptr().copy_from_nonoverlapping(path_bytes.as_ptr() as *const _, path_bytes_length) };
 
 		// length is offsetof(struct sockaddr_un, sun_path) + strlen(sun_path) + 1
-		(socket_data, size_of::<>(sa_family_t) + path_bytes_length + 1)
+		(socket_data, size_of::<sa_family_t>() + path_bytes_length + 1)
 	}
 
 	#[inline(always)]
@@ -578,10 +514,10 @@ impl SocketFileDescriptor<sockaddr_un>
 		let path_bytes_length = abstract_name.len();
 		debug_assert!(path_bytes_length < sockaddr_un::PathLength, "Path converted to bytes is equal to or more than sockaddr_un::PathLength bytes long");
 
-		unsafe { socket_data.sun_path.as_mut_ptr().copy_from_nonoverlapping(unsafe { abstract_name.as_ptr().add(1) as *const _ }, path_bytes_length) };
+		unsafe { socket_data.sun_path.as_mut_ptr().copy_from_nonoverlapping(abstract_name.as_ptr().add(1) as *const _, path_bytes_length) };
 
 		// length is offsetof(struct sockaddr_un, sun_path) + strlen(sun_path) + 1
-		(socket_data, size_of::<>(sa_family_t) + path_bytes_length + 1)
+		(socket_data, size_of::<sa_family_t>() + path_bytes_length + 1)
 	}
 }
 
@@ -592,7 +528,7 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	pub fn local_address(&self) -> Result<(SD, usize), ()>
 	{
 		let mut socket_address = SD::default();
-		let mut socket_address_length = size_of::<SD>();
+		let mut socket_address_length = size_of::<SD>() as u32;
 		let result = unsafe { getsockname(self.0, &mut socket_address as *mut _ as *mut _, &mut socket_address_length) };
 
 		if likely!(result == 0)
@@ -742,7 +678,7 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	#[inline(always)]
 	fn set_socket_option<T>(&self, level: c_int, optname: c_int, value: &T)
 	{
-		let result = unsafe { setsockopt(self.0, level, value as *const _ as *const _, size_of::<T>() as socklen_t) };
+		let result = unsafe { setsockopt(self.0, level, optname, value as *const _ as *const _, size_of::<T>() as socklen_t) };
 
 		if likely!(result == 0)
 		{
@@ -790,8 +726,8 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	{
 		debug_assert!(receive_buffer_size_in_bytes >= 256, "receive_buffer_size_in_bytes must be at least 256 bytess; maximum is in `/proc/sys/net/core/rmem_max`");
 
-		let send_buffer_halved: c_int = (send_buffer_size_in_bytes / 2) as c_int;
-		self.set_socket_option(SOL_SOCKET, SO_SNDBUF, &send_buffer_halved);
+		let receive_buffer_halved: c_int = (receive_buffer_size_in_bytes / 2) as c_int;
+		self.set_socket_option(SOL_SOCKET, SO_SNDBUF, &receive_buffer_halved);
 	}
 
 	#[inline(always)]
@@ -816,7 +752,7 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	fn set_tcp_max_SYN_transmits(&self, maximum_SYN_transmits: u16)
 	{
 		let maximum_SYN_transmits: i32 = maximum_SYN_transmits as i32;
-		this.set_socket_option(SOL_TCP, TCP_SYNCNT, &maximum_SYN_transmits);
+		self.set_socket_option(SOL_TCP, TCP_SYNCNT, &maximum_SYN_transmits);
 	}
 
 	#[inline(always)]
@@ -834,14 +770,14 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 			l_onoff: 1,
 			l_linger: linger_seconds as i32,
 		};
-		this.set_socket_option(SOL_SOCKET, SO_LINGER, &linger);
+		self.set_socket_option(SOL_SOCKET, SO_LINGER, &linger);
 	}
 
 	#[inline(always)]
 	fn set_internet_protocol_socket_options(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize)
 	{
-		this.set_send_buffer_size(send_buffer_size_in_bytes);
-		this.set_receive_buffer_size(receive_buffer_size_in_bytes);
+		self.set_send_buffer_size(send_buffer_size_in_bytes);
+		self.set_receive_buffer_size(receive_buffer_size_in_bytes);
 	}
 
 	#[inline(always)]
@@ -850,47 +786,47 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 		debug_assert!(maximum_SYN_transmits > 0, "maximum_SYN_transmits is zero");
 		//TODO: SOL_SOCKET,SO_BINDTODEVICE,CStr => force use of device such as `eth0`.
 
-		this.set_socket_option_true(SOL_SOCKET, SO_KEEPALIVE);
+		self.set_socket_option_true(SOL_SOCKET, SO_KEEPALIVE);
 
-		this.set_out_of_band_inline();
+		self.set_out_of_band_inline();
 
-		this.disable_nagle_algorithm();
+		self.disable_nagle_algorithm();
 
 		let idles_before_keep_alive_seconds: i32 = idles_before_keep_alive_seconds as i32;
-		this.set_socket_option(SOL_TCP, TCP_KEEPALIVE, &idles_before_keep_alive_seconds);
+		self.set_socket_option(SOL_TCP, TCP_KEEPIDLE, &idles_before_keep_alive_seconds);
 
 		let keep_alive_interval_seconds: i32 = keep_alive_interval_seconds as i32;
-		this.set_socket_option(SOL_TCP, TCP_KEEPINTVL, &keep_alive_interval_seconds);
+		self.set_socket_option(SOL_TCP, TCP_KEEPINTVL, &keep_alive_interval_seconds);
 
 		let maximum_keep_alive_probes: i32 = maximum_keep_alive_probes as i32;
-		this.set_socket_option(SOL_TCP, TCP_KEEPCNT, &maximum_keep_alive_probes);
+		self.set_socket_option(SOL_TCP, TCP_KEEPCNT, &maximum_keep_alive_probes);
 
-		this.set_tcp_linger(linger_seconds);
+		self.set_tcp_linger(linger_seconds);
 
 		let linger_in_FIN_WAIT2_seconds: i32 = linger_in_FIN_WAIT2_seconds as i32;
-		this.set_socket_option(SOL_TCP, TCP_LINGER2, &linger_in_FIN_WAIT2_seconds);
+		self.set_socket_option(SOL_TCP, TCP_LINGER2, &linger_in_FIN_WAIT2_seconds);
 
-		this.set_tcp_max_SYN_transmits(maximum_SYN_transmits);
+		self.set_tcp_max_SYN_transmits(maximum_SYN_transmits);
 	}
 
 	#[inline(always)]
 	fn set_udp_socket_options(&self)
 	{
-		this.set_broadcast();
+		self.set_broadcast();
 	}
 
 	#[inline(always)]
 	fn set_internet_protocol_server_listener_socket_options(&self)
 	{
-		this.set_socket_option_true(SOL_SOCKET, SO_REUSEADDR);
-		this.set_socket_option_true(SOL_SOCKET, SO_REUSEPORT);
+		self.set_socket_option_true(SOL_SOCKET, SO_REUSEADDR);
+		self.set_socket_option_true(SOL_SOCKET, SO_REUSEPORT);
 	}
 
 	#[inline(always)]
 	fn set_tcp_server_listener_socket_options(&self)
 	{
-		this.set_socket_option_true(SOL_TCP, TCP_DEFER_ACCEPT);
-		this.set_socket_option_true(SOL_TCP, TCP_FASTOPEN);
+		self.set_socket_option_true(SOL_TCP, TCP_DEFER_ACCEPT);
+		self.set_socket_option_true(SOL_TCP, TCP_FASTOPEN);
 	}
 
 	#[inline(always)]

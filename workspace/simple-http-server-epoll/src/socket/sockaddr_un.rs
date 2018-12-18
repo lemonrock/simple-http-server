@@ -88,6 +88,60 @@ impl SocketData for sockaddr_un
 	{
 		self.sun_family
 	}
+
+	#[inline(always)]
+	fn specialized_drop(socket_file_descriptor: &mut SocketFileDescriptor<Self>)
+	{
+		let local_address = socket_file_descriptor.local_address();
+
+		socket_file_descriptor.0.close();
+
+		fn unlink_socket_file_path(local_address: &sockaddr_un, length: usize)
+		{
+			let is_unnamed = length <= size_of::<sa_family_t>();
+			if unlikely!(is_unnamed)
+			{
+				return
+			}
+
+			const AsciiNull: i8 = 0;
+
+			let first_byte = unsafe { *local_address.sun_path.get_unchecked(0) };
+			let is_abstract = first_byte == AsciiNull;
+			if unlikely!(is_abstract)
+			{
+				return
+			}
+
+			let last_byte = unsafe { *local_address.sun_path.get_unchecked(sockaddr_un::PathLength - 1) };
+			let last_byte_is_zero_terminated = last_byte == AsciiNull;
+			if likely!(last_byte_is_zero_terminated)
+			{
+				unsafe
+				{
+					// NOTE: Result ignored; nothing we can do about it.
+					unlink(local_address.sun_path.as_ptr());
+				}
+			}
+			else
+			{
+				unsafe
+				{
+					let mut copy: [c_char; sockaddr_un::PathLength + 1] = uninitialized();
+					copy.as_mut_ptr().copy_from_nonoverlapping(local_address.sun_path.as_ptr(), sockaddr_un::PathLength);
+					*copy.get_unchecked_mut(sockaddr_un::PathLength) = AsciiNull;
+
+					// NOTE: Result ignored; nothing we can do about it.
+					unlink(copy.as_ptr());
+				}
+			}
+		}
+
+		if let Ok((local_address, length)) = local_address
+		{
+			unlink_socket_file_path(&local_address, length)
+		}
+	}
 }
 
 impl sockaddr_un

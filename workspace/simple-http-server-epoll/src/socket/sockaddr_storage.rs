@@ -17,15 +17,6 @@ pub(crate) struct sockaddr_storage
 	__ss_pad2: [u8; 128 - size_of::<sa_family_t>() - size_of::<size_t>()],
 }
 
-impl SocketData for sockaddr_storage
-{
-	#[inline(always)]
-	fn family(&self) -> sa_family_t
-	{
-		self.ss_family
-	}
-}
-
 impl Debug for sockaddr_storage
 {
 	#[inline(always)]

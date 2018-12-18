@@ -3,7 +3,7 @@
 
 
 /// An error that can occur during creation of a socket listener.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 pub enum NewSocketServerListenerError
 {
 	/// Creation.

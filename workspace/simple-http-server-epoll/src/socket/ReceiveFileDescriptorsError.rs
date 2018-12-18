@@ -16,19 +16,19 @@ pub enum ReceiveFileDescriptorsError
 	WasNotScmRights,
 }
 
-impl Display for StructReadError
+impl Display for ReceiveFileDescriptorsError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<StructReadError as Debug>::fmt(self, f)
+		<ReceiveFileDescriptorsError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for StructReadError
+impl error::Error for ReceiveFileDescriptorsError
 {
 	#[inline(always)]
-	fn source(&self) -> Option<&(dyn Error + 'static)>
+	fn source(&self) -> Option<&(dyn error::Error + 'static)>
 	{
 		use self::ReceiveFileDescriptorsError::*;
 

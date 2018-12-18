@@ -17,23 +17,32 @@ pub(crate) struct msghdr
 }
 
 #[cfg(target_pointer_width = "64")]
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub(crate) struct msghdr
 {
 	msg_name: *mut c_void,
 	msg_namelen: socklen_t,
 	msg_iov: *mut iovec,
-	#[cfg(endian = "little")] msg_iovlen: socklen_t,
-	#[cfg(endian = "little")] __pad1: u32,
-	#[cfg(endian = "big")] __pad1: u32,
-	#[cfg(endian = "big")] msg_iovlen: socklen_t,
+	#[cfg(target_endian = "little")] msg_iovlen: socklen_t,
+	#[cfg(target_endian = "little")] __pad1: u32,
+	#[cfg(target_endian = "big")] __pad1: u32,
+	#[cfg(target_endian = "big")] msg_iovlen: socklen_t,
 	msg_control: *mut c_void,
-	#[cfg(endian = "little")] msg_controllen: socklen_t,
-	#[cfg(endian = "little")] __pad2: u32,
-	#[cfg(endian = "big")] __pad2: u32,
-	#[cfg(endian = "big")] msg_controllen: socklen_t,
+	#[cfg(target_endian = "little")] msg_controllen: socklen_t,
+	#[cfg(target_endian = "little")] __pad2: u32,
+	#[cfg(target_endian = "big")] __pad2: u32,
+	#[cfg(target_endian = "big")] msg_controllen: socklen_t,
 	msg_flags: c_int,
+}
+
+impl Default for msghdr
+{
+	#[inline(always)]
+	fn default() -> Self
+	{
+		unsafe { zeroed() }
+	}
 }
 
 impl msghdr
@@ -71,10 +80,11 @@ impl msghdr
 	}
 
 	#[inline(always)]
-	pub(crate) fn initialize_first_header<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T])
+	pub(crate) fn initialize_first_header<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T]) -> &mut cmsghdr
 	{
 		let first_header = self.first_header_mut().as_mut().unwrap();
 		first_header.initialize(cmsg_level, cmsg_type, array);
+		first_header
 	}
 
 	#[inline(always)]

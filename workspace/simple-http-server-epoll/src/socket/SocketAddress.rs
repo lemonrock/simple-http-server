@@ -9,7 +9,7 @@ pub enum SocketAddress<FilePath: AsRef<Path>>
 	InternetProtocol(SocketAddr),
 
 	/// An Unix Domain Socket, either as a file or as an abstract name.
-	Unix(UnixSocketAddress),
+	Unix(UnixSocketAddress<FilePath>),
 }
 
 
