@@ -6,6 +6,24 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum FilePathInvalidReason
 {
+	/// In preparing the parent folder, canonicalization of the supplied path failed.
+	CanonicalizationOfPathFailed(io::Error),
+
+	/// In preparing the parent folder it was discovered that the supplied path does not have a parent folder.
+	DoesNotHaveAParentFolder,
+
+	/// In preparing the parent folder it was discovered that the supplied path's parent exists and is not a folder.
+	ParentExistsAndIsNotAFolder,
+
+	/// Setting permissions on an (extant) parent folder failed.
+	SetParentFolderPermissions(io::Error),
+
+	/// Creating the parent folder failed.
+	ParentFolderRecursiveCreationFailed(io::Error),
+
+	/// Could not remove a previous file path (either a file or a folder) that represented an Unix Domain Socket.
+	CouldNotRemovePreviousSocketFilePath(io::Error),
+
 	/// A nonexistent interface was requested or the requested address was not local (eg it was on a NFS mount).
 	AddressUnavailable,
 

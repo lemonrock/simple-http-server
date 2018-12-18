@@ -28,9 +28,9 @@ pub(crate) struct cmsghdr
 impl cmsghdr
 {
 	#[inline(always)]
-	pub(crate) fn initialize<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T])
+	pub(crate) fn initialize_known_fields<T: Sized>(&mut self, cmsg_level: c_int, data_size: usize)
 	{
-		let cmsg_len = Self::CMSG_LEN(size_of::<T>() * array.len());
+		let cmsg_len = Self::CMSG_LEN(data_size);
 
 		unsafe
 		{
@@ -38,6 +38,12 @@ impl cmsghdr
 			write(&mut self.cmsg_type, cmsg_type);
 			write(&mut self.cmsg_len, cmsg_len);
 		}
+	}
+
+	#[inline(always)]
+	pub(crate) fn initialize<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T])
+	{
+		self.initialize_known_fields(cmsg_level, cmsg_type, size_of::<T>() * array.len());
 
 		self.initialize_payload(array);
 	}

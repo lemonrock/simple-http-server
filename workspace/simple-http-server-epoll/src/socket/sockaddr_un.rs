@@ -12,8 +12,10 @@ pub struct sockaddr_un
 
 	/// Zero-terminated C String.
 	///
-	/// If the string is exactly 108 bytes, it is not terminated.
-	pub sun_path: [c_char; 108]
+	/// ***Caution!***
+	///
+	/// If the string is exactly `sockaddr_un::PathLength` bytes, it is not ASCII NUL terminated.
+	pub sun_path: [c_char; sockaddr_un::PathLength]
 }
 
 impl Default for sockaddr_un
@@ -86,4 +88,10 @@ impl SocketData for sockaddr_un
 	{
 		self.sun_family
 	}
+}
+
+impl sockaddr_un
+{
+	/// Length of the `sun_path` entry.
+	pub const PathLength: usize = 108;
 }

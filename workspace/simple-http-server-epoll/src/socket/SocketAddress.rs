@@ -8,9 +8,10 @@ pub enum SocketAddress<FilePath: AsRef<Path>>
 	/// An Internet Protocol (IP) version 4 or 6 socket.
 	InternetProtocol(SocketAddr),
 
-	/// An Unix Domain Socket file path of up to 108 bytes.
-	Unix(FilePath),
+	/// An Unix Domain Socket, either as a file or as an abstract name.
+	Unix(UnixSocketAddress),
 }
+
 
 impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 {
@@ -34,7 +35,7 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 			{
 				&InternetProtocol(V4(socket_address)) => InternetProtocolVersion4(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits, back_log)?),
 				&InternetProtocol(V6(socket_address)) => InternetProtocolVersion6(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits, back_log)?),
-				&Unix(ref file_path) => UnixDomain(SocketFileDescriptor::new_streaming_unix_domain_socket_server_listener(file_path, send_buffer_size_in_bytes)?),
+				&Unix(ref unix_socket_address) => UnixDomain(SocketFileDescriptor::new_streaming_unix_domain_socket_server_listener(unix_socket_address, send_buffer_size_in_bytes)?),
 			}
 		)
 	}
@@ -50,7 +51,7 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 		{
 			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits),
 			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits),
-			&Unix(ref file_path) => SocketFileDescriptor::new_streaming_unix_domain_socket_client(file_path, send_buffer_size_in_bytes),
+			&Unix(ref unix_socket_address) => SocketFileDescriptor::new_streaming_unix_domain_socket_client(unix_socket_address, send_buffer_size_in_bytes),
 		}
 	}
 
@@ -65,7 +66,7 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 		{
 			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
 			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_server_listener(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
-			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_server_listener(file_path, send_buffer_size_in_bytes),
+			&Unix(ref unix_socket_address) => SocketFileDescriptor::new_datagram_unix_domain_socket_server_listener(unix_socket_address, send_buffer_size_in_bytes),
 		}
 	}
 
@@ -80,7 +81,7 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 		{
 			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_4_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
 			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_user_datagram_protocol_over_internet_protocol_version_6_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes),
-			&Unix(ref file_path) => SocketFileDescriptor::new_datagram_unix_domain_socket_client(file_path, send_buffer_size_in_bytes),
+			&Unix(ref unix_socket_address) => SocketFileDescriptor::new_datagram_unix_domain_socket_client(unix_socket_address, send_buffer_size_in_bytes),
 		}
 	}
 }

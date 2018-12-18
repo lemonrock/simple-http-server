@@ -94,8 +94,6 @@ impl EventFileDescriptor
 	#[inline(always)]
 	pub fn read(&self) -> Result<u64, StructReadError>
 	{
-		use self::StructReadError::*;
-
 		let mut value: u64 = unsafe { uninitialized() };
 
 		const SizeOfRead: usize = size_of::<u64>();
@@ -112,8 +110,9 @@ impl EventFileDescriptor
 			{
 				-1 =>
 				{
-					let error_number = errno();
-					match error_number.0
+					use self::StructReadError::*;
+
+					match errno().0
 					{
 						EAGAIN => Err(WouldBlock),
 						ECANCELED => Err(Cancelled),

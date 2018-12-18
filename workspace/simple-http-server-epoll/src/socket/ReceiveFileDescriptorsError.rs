@@ -2,18 +2,18 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during read.
+/// An error that can occur during receive of file descriptors.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum StructReadError
+pub enum ReceiveFileDescriptorsError
 {
-	/// There are no timer events to read at this time.
-	WouldBlock,
+	/// A read error that might be possible to handle.
+	Read(StructReadError),
 
-	/// Timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
-	Cancelled,
+	MoreThanOneHeader,
 
-	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
-	Interrupted,
+	WasNotSocketLevelMessage,
+
+	WasNotScmRights,
 }
 
 impl Display for StructReadError
@@ -27,4 +27,20 @@ impl Display for StructReadError
 
 impl error::Error for StructReadError
 {
+	#[inline(always)]
+	fn source(&self) -> Option<&(dyn Error + 'static)>
+	{
+		use self::ReceiveFileDescriptorsError::*;
+
+		match self
+		{
+			&Read(ref error) => Some(error),
+
+			&MoreThanOneHeader => None,
+
+			&WasNotSocketLevelMessage => None,
+
+			&WasNotScmRights => None,
+		}
+	}
 }

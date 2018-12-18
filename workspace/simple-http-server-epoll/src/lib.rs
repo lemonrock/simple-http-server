@@ -27,24 +27,40 @@
 //!
 //! ## Supported File Descriptors
 //!
+//! * epoll.
 //! * eventfd.
 //! * fanotify.
 //! * inotify.
+//! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
 //! * signalfd.
 //! * sockets (TCP, UDP and the equivalent over Unix Domain Sockets).
 //! * timerfd.
-//! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
+//!
+//!
+//! ## Unix Domain Sockets
+//!
+//!
+//! ### When using file paths
+//!
+//! * Every effort is made to create the socket file path cleanly;
+//! * To make sure all parent folders exist;
+//! * To make sure parent folder permissions are correctly set;
+//! * To remove any stale files;
+//! * To remove socket file paths on drop (close).
+//!
+//! The above features may not work correctly after the use of `seccomp` system calls (particularly the attempt to delete a socket file path on close).
 //!
 //!
 //! ## Unsupported for now
 //!
-//! * pipes
-//! * socketpair
-//! * anonymous Unix Domain Sockets.
-//! * Passing file descriptors and credentials over Unix Domain Sockets: see <https://keithp.com/blogs/fd-passing/> or <https://stackoverflow.com/questions/28003921/sending-file-descriptor-by-linux-socket>. Essentially, the code is complex, ugly and only useful for inter-process communication; it is almost always going to be far simpler to use FIFOs, Unix Domain Sockets with actual file paths or POSIX message queues.
+//! * `pipe2()`.
+//! * `socketpair()`.
+//! * Anonymous Unix Domain Sockets and `autobind`; setting of the `SO_PASSCRED` socket option.
+//! * Receiving credentials over Unix Domain Sockets (or any other ancillary messages).
 //! * Linux abstract Unix Domain Sockets.
 
 
+#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[macro_use] extern crate bitflags;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] #[macro_use] extern crate cfg_if;
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate errno;
