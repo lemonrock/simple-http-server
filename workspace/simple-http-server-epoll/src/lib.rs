@@ -55,8 +55,10 @@
 //!
 //! * `pipe2()`.
 //! * `socketpair()`.
+//! * Linux zero copy send (`MSG_ZEROCOPY`) and receive (`SO_ZEROCOPY`), mostly because they have a horrible, hacky API.
+//! * `SO_BUSY_POLL`.
 //! * Anonymous Unix Domain Sockets and `autobind`; setting of the `SO_PASSCRED` socket option.
-//! * Receiving credentials over Unix Domain Sockets (or any other ancillary messages).
+//! * Receiving credentials over Unix Domain Sockets.
 //! * Linux abstract Unix Domain Sockets.
 
 

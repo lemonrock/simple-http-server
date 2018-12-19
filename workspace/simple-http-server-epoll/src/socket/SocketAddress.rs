@@ -84,4 +84,22 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 			&Unix(ref unix_socket_address) => SocketFileDescriptor::new_datagram_unix_domain_socket_client(unix_socket_address, send_buffer_size_in_bytes),
 		}
 	}
+
+	/// Creates a new streaming Unix Domain client socket pair.
+	///
+	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
+	#[inline(always)]
+	pub fn new_streaming_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(StreamingSocketFileDescriptor<sockaddr_un>, StreamingSocketFileDescriptor<sockaddr_un>), NewSocketClientError>
+	{
+		SocketFileDescriptor::new_streaming_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes, righthand_send_buffer_size_in_bytes)
+	}
+
+	/// Creates a new datagram Unix Domain client socket pair.
+	///
+	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
+	#[inline(always)]
+	pub fn new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(), NewSocketClientError>
+	{
+		SocketFileDescriptor::new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes, righthand_send_buffer_size_in_bytes)
+	}
 }

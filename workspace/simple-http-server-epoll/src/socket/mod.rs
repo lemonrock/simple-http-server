@@ -100,6 +100,7 @@ include!("sendmsg.rs");
 include!("ServerListenerSocketFileDescriptor.rs");
 include!("ServerListenerSocketFileDescriptorEnum.rs");
 include!("setsockopt.rs");
+include!("socketpair.rs");
 include!("shutdown.rs");
 include!("SO_.rs");
 include!("sockaddr_in.rs");

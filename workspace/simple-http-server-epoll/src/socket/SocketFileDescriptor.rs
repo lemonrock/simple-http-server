@@ -414,6 +414,28 @@ impl SocketFileDescriptor<sockaddr_un>
 		Ok(())
 	}
 
+	/// Creates a new streaming Unix Domain client socket pair.
+	///
+	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
+	#[inline(always)]
+	pub(crate) fn new_streaming_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(StreamingSocketFileDescriptor<sockaddr_un>, StreamingSocketFileDescriptor<sockaddr_un>), NewSocketClientError>
+	{
+		let (lefthand, righthand) = Self::socketpair(SOCK_STREAM, lefthand_send_buffer_size_in_bytes, righthand_send_buffer_size_in_bytes)?;
+
+		Ok((StreamingSocketFileDescriptor(lefthand), StreamingSocketFileDescriptor(righthand)))
+	}
+
+	/// Creates a new datagram Unix Domain client socket pair.
+	///
+	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
+	#[inline(always)]
+	pub(crate) fn new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(), NewSocketClientError>
+	{
+		let (lefthand, righthand) = Self::socketpair(SOCK_DGRAM, lefthand_send_buffer_size_in_bytes, righthand_send_buffer_size_in_bytes)?;
+
+		Ok(())
+	}
+
 	#[inline(always)]
 	fn connect_unix_domain_socket(&self, unix_socket_address: &UnixSocketAddress<impl AsRef<Path>>) -> Result<(), SocketConnectError>
 	{
@@ -898,13 +920,61 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 		})
 	}
 
-	/// Creates a new instance.
+	#[inline(always)]
+	fn type_and_flags(type_: c_int) -> c_int
+	{
+		const Flags: c_int = SOCK_NONBLOCK | SOCK_CLOEXEC;
+		type_ | Flags
+	}
+
+	#[inline(always)]
+	fn socketpair(type_: c_int, lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(Self, Self), CreationError>
+	{
+		const domain: c_int = AF_UNIX;
+		const ethernet_protocol: c_int = 0;
+
+		let mut sv = unsafe { uninitialized() };
+		let result = unsafe { socketpair(domain, Self::type_and_flags(type_), ethernet_protocol, &mut sv) };
+
+		if likely!(result == 0)
+		{
+			let lefthand = SocketFileDescriptor(unsafe { *sv.get_unchecked(0) }, PhantomData);
+			lefthand.set_send_buffer_size_unix_domain_socket(lefthand_send_buffer_size_in_bytes);
+
+			let righthand = SocketFileDescriptor(unsafe { *sv.get_unchecked(1) }, PhantomData);
+			righthand.set_send_buffer_size_unix_domain_socket(righthand_send_buffer_size_in_bytes);
+
+			Ok((lefthand, righthand))
+		}
+		else if likely!(result == -1)
+		{
+			use self::CreationError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EMFILE => PerProcessLimitOnNumberOfFileDescriptorsWouldBeExceeded,
+					ENFILE => SystemWideLimitOnTotalNumberOfFileDescriptorsWouldBeExceeded,
+					EAFNOSUPPORT => panic!("The specified address family is not supported on this machine"),
+					EFAULT => panic!("The address `sv` does not specify a valid part of the process address space"),
+					EOPNOTSUPP => panic!("The specified `protocol` does not support creation of socket pairs"),
+					EPROTONOSUPPORT => panic!("TThe specified `protocol` is not supported on this machine"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!();
+		}
+	}
+
 	#[inline(always)]
 	fn new(domain: c_int, type_: c_int, ethernet_protocol: c_int) -> Result<Self, CreationError>
 	{
-		const Flags: c_int = SOCK_NONBLOCK | SOCK_CLOEXEC;
-
-		let result = unsafe { socket(domain, type_ | Flags, ethernet_protocol) };
+		let result = unsafe { socket(domain, Self::type_and_flags(type_), ethernet_protocol) };
 		if likely!(result != -1)
 		{
 			Ok(SocketFileDescriptor(result, PhantomData))
