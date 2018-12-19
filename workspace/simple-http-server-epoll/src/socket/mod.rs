@@ -88,7 +88,6 @@ include!("listen.rs");
 include!("MessageHeadersIterator.rs");
 include!("MSG_.rs");
 include!("msghdr.rs");
-include!("MutableMessageHeadersIterator.rs");
 include!("NewSocketClientError.rs");
 include!("NewSocketServerListenerError.rs");
 include!("ReceiveFlags.rs");

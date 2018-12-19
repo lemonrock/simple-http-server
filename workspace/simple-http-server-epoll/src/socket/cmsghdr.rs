@@ -56,6 +56,7 @@ impl cmsghdr
 	}
 
 	/// Equivalent to the lib c macro `CMSG_DATA()`.
+	#[allow(dead_code)]
 	#[inline(always)]
 	pub(crate) fn data(&self) -> &[u8]
 	{
@@ -63,6 +64,7 @@ impl cmsghdr
 	}
 
 	/// Equivalent to the lib c macro `CMSG_DATA()`.
+	#[allow(dead_code)]
 	#[inline(always)]
 	pub(crate) fn data_mut(&mut self) -> &mut [u8]
 	{
@@ -92,6 +94,7 @@ impl cmsghdr
 	}
 
 	/// Equivalent to the lib c macro `CMSG_NXTHDR()`.
+	#[allow(dead_code)]
 	#[inline(always)]
 	pub(crate) fn next_mut(&mut self, parent: &msghdr) -> Option<&mut Self>
 	{
@@ -129,6 +132,7 @@ impl cmsghdr
 		(self as *mut Self as usize + self.__CMSG_LEN()) as *mut Self
 	}
 
+	#[allow(dead_code)]
 	#[inline(always)]
 	fn CMSG_NXTHDR(&mut self, mhdr: &msghdr) -> *mut Self
 	{

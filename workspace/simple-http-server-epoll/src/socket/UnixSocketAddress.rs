@@ -15,6 +15,7 @@ pub enum UnixSocketAddress<FilePath: AsRef<Path>>
 		parent_folder_mode: u32,
 	},
 
+	/// A Linux-specific abstractly named socket.
 	Abstract
 	{
 		/// An abstract name of zero or more bytes.

@@ -6,6 +6,9 @@
 #[cfg(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64")))] pub(crate) const SOL_SOCKET: c_int = 0xFFFF;
 #[cfg(not(all(any(target_arch = "android", target_arch = "linux"), any(target_arch = "mips", target_arch = "mips64", target_arch = "sparc64"))))] pub(crate) const SOL_SOCKET: c_int = 1;
 
+///
 pub(crate) const SOL_TCP: c_int = 6;
 
+///
+#[allow(dead_code)]
 pub(crate) const SOL_UDP: c_int = 17;

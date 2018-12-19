@@ -80,13 +80,22 @@ impl msghdr
 	}
 
 	#[inline(always)]
-	pub(crate) fn initialize_first_header<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T]) -> &mut cmsghdr
+	pub(crate) fn initialize_sole_header<T: Sized>(&mut self, cmsg_level: c_int, cmsg_type: c_int, array: &[T])
 	{
-		let first_header = self.first_header_mut().as_mut().unwrap();
-		first_header.initialize(cmsg_level, cmsg_type, array);
-		first_header
+		let control_length =
+		{
+			let first_header_mut = self.first_header_mut();
+			let first_header = first_header_mut.unwrap();
+			first_header.initialize(cmsg_level, cmsg_type, array);
+
+			first_header.cmsg_len
+		};
+
+		// Sum of the length of all control messages in the buffer.
+		self.msg_controllen = control_length;
 	}
 
+	#[allow(dead_code)]
 	#[inline(always)]
 	pub(crate) fn message_headers_iterator<'a>(&'a self) -> MessageHeadersIterator<'a>
 	{
@@ -94,16 +103,6 @@ impl msghdr
 		{
 			parent: self,
 			next: self.first_header(),
-		}
-	}
-
-	#[inline(always)]
-	pub(crate) fn mutable_message_headers_iterator<'a>(&'a mut self) -> MutableMessageHeadersIterator<'a>
-	{
-		MutableMessageHeadersIterator
-		{
-			parent: self,
-			next: self.first_header_mut(),
 		}
 	}
 

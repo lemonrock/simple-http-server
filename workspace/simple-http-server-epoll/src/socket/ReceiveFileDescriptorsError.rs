@@ -9,10 +9,13 @@ pub enum ReceiveFileDescriptorsError
 	/// A read error that might be possible to handle.
 	Read(StructReadError),
 
+	/// More than one ancillary message header was received.
 	MoreThanOneHeader,
 
+	/// A received ancillary message was not for `SOL_SOCKET`.
 	WasNotSocketLevelMessage,
 
+	/// A received ancillary message was not for `SCM_RIGHTS`.
 	WasNotScmRights,
 }
 

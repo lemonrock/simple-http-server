@@ -2,6 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[allow(dead_code)]
 pub(crate) struct MessageHeadersIterator<'a>
 {
 	parent: &'a msghdr,

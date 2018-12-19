@@ -163,6 +163,7 @@ impl SocketFileDescriptor<sockaddr_in6>
 
 impl SocketFileDescriptor<sockaddr_un>
 {
+	/// Receive file descriptors.
 	pub fn receive_file_descriptors(&self, maximum_file_descriptors_to_receive: usize) -> Result<Vec<RawFd>, ReceiveFileDescriptorsError>
 	{
 		let space_for_file_descriptors = size_of::<RawFd>() * maximum_file_descriptors_to_receive;
@@ -186,8 +187,8 @@ impl SocketFileDescriptor<sockaddr_un>
 		// Insert a magic value of `-1` to detect where sent file descriptors stop as no length is specified in the data set by `recvmsg()`.
 		let file_descriptor_end_pointer =
 		{
-			let mut first_header = message.first_header();
-			let mut first_header = first_header.as_mut().unwrap();
+			let mut borrow_checker = message.first_header_mut();
+			let mut first_header = borrow_checker.as_mut().unwrap();
 			first_header.initialize_known_fields(SOL_SOCKET, SCM_RIGHTS, size_of::<RawFd>() * maximum_file_descriptors_to_receive);
 			let mut file_descriptor_current_pointer = first_header.CMSG_DATA_mut() as *mut RawFd;
 			let file_descriptor_end_pointer = unsafe { file_descriptor_current_pointer.add(maximum_file_descriptors_to_receive) };
@@ -316,17 +317,11 @@ impl SocketFileDescriptor<sockaddr_un>
 	{
 		let mut ancillary_data_buffer: Vec<u8> = Vec::with_capacity(cmsghdr::CMSG_SPACE(size_of::<T>() * array.len()));
 
-		let mut msg = msghdr::new(null_mut(), 0, null_mut(), 0, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len() as u32, 0);
+		let mut message = msghdr::new(null_mut(), 0, null_mut(), 0, ancillary_data_buffer.as_mut_ptr() as *mut _, ancillary_data_buffer.len() as u32, 0);
 
-		let control_length =
-		{
-			let cmsg = msg.initialize_first_header(level, type_, array);
-			cmsg.cmsg_len
-		};
-		// Sum of the length of all control messages in the buffer.
-		msg.msg_controllen = control_length;
+		message.initialize_sole_header(level, type_, array);
 
-		let result = unsafe { sendmsg(self.0, &msg, SendFlags::NoSigPipeSignal.bits) };
+		let result = unsafe { sendmsg(self.0, &message, SendFlags::NoSigPipeSignal.bits) };
 
 		if likely!(result > 0)
 		{
@@ -737,7 +732,7 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 		debug_assert!(receive_buffer_size_in_bytes >= 256, "receive_buffer_size_in_bytes must be at least 256 bytess; maximum is in `/proc/sys/net/core/rmem_max`");
 
 		let receive_buffer_halved: c_int = (receive_buffer_size_in_bytes / 2) as c_int;
-		self.set_socket_option(SOL_SOCKET, SO_SNDBUF, &receive_buffer_halved);
+		self.set_socket_option(SOL_SOCKET, SO_RCVBUF, &receive_buffer_halved);
 	}
 
 	#[inline(always)]
