@@ -823,13 +823,13 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	#[inline(always)]
 	fn set_internet_protocol_server_listener_socket_options(&self)
 	{
-		self.set_socket_option_true(SOL_SOCKET, SO_REUSEADDR);
 		self.set_socket_option_true(SOL_SOCKET, SO_REUSEPORT);
 	}
 
 	#[inline(always)]
 	fn set_tcp_server_listener_socket_options(&self)
 	{
+		self.set_socket_option_true(SOL_SOCKET, SO_REUSEADDR);
 		self.set_socket_option_true(SOL_TCP, TCP_DEFER_ACCEPT);
 		self.set_socket_option_true(SOL_TCP, TCP_FASTOPEN);
 	}
