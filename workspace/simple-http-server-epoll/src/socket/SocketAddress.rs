@@ -42,17 +42,21 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 
 	/// New streaming client.
 	#[inline(always)]
-	pub fn new_streaming_client(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<(), NewSocketClientError>
+	pub fn new_streaming_client(&self, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<StreamingSocketFileDescriptorEnum, NewSocketClientError>
 	{
+		use self::StreamingSocketFileDescriptorEnum::*;
 		use self::SocketAddr::*;
 		use self::SocketAddress::*;
 
-		match self
-		{
-			&InternetProtocol(V4(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits),
-			&InternetProtocol(V6(socket_address)) => SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits),
-			&Unix(ref unix_socket_address) => SocketFileDescriptor::new_streaming_unix_domain_socket_client(unix_socket_address, send_buffer_size_in_bytes),
-		}
+		Ok
+		(
+			match self
+			{
+				&InternetProtocol(V4(socket_address)) => InternetProtocolVersion4(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits)?),
+				&InternetProtocol(V6(socket_address)) => InternetProtocolVersion6(SocketFileDescriptor::new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address, send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits)?),
+				&Unix(ref unix_socket_address) => UnixDomain(SocketFileDescriptor::new_streaming_unix_domain_socket_client(unix_socket_address, send_buffer_size_in_bytes)?),
+			}
+		)
 	}
 
 	/// New datagram server listener.

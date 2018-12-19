@@ -52,6 +52,7 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 	/// * `Interrupted`
 	/// * `Other` (which is for when the kernel reports `ENOMEM`, ie it is out of memory).
 	/// * `ConnectionReset` (seems to be posible in some circumstances for Unix domain sockets).
+	/// * `ConnectionRefused` (only can happen for TCP client sockets; can not happen for sockets `accept()`ed by a server listener).
 	#[inline(always)]
 	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>
 	{
@@ -87,8 +88,7 @@ impl<SD: SocketData> Read for StreamingSocketFileDescriptor<SD>
 							EINTR => Interrupted,
 							ENOMEM => Other,
 							ECONNRESET => ConnectionReset,
-							// Can be mapped to `ConnectionRefused`, but should not happen for a socket that is now connected.
-							ECONNREFUSED => panic!("A remote host refused to allow the network connection (typically because it is not running the requested service)"),
+							ECONNREFUSED => ConnectionRefused,
 							EBADF => panic!("The argument `sockfd` is an invalid descriptor"),
 							EFAULT => panic!("The receive buffer pointer(s) point outside the process's address space"),
 							EINVAL => panic!("Invalid argument passed"),

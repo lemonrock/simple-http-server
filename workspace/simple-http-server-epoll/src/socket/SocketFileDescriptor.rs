@@ -52,11 +52,11 @@ impl SocketFileDescriptor<sockaddr_in>
 
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 4 client.
 	#[inline(always)]
-	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<(), NewSocketClientError>
+	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_4_client(socket_address: SocketAddrV4, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<StreamingSocketFileDescriptor<sockaddr_in>, NewSocketClientError>
 	{
 		let this = SocketFileDescriptor::<sockaddr_in>::new_transmission_control_protocol_over_internet_protocol_version_4(send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits)?;
 		this.connect_internet_protocol_version_4_socket(socket_address)?;
-		Ok(())
+		Ok(StreamingSocketFileDescriptor(this))
 	}
 
 	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 4 server listener.
@@ -116,11 +116,11 @@ impl SocketFileDescriptor<sockaddr_in6>
 
 	/// Creates a new instance of a Transmission Control Protocol (TCP) socket over Internet Protocol (IP) version 6 client.
 	#[inline(always)]
-	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<(), NewSocketClientError>
+	pub(crate) fn new_transmission_control_protocol_over_internet_protocol_version_6_client(socket_address: SocketAddrV6, send_buffer_size_in_bytes: usize, receive_buffer_size_in_bytes: usize, idles_before_keep_alive_seconds: u16, keep_alive_interval_seconds: u16, maximum_keep_alive_probes: u16, linger_seconds: u16, linger_in_FIN_WAIT2_seconds: u16, maximum_SYN_transmits: u16) -> Result<StreamingSocketFileDescriptor<sockaddr_in6>, NewSocketClientError>
 	{
 		let this = SocketFileDescriptor::<sockaddr_in6>::new_transmission_control_protocol_over_internet_protocol_version_6(send_buffer_size_in_bytes, receive_buffer_size_in_bytes, idles_before_keep_alive_seconds, keep_alive_interval_seconds, maximum_keep_alive_probes, linger_seconds, linger_in_FIN_WAIT2_seconds, maximum_SYN_transmits)?;
 		this.connect_internet_protocol_version_6_socket(socket_address)?;
-		Ok(())
+		Ok(StreamingSocketFileDescriptor(this))
 	}
 
 	/// Creates a new instance of a User Datagram Protocol (UDP) socket over Internet Protocol (IP) version 6 server listener.
@@ -385,11 +385,11 @@ impl SocketFileDescriptor<sockaddr_un>
 	///
 	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
 	#[inline(always)]
-	pub(crate) fn new_streaming_unix_domain_socket_client(unix_socket_address: &UnixSocketAddress<impl AsRef<Path>>, send_buffer_size_in_bytes: usize) -> Result<(), NewSocketClientError>
+	pub(crate) fn new_streaming_unix_domain_socket_client(unix_socket_address: &UnixSocketAddress<impl AsRef<Path>>, send_buffer_size_in_bytes: usize) -> Result<StreamingSocketFileDescriptor<sockaddr_un>, NewSocketClientError>
 	{
 		let this = SocketFileDescriptor::<sockaddr_un>::new_streaming_unix_domain_socket(send_buffer_size_in_bytes)?;
 		this.connect_unix_domain_socket(unix_socket_address)?;
-		Ok(())
+		Ok(StreamingSocketFileDescriptor(this))
 	}
 
 	/// Creates a new datagram Unix Domain server listener socket.
