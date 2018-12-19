@@ -31,3 +31,64 @@ impl AsRawFd for StreamingSocketFileDescriptorEnum
 		}
 	}
 }
+
+impl Read for StreamingSocketFileDescriptorEnum
+{
+	/// This particular implementation can only return an `io::ErrorKind` of:-
+	///
+	/// * `UnexpectedEof`
+	/// * `WouldBlock`
+	/// * `Interrupted`
+	/// * `Other` (which is for when the kernel reports `ENOMEM`, ie it is out of memory).
+	/// * `ConnectionReset` (seems to be posible in some circumstances for Unix domain sockets).
+	/// * `ConnectionRefused` (only can happen for TCP client sockets; can not happen for sockets `accept()`ed by a server listener).
+	#[inline(always)]
+	fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>
+	{
+		use self::StreamingSocketFileDescriptorEnum::*;
+
+		match self
+		{
+			&mut InternetProtocolVersion4(ref mut streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.read(buf),
+			&mut InternetProtocolVersion6(ref mut streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.read(buf),
+			&mut UnixDomain(ref mut streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.read(buf),
+		}
+	}
+
+	#[inline(always)]
+	unsafe fn initializer(&self) -> Initializer
+	{
+		Initializer::nop()
+	}
+}
+
+impl Write for StreamingSocketFileDescriptorEnum
+{
+	/// This particular implementation can only return an `io::ErrorKind` of:-
+	///
+	/// * `WriteZero`
+	/// * `WouldBlock`
+	/// * `Interrupted`
+	/// * `Other` (which is for when the kernel reports `ENOMEM` or `ENOBUFS`, ie it is out of memory).
+	/// * `BrokenPipe`
+	/// * `PermissionDenied` (only for Unix domain sockets).
+	/// * `ConnectionReset`
+	#[inline(always)]
+	fn write(&mut self, buf: &[u8]) -> io::Result<usize>
+	{
+		use self::StreamingSocketFileDescriptorEnum::*;
+
+		match self
+		{
+			&mut InternetProtocolVersion4(ref mut streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.write(buf),
+			&mut InternetProtocolVersion6(ref mut streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.write(buf),
+			&mut UnixDomain(ref mut streaming_listener_socket_file_descriptor) => streaming_listener_socket_file_descriptor.write(buf),
+		}
+	}
+
+	#[inline(always)]
+	fn flush(&mut self) -> io::Result<()>
+	{
+		Ok(())
+	}
+}

@@ -190,7 +190,3 @@ impl<SD: SocketData> Write for StreamingSocketFileDescriptor<SD>
 		Ok(())
 	}
 }
-
-impl StreamingSocketFileDescriptor<sockaddr_un>
-{
-}

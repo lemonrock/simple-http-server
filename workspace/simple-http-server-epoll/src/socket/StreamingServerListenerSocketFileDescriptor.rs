@@ -4,9 +4,9 @@
 
 /// Represents a server listener socket instance.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ServerListenerSocketFileDescriptor<SD: SocketData>(SocketFileDescriptor<SD>);
+pub struct StreamingServerListenerSocketFileDescriptor<SD: SocketData>(SocketFileDescriptor<SD>);
 
-impl<SD: SocketData> AsRawFd for ServerListenerSocketFileDescriptor<SD>
+impl<SD: SocketData> AsRawFd for StreamingServerListenerSocketFileDescriptor<SD>
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -15,7 +15,7 @@ impl<SD: SocketData> AsRawFd for ServerListenerSocketFileDescriptor<SD>
 	}
 }
 
-impl<SD: SocketData> IntoRawFd for ServerListenerSocketFileDescriptor<SD>
+impl<SD: SocketData> IntoRawFd for StreamingServerListenerSocketFileDescriptor<SD>
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -24,7 +24,7 @@ impl<SD: SocketData> IntoRawFd for ServerListenerSocketFileDescriptor<SD>
 	}
 }
 
-impl<SD: SocketData> ServerListenerSocketFileDescriptor<SD>
+impl<SD: SocketData> StreamingServerListenerSocketFileDescriptor<SD>
 {
 	/// Accepts any pending connections.
 	#[inline(always)]
