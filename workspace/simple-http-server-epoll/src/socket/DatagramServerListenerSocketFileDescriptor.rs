@@ -42,3 +42,34 @@ impl<SD: SocketData> AsRawFd for DatagramServerListenerSocketFileDescriptor<SD>
 		self.0.as_raw_fd()
 	}
 }
+
+impl DatagramServerListenerSocketFileDescriptor<sockaddr_un>
+{
+	/// Receive file descriptors.
+	pub fn receive_file_descriptors(&self, maximum_file_descriptors_to_receive: usize) -> Result<Vec<RawFd>, ReceiveFileDescriptorsError>
+	{
+		self.0.receive_file_descriptors(maximum_file_descriptors_to_receive)
+	}
+
+	/// Tries to send file descriptors to a remote peer over an Unix Domain Socket.
+	///
+	/// `file_descriptors`: File Descriptors to send.
+	#[inline(always)]
+	pub fn send_file_descriptors(&self, file_descriptors: &[RawFd]) -> io::Result<()>
+	{
+		self.0.send_file_descriptors(file_descriptors)
+	}
+
+	/// Tries to send credentials to a remote peer over an Unix Domain Socket.
+	///
+	/// Useful for complex scenarios where a priveleged (eg root) process wants to use different credentials to those it would default to.
+	///
+	/// `process_identifier`: Process identifier (also known as `pid`). Unless the process has capability `CAP_SYS_ADMIN`, this must be its own `process_identifier`.
+	/// `user_identifier`: User identifier (also known as `uid`). Unless the process has capability `CAP_SETUID`, this must be its own `user_identifier`, effective `user_identifier` or saved-set `user_identifier`.
+	/// `group_identifier`: Group identifier (also known as `gid`). Unless the process has capability `CAP_SETGID`, this must be its own `group_identifier`, effective `group_identifier` or saved-set `group_identifier`.
+	#[inline(always)]
+	pub fn send_credentials(&self, credentials: Credentials) -> io::Result<()>
+	{
+		self.0.send_credentials(credentials)
+	}
+}

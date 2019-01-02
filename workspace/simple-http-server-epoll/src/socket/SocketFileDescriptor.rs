@@ -163,6 +163,18 @@ impl SocketFileDescriptor<sockaddr_in6>
 
 impl SocketFileDescriptor<sockaddr_un>
 {
+	/// Tries to obtain remote peer credentials.
+	///
+	/// * Not available for Datagram sockets (unless created using `socketpair()`).
+	/// * Not available for Sequenced Packet sockets.
+	///
+	/// The returned credentials are those that were in effect at the time of the call to `connect()` or `socketpair()`.
+	#[inline(always)]
+	pub fn remote_peer_credentials(&self) -> Credentials
+	{
+		unsafe { transmute::<ucred, Credentials>(self.get_socket_option(SOL_SOCKET, SO_PEERCRED)) }
+	}
+
 	/// Receive file descriptors.
 	pub fn receive_file_descriptors(&self, maximum_file_descriptors_to_receive: usize) -> Result<Vec<RawFd>, ReceiveFileDescriptorsError>
 	{
@@ -203,7 +215,7 @@ impl SocketFileDescriptor<sockaddr_un>
 			file_descriptor_end_pointer
 		};
 
-		let result = unsafe { recvmsg(self.0, &mut message, 0) };
+		let result = unsafe { recvmsg(self.0, &mut message, ReceiveFlags::ControlMessageCloseOnExec.bits) };
 
 		use self::ReceiveFileDescriptorsError::*;
 
@@ -293,16 +305,11 @@ impl SocketFileDescriptor<sockaddr_un>
 	/// `user_identifier`: User identifier (also known as `uid`). Unless the process has capability `CAP_SETUID`, this must be its own `user_identifier`, effective `user_identifier` or saved-set `user_identifier`.
 	/// `group_identifier`: Group identifier (also known as `gid`). Unless the process has capability `CAP_SETGID`, this must be its own `group_identifier`, effective `group_identifier` or saved-set `group_identifier`.
 	#[inline(always)]
-	pub fn send_credentials(&self, process_identifier: pid_t, user_identifier: uid_t, group_identifier: gid_t) -> io::Result<()>
+	pub fn send_credentials(&self, credentials: Credentials) -> io::Result<()>
 	{
 		let credentials: [ucred; 1] =
 		[
-			ucred
-			{
-				pid: process_identifier,
-				uid: user_identifier,
-				gid: group_identifier,
-			}
+			unsafe { transmute(credentials) }
 		];
 
 		self.send_ancillary_data(SOL_SOCKET, SCM_CREDENTIALS, &credentials)
@@ -696,10 +703,33 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 	}
 
 	#[inline(always)]
-	fn set_socket_option_true(&self, level: c_int, optname: c_int)
+	fn get_socket_option<T>(&self, level: c_int, optname: c_int) -> T
 	{
-		static is_true: c_int = 1;
-		self.set_socket_option(level, optname, &is_true);
+		let mut value: T = unsafe { uninitialized() };
+		let mut value_length = size_of::<T>() as u32;
+		let result = unsafe { getsockopt(self.0, level, optname, &mut value as *mut _ as *mut _, &mut value_length) };
+
+		if likely!(result == 0)
+		{
+			return value
+		}
+		else if likely!(result == -1)
+		{
+			match errno().0
+			{
+				EBADF => panic!("The argument `sockfd` is not a valid descriptor"),
+				EFAULT => panic!("The address pointed to by `optval` is not in a valid part of the process address space"),
+				EINVAL => panic!("`optlen` is invalid, or there is an invalid value in `optval`"),
+				ENOPROTOOPT => panic!("The option is unknown at the level indicated"),
+				ENOTSOCK => panic!("The argument `sockfd` is a file, not a socket"),
+
+				_ => unreachable!(),
+			}
+		}
+		else
+		{
+			unreachable!();
+		}
 	}
 
 	#[inline(always)]
@@ -728,6 +758,13 @@ impl<SD: SocketData> SocketFileDescriptor<SD>
 		{
 			unreachable!();
 		}
+	}
+
+	#[inline(always)]
+	fn set_socket_option_true(&self, level: c_int, optname: c_int)
+	{
+		static is_true: c_int = 1;
+		self.set_socket_option(level, optname, &is_true);
 	}
 
 	#[inline(always)]
