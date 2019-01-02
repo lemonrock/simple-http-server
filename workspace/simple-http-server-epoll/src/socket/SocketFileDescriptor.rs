@@ -423,7 +423,7 @@ impl SocketFileDescriptor<sockaddr_un>
 
 	/// Creates a new streaming Unix Domain client socket pair.
 	///
-	/// This is local socket akin to a Transmission Control Protocol (TCP) socket.
+	/// This is a pair of local sockets akin to Transmission Control Protocol (TCP) sockets.
 	#[inline(always)]
 	pub(crate) fn new_streaming_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(StreamingSocketFileDescriptor<sockaddr_un>, StreamingSocketFileDescriptor<sockaddr_un>), NewSocketClientError>
 	{
@@ -434,13 +434,13 @@ impl SocketFileDescriptor<sockaddr_un>
 
 	/// Creates a new datagram Unix Domain client socket pair.
 	///
-	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
+	/// This is a pair of local sockets akin to User Datagram Protocol (UDP) sockets.
 	#[inline(always)]
-	pub(crate) fn new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(), NewSocketClientError>
+	pub(crate) fn new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(DatagramClientSocketFileDescriptor<sockaddr_un>, DatagramClientSocketFileDescriptor<sockaddr_un>), NewSocketClientError>
 	{
 		let (lefthand, righthand) = Self::socketpair(SOCK_DGRAM, lefthand_send_buffer_size_in_bytes, righthand_send_buffer_size_in_bytes)?;
 
-		Ok(())
+		Ok((DatagramClientSocketFileDescriptor(lefthand), DatagramClientSocketFileDescriptor(righthand)))
 	}
 
 	#[inline(always)]

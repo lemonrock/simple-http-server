@@ -110,7 +110,7 @@ impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 	///
 	/// This is local socket akin to an User Datagram Protocol (UDP) socket.
 	#[inline(always)]
-	pub fn new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(), NewSocketClientError>
+	pub fn new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes: usize, righthand_send_buffer_size_in_bytes: usize) -> Result<(DatagramClientSocketFileDescriptor<sockaddr_un>, DatagramClientSocketFileDescriptor<sockaddr_un>), NewSocketClientError>
 	{
 		SocketFileDescriptor::new_datagram_unix_domain_socket_pair(lefthand_send_buffer_size_in_bytes, righthand_send_buffer_size_in_bytes)
 	}
