@@ -6,13 +6,15 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum StructReadError
 {
-	/// There are no timer events to read at this time.
+	/// There is no data to read at this time.
 	WouldBlock,
 
-	/// Timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
+	/// For timers: the timer was cancelled because it depends on the realtime clock and the realtime clock was adjusted.
+	///
+	/// Not obvious if this can occur for other file descriptors.
 	Cancelled,
 
-	/// `EINTR` occurred; this can be handled by either re-trying the `read()` or might actual be fatal depending on the signal handling strategy in use.
+	/// `EINTR` occurred; this can be handled by either re-trying the read operation or might actual be fatal depending on the signal handling strategy in use.
 	Interrupted,
 }
 

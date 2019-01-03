@@ -9,6 +9,7 @@
 #![deny(unreachable_patterns)]
 #![feature(core_intrinsics)]
 #![feature(read_initializer)]
+#![feature(self_struct_ctor)]
 #![feature(try_from)]
 
 
@@ -32,6 +33,7 @@
 //! * fanotify.
 //! * inotify.
 //! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
+//! * pipes (anonymous and named (FIFO)s).
 //! * signalfd.
 //! * sockets (TCP, UDP and the equivalent over Unix Domain Sockets).
 //! * timerfd.
@@ -48,18 +50,20 @@
 //! * To remove any stale files;
 //! * To remove socket file paths on drop (close).
 //!
-//! The above features may not work correctly after the use of `seccomp` system calls (particularly the attempt to delete a socket file path on close).
+//! The above features may not work correctly after the use of `seccomp` to lock down system calls (particularly the attempt to delete a socket file path on close).
 //!
 //!
 //! ## Unsupported for now
 //!
-//! * `pipe2()`.
-//! * `socketpair()`.
 //! * Linux zero copy send (`MSG_ZEROCOPY`) and receive (`SO_ZEROCOPY`), mostly because they have a horrible, hacky API.
-//! * `SO_BUSY_POLL`.
-//! * Anonymous Unix Domain Sockets and `autobind`; setting of the `SO_PASSCRED` socket option.
-//! * Receiving credentials over Unix Domain Sockets.
-//! * Linux abstract Unix Domain Sockets.
+//! * `SO_BUSY_POLL` and `SO_INCOMING_CPU`.
+//! * Unix Domain Sockets using `autobind`; setting of the `SO_PASSCRED` socket option.
+//! * Receiving credentials over Unix Domain Sockets using `recvmsg()`.
+//! * `vmsplice()`, `tee()` and `splice()`.
+//! * `mkfifo()`
+//!
+//! TODO: epoll / stdin (need to change FD 0 to be non blocking, though).
+//! TODO: epoll and serial port / USB
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;
@@ -160,6 +164,20 @@ cfg_if!
 		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
 		/// POSIX message queue file descriptors.
 		pub mod mq;
+
+
+		/// Anonymous and named, connected unidirectional pipes (act like TCP connected sockets).
+		///
+		/// Since Linux 2.6.35, the default pipe capacity is 16 pages (which are 4096 bytes on x86-64), but the capacity can be queried and set using the `fcntl()` `F_GETPIPE_SZ` and `F_SETPIPE_SZ` operations.
+		///
+		/// The unread bytes in a pipe can be obtained using the `fcntl()` operation `FIONREAD`.
+		///
+		/// The maximum capacity that can be set for a non-privileged process (one without the `CAP_SYS_RESOURCE` capability) is specified in the file `/proc/sys/fs/pipe-max-size`; it defaults to 1Mb.
+		///
+		/// Writes of less than `PIPE_BUF` bytes are atomic; `PIPE_BUF` is 4096 bytes on Linux.
+		///
+		/// Atomic writes are significant when there are many writers sharing one named pipe (FIFO).
+		pub mod pipes;
 
 
 		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]

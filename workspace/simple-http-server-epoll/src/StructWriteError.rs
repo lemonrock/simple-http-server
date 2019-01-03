@@ -14,7 +14,7 @@ pub enum StructWriteError
 	/// Event was cancelled; it is not obvious whether this can actually ever occur.
 	Cancelled,
 
-	/// `EINTR` occurred; this can be handled by either re-trying the `write()` or might actual be fatal depending on the signal handling strategy in use.
+	/// `EINTR` occurred; this can be handled by either re-trying the write-like operation or might actual be fatal depending on the signal handling strategy in use.
 	Interrupted,
 }
 
