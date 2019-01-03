@@ -11,7 +11,10 @@ impl Drop for ReceivePipeFileDescriptor
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		self.0.close()
+		if self.0 != Self::StandardInFileDescriptor
+		{
+			self.0.close()
+		}
 	}
 }
 
@@ -103,6 +106,8 @@ impl Read for ReceivePipeFileDescriptor
 
 impl ReceivePipeFileDescriptor
 {
+	const StandardInFileDescriptor: RawFd = 0;
+
 	/// Opens a pipe (FIFO) named in the file system suitable for receiving data from.
 	///
 	/// Sadly, there is no way to atomically detect if the provided path is **not** a FIFO.
@@ -119,5 +124,12 @@ impl ReceivePipeFileDescriptor
 	pub fn new_anonymous_pipe() -> Result<(SendPipeFileDescriptor, Self), CreationError>
 	{
 		SendPipeFileDescriptor::new_anonymous_pipe()
+	}
+
+	/// Wraps the standard in pipe.
+	#[inline(always)]
+	pub fn standard_in() -> Self
+	{
+		Self(Self::StandardInFileDescriptor)
 	}
 }

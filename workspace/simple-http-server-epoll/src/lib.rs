@@ -53,6 +53,13 @@
 //! The above features may not work correctly after the use of `seccomp` to lock down system calls (particularly the attempt to delete a socket file path on close).
 //!
 //!
+//! ## Pipes
+//!
+//! * To be able to use epoll with standard in (`stdin`), use `pipes::ReceivePipeFileDescriptor::standard_in()`.
+//! * To be able to use epoll with standard out (`stdout`), use `pipes::SendPipeFileDescriptor::standard_out()`.
+//! * To be able to use epoll with standard error (`stderr`), use `pipes::SendPipeFileDescriptor::standard_error()`.
+//!
+//!
 //! ## Unsupported for now
 //!
 //! * Linux zero copy send (`MSG_ZEROCOPY`) and receive (`SO_ZEROCOPY`), mostly because they have a horrible, hacky API.
@@ -61,9 +68,7 @@
 //! * Receiving credentials over Unix Domain Sockets using `recvmsg()`.
 //! * `vmsplice()`, `tee()` and `splice()`.
 //! * `mkfifo()`
-//!
-//! TODO: epoll / stdin (need to change FD 0 to be non blocking, though).
-//! TODO: epoll and serial port / USB
+//! * epoll and serial port / USB.
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;

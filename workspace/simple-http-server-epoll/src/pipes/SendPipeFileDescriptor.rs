@@ -11,7 +11,11 @@ impl Drop for SendPipeFileDescriptor
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		self.0.close()
+		match self.0
+		{
+			Self::StandardOutFileDescriptor | Self::StandardErrorFileDescriptor => (),
+			_ => self.0.close(),
+		}
 	}
 }
 
@@ -102,6 +106,10 @@ impl Write for SendPipeFileDescriptor
 
 impl SendPipeFileDescriptor
 {
+	const StandardOutFileDescriptor: RawFd = 1;
+
+	const StandardErrorFileDescriptor: RawFd = 2;
+
 	/// Opens a pipe (FIFO) named in the file system suitable for sending data to.
 	///
 	/// Sadly, there is no way to atomically detect if the provided path is **not** a FIFO.
@@ -158,6 +166,24 @@ impl SendPipeFileDescriptor
 		{
 			unreachable!()
 		}
+	}
+
+	/// Wraps the standard out pipe.
+	///
+	/// Normally of very limited value as standard out is nearly always writable.
+	#[inline(always)]
+	pub fn standard_out() -> Self
+	{
+		Self(Self::StandardOutFileDescriptor)
+	}
+
+	/// Wraps the standard error pipe.
+	///
+	/// Normally of very limited value as standard error is nearly always writable.
+	#[inline(always)]
+	pub fn standard_error() -> Self
+	{
+		Self(Self::StandardErrorFileDescriptor)
 	}
 
 	#[inline(always)]
