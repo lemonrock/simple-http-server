@@ -3,6 +3,8 @@
 
 
 use super::*;
+use self::syscall::*;
+use super::epoll::syscall::EPOLLIN;
 use ::libc::pthread_sigmask;
 use ::libc::raise;
 use ::libc::SIG_BLOCK;
@@ -42,6 +44,9 @@ use ::std::process::abort;
 use ::std::process::exit;
 
 
+mod syscall;
+
+
 include!("AllSignalReactor.rs");
 include!("ArithmeticErrorCode.rs");
 include!("BusCode.rs");
@@ -56,12 +61,8 @@ include!("IllegalInstructionCode.rs");
 include!("PollCode.rs");
 include!("PollData.rs");
 include!("SegmentationFaultCode.rs");
-include!("SI_.rs");
 include!("SignalFileDescriptor.rs");
 include!("SignalHandler.rs");
-include!("signalfd.rs");
-include!("signalfd_siginfo.rs");
-include!("SIGRT.rs");
 include!("SpecificSignalData.rs");
 include!("SystemCallCode.rs");
 include!("SystemCallData.rs");

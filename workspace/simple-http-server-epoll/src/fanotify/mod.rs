@@ -3,6 +3,7 @@
 
 
 use super::*;
+use self::syscall::*;
 use ::libc::AT_FDCWD;
 use ::libc::c_uchar;
 use ::libc::c_ushort;
@@ -16,11 +17,10 @@ use ::libc::O_SYNC;
 use ::std::fs::File;
 
 
+mod syscall;
+
+
 include!("EventFlags.rs");
-include!("fanotify_event_metadata.rs");
-include!("fanotify_init.rs");
-include!("fanotify_mark.rs");
-include!("fanotify_response.rs");
 include!("FanotifyFileDescriptor.rs");
 include!("FanotifyMarkError.rs");
 include!("FanotifyReadOrWrite.rs");

@@ -7,13 +7,13 @@
 #[repr(C)]
 pub(crate) struct msghdr
 {
-	msg_name: *mut c_void,
-	msg_namelen: socklen_t,
-	msg_iov: *mut iovec,
-	msg_iovlen: socklen_t,
-	msg_control: *mut c_void,
-	msg_controllen: socklen_t,
-	msg_flags: c_int,
+	pub(crate) msg_name: *mut c_void,
+	pub(crate) msg_namelen: socklen_t,
+	pub(crate) msg_iov: *mut iovec,
+	pub(crate) msg_iovlen: socklen_t,
+	pub(crate) msg_control: *mut c_void,
+	pub(crate) msg_controllen: socklen_t,
+	pub(crate) msg_flags: c_int,
 }
 
 #[cfg(target_pointer_width = "64")]
@@ -21,19 +21,19 @@ pub(crate) struct msghdr
 #[repr(C)]
 pub(crate) struct msghdr
 {
-	msg_name: *mut c_void,
-	msg_namelen: socklen_t,
-	msg_iov: *mut iovec,
-	#[cfg(target_endian = "little")] msg_iovlen: socklen_t,
+	pub(crate) msg_name: *mut c_void,
+	pub(crate) msg_namelen: socklen_t,
+	pub(crate) msg_iov: *mut iovec,
+	#[cfg(target_endian = "little")] pub(crate) msg_iovlen: socklen_t,
 	#[cfg(target_endian = "little")] __pad1: u32,
 	#[cfg(target_endian = "big")] __pad1: u32,
-	#[cfg(target_endian = "big")] msg_iovlen: socklen_t,
-	msg_control: *mut c_void,
-	#[cfg(target_endian = "little")] msg_controllen: socklen_t,
+	#[cfg(target_endian = "big")] pub(crate) msg_iovlen: socklen_t,
+	pub(crate) msg_control: *mut c_void,
+	#[cfg(target_endian = "little")] pub(crate) msg_controllen: socklen_t,
 	#[cfg(target_endian = "little")] __pad2: u32,
 	#[cfg(target_endian = "big")] __pad2: u32,
-	#[cfg(target_endian = "big")] msg_controllen: socklen_t,
-	msg_flags: c_int,
+	#[cfg(target_endian = "big")] pub(crate) msg_controllen: socklen_t,
+	pub(crate) msg_flags: c_int,
 }
 
 impl Default for msghdr
@@ -108,7 +108,7 @@ impl msghdr
 
 	/// Equivalent to the lib c macro `CMSG_FIRSTHDR()`.
 	#[inline(always)]
-	fn first_header(&self) -> Option<&cmsghdr>
+	pub(crate) fn first_header(&self) -> Option<&cmsghdr>
 	{
 		if likely!(self.msg_controllen >= cmsghdr::Size)
 		{
@@ -124,7 +124,7 @@ impl msghdr
 
 	/// Equivalent to the lib c macro `CMSG_FIRSTHDR()`.
 	#[inline(always)]
-	fn first_header_mut(&mut self) -> Option<&mut cmsghdr>
+	pub(crate) fn first_header_mut(&mut self) -> Option<&mut cmsghdr>
 	{
 		let there_is_one_or_more_headers = self.msg_controllen >= cmsghdr::Size;
 
@@ -141,7 +141,7 @@ impl msghdr
 	}
 
 	#[inline(always)]
-	fn end(&self) -> usize
+	pub(crate) fn end(&self) -> usize
 	{
 		((self.msg_control as usize) + (self.msg_controllen as usize))
 	}

@@ -3,15 +3,12 @@
 
 
 use super::*;
+use self::syscall::*;
 
 
-include!("EPOLL.rs");
-include!("epoll_create1.rs");
-include!("epoll_ctl.rs");
-include!("epoll_data_t.rs");
-include!("epoll_event.rs");
-include!("epoll_pwait.rs");
-include!("epoll_wait.rs");
+pub(crate) mod syscall;
+
+
 include!("EPollAddError.rs");
 include!("EPollDeleteError.rs");
 include!("EPollAddFlags.rs");

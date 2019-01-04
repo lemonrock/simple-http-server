@@ -3,12 +3,10 @@
 
 
 use super::*;
+use self::syscall::*;
 use ::libc::AF_INET;
 use ::libc::AF_INET6;
 use ::libc::AF_UNIX;
-use ::libc::c_char;
-use ::libc::c_uchar;
-use ::libc::c_uint;
 use ::libc::EADDRINUSE;
 use ::libc::EADDRNOTAVAIL;
 use ::libc::EALREADY;
@@ -33,20 +31,15 @@ use ::libc::EROFS;
 use ::libc::ESOCKTNOSUPPORT;
 use ::libc::ETIMEDOUT;
 use ::libc::gid_t;
-use ::libc::in_addr_t;
-use ::libc::in_port_t;
 use ::libc::iovec;
 use ::libc::IPPROTO_TCP;
 use ::libc::IPPROTO_UDP;
 use ::libc::sa_family_t; // Typically u16.
-use ::libc::send;
 use ::libc::SOCK_DGRAM;
 use ::libc::SOCK_STREAM;
+use ::libc::send;
 use ::libc::socklen_t; // Typically u32.
-use ::libc::ssize_t;
-use ::libc::timespec;
 use ::libc::uid_t;
-use ::libc::unlink;
 use ::std::borrow::Borrow;
 use ::std::borrow::BorrowMut;
 use ::std::cmp::Ordering;
@@ -73,12 +66,11 @@ use ::std::os::unix::fs::DirBuilderExt;
 use ::std::os::unix::fs::PermissionsExt;
 
 
-include!("accept4.rs");
+mod syscall;
+
+
 include!("AcceptedConnection.rs");
 include!("AcceptedConnectionEnum.rs");
-include!("bind.rs");
-include!("cmsghdr.rs");
-include!("connect.rs");
 include!("ConnectionFailedReason.rs");
 include!("Credentials.rs");
 include!("DatagramClientSocketFileDescriptor.rs");
@@ -87,36 +79,14 @@ include!("DatagramServerListenerSocketFileDescriptor.rs");
 include!("DatagramServerListenerSocketFileDescriptorEnum.rs");
 include!("ErrorFlags.rs");
 include!("FilePathInvalidReason.rs");
-include!("getsockname.rs");
-include!("getsockopt.rs");
-include!("in_addr.rs");
-include!("in6_addr.rs");
-include!("listen.rs");
 include!("MessageHeadersIterator.rs");
-include!("MSG_.rs");
-include!("mmsghdr.rs");
-include!("msghdr.rs");
 include!("NewSocketClientError.rs");
 include!("NewSocketServerListenerError.rs");
 include!("ReceivedMessageHelper.rs");
 include!("ReceivedMessages.rs");
 include!("ReceiveFlags.rs");
 include!("ReceiveFileDescriptorsError.rs");
-include!("recvfrom.rs");
-include!("recvmmsg.rs");
-include!("recvmsg.rs");
-include!("SCM_.rs");
 include!("SendFlags.rs");
-include!("sendmsg.rs");
-include!("setsockopt.rs");
-include!("socketpair.rs");
-include!("shutdown.rs");
-include!("SO_.rs");
-include!("sockaddr_in.rs");
-include!("sockaddr_in6.rs");
-include!("sockaddr_un.rs");
-include!("sockaddr_storage.rs");
-include!("socket.rs");
 include!("SocketAcceptError.rs");
 include!("SocketAddress.rs");
 include!("SocketBindError.rs");
@@ -124,11 +94,9 @@ include!("SocketConnectError.rs");
 include!("SocketData.rs");
 include!("SocketFileDescriptor.rs");
 include!("SocketListenError.rs");
-include!("SOL_.rs");
 include!("StreamingServerListenerSocketFileDescriptor.rs");
 include!("StreamingServerListenerSocketFileDescriptorEnum.rs");
 include!("StreamingSocketFileDescriptor.rs");
 include!("StreamingSocketFileDescriptorEnum.rs");
-include!("TCP_.rs");
-include!("ucred.rs");
 include!("UnixSocketAddress.rs");
+

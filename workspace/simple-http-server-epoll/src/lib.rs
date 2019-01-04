@@ -68,7 +68,7 @@
 //! * Receiving credentials over Unix Domain Sockets using `recvmsg()`.
 //! * `vmsplice()`, `tee()` and `splice()`.
 //! * `mkfifo()`
-//! * epoll and serial port / USB.
+//! * epoll and serial port / USB, eg https://www.cnblogs.com/darryo/p/selectpollepoll-on-serial-port.html; in effect, very similar to a pipe. Can we epoll on any character device, then?
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;

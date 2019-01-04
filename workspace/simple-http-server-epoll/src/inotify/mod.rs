@@ -3,15 +3,15 @@
 
 
 use super::*;
+use self::syscall::*;
 use ::std::ffi::CString;
 use ::std::rc::Rc;
 use ::std::rc::Weak;
 
 
-include!("inotify_add_watch.rs");
-include!("inotify_event.rs");
-include!("inotify_init1.rs");
-include!("inotify_rm_watch.rs");
+mod syscall;
+
+
 include!("InotifyAddError.rs");
 include!("InotifyAddWatchFlags.rs");
 include!("InotifyEventFlags.rs");

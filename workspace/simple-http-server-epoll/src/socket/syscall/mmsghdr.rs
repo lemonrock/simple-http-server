@@ -7,10 +7,10 @@
 pub(crate) struct mmsghdr
 {
 	/// Message header.
-	msg_hdr: msghdr,
+	pub(crate) msg_hdr: msghdr,
 
 	/// Number of received bytes for header.
 	///
 	/// This field has the same value as the return value of a single `recvmsg()` call.
-	msg_len: c_uint,
+	pub(crate) msg_len: c_uint,
 }

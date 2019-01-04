@@ -3,24 +3,14 @@
 
 
 use super::*;
-use self::syscall::*;
-use ::libc::ENAMETOOLONG;
-use ::libc::ENXIO;
-use ::libc::EOVERFLOW;
-use ::libc::EROFS;
-use ::libc::ETXTBSY;
-use ::std::ffi::CString;
-use ::std::io;
-use ::std::io::ErrorKind;
-use ::std::io::Initializer;
-use ::std::io::Read;
-use ::std::io::Write;
+use ::libc::ssize_t;
+use ::libc::timespec;
 
 
-mod syscall;
-
-
-include!("FifiOpenError.rs");
-include!("InvalidFifoPathReason.rs");
-include!("ReceivePipeFileDescriptor.rs");
-include!("SendPipeFileDescriptor.rs");
+include!("mq_attr.rs");
+include!("mqd_t.rs");
+include!("mq_getattr.rs");
+include!("mq_open.rs");
+include!("mq_timedreceive.rs");
+include!("mq_timedsend.rs");
+include!("mq_unlink.rs");

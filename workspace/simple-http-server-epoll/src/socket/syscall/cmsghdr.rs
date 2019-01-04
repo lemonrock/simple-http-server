@@ -6,9 +6,9 @@
 #[repr(C)]
 pub(crate) struct cmsghdr
 {
-	cmsg_len: socklen_t,
-	cmsg_level: c_int,
-	cmsg_type: c_int,
+	pub(crate) cmsg_len: socklen_t,
+	pub(crate) cmsg_level: c_int,
+	pub(crate) cmsg_type: c_int,
 	data: PhantomData<u8>,
 }
 
@@ -16,12 +16,12 @@ pub(crate) struct cmsghdr
 #[repr(C)]
 pub(crate) struct cmsghdr
 {
-	#[cfg(target_endian = "little")] cmsg_len: socklen_t,
+	#[cfg(target_endian = "little")] pub(crate) cmsg_len: socklen_t,
 	#[cfg(target_endian = "little")] __pad1: u32,
 	#[cfg(target_endian = "big")] __pad1: u32,
-	#[cfg(target_endian = "big")] cmsg_len: socklen_t,
-	cmsg_level: c_int,
-	cmsg_type: c_int,
+	#[cfg(target_endian = "big")] pub(crate) cmsg_len: socklen_t,
+	pub(crate) cmsg_level: c_int,
+	pub(crate) cmsg_type: c_int,
 	data: PhantomData<u8>,
 }
 
@@ -134,7 +134,7 @@ impl cmsghdr
 
 	#[allow(dead_code)]
 	#[inline(always)]
-	fn CMSG_NXTHDR(&mut self, mhdr: &msghdr) -> *mut Self
+	pub(crate) fn CMSG_NXTHDR(&mut self, mhdr: &msghdr) -> *mut Self
 	{
 		if self.is_last(mhdr)
 		{
@@ -147,32 +147,32 @@ impl cmsghdr
 	}
 
 	#[inline(always)]
-	fn CMSG_DATA_mut(&mut self) -> *mut c_uchar
+	pub(crate) fn CMSG_DATA_mut(&mut self) -> *mut c_uchar
 	{
 		(unsafe { (self as *mut Self).add(1) }) as *mut c_uchar
 	}
 
 	#[inline(always)]
-	fn CMSG_DATA(&self) -> *const c_uchar
+	pub(crate) fn CMSG_DATA(&self) -> *const c_uchar
 	{
 		(unsafe { (self as *const Self).add(1) }) as *const c_uchar
 	}
 
 	#[inline(always)]
-	const fn CMSG_ALIGN(length: usize) -> usize
+	pub(crate) const fn CMSG_ALIGN(length: usize) -> usize
 	{
 		// This rounds up `length` to the nearest size of `usize`.
 		(length + size_of::<usize>() - 1) & !(size_of::<usize>() - 1)
 	}
 
 	#[inline(always)]
-	const fn CMSG_SPACE(length: usize) -> usize
+	pub(crate) const fn CMSG_SPACE(length: usize) -> usize
 	{
 		Self::CMSG_ALIGN(length) + Self::CMSG_ALIGN(size_of::<Self>())
 	}
 
 	#[inline(always)]
-	const fn CMSG_LEN(length: usize) -> usize
+	pub(crate) const fn CMSG_LEN(length: usize) -> usize
 	{
 		length + Self::CMSG_ALIGN(size_of::<Self>())
 	}
