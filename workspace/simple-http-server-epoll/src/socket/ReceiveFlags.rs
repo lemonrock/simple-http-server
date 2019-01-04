@@ -57,6 +57,6 @@ bitflags!
 		/// Set the close-on-exec flag for the file descriptor received via a UNIX domain file descriptor using the `SCM_RIGHTS` operation (described in `man 7 unix`)
 		///
 		/// Since Linux 2.6.23.
-		const ControlMessageCloseOnExec = MSG_CMSG_CLOEXEC;
+		const ControlPosixMessageCloseOnExec = MSG_CMSG_CLOEXEC;
 	}
 }

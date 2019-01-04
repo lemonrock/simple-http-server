@@ -4,26 +4,26 @@
 
 /// How to open or create (or both) a message queue.
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum OpenOrCreateMessageQueue
+pub enum OpenOrCreatePosixMessageQueue
 {
 	/// Opens the queue if it already exists; fails if it does not.
 	OpenIfAlreadyExistsOrFail,
 
 	/// Opens the queue if it already exists; creates (and implicitly opens) it is it does not.
-	OpenOrCreateIfDoesNotExist(MessageQueueCreateSettings),
+	OpenOrCreateIfDoesNotExist(PosixMessageQueueCreateSettings),
 
 	/// Creates (and implicitly opens) the queue if it does not already exist; fails if it does exist.
-	CreateIfItDoesNotExistOrFail(MessageQueueCreateSettings),
+	CreateIfItDoesNotExistOrFail(PosixMessageQueueCreateSettings),
 }
 
-impl OpenOrCreateMessageQueue
+impl OpenOrCreatePosixMessageQueue
 {
 	#[inline(always)]
-	pub(crate) fn invoke_mq_open(&self, send_or_receive: MessageQueueCreateSendOrReceive, name: &CStr) -> Result<MessageQueueFileDescriptor, CreationError>
+	pub(crate) fn invoke_mq_open(&self, send_or_receive: PosixMessageQueueCreateSendOrReceive, name: &CStr) -> Result<PosixMessageQueueFileDescriptor, CreationError>
 	{
-		MessageQueueFileDescriptor::guard_name(name);
+		PosixMessageQueueFileDescriptor::guard_name(name);
 
-		use self::OpenOrCreateMessageQueue::*;
+		use self::OpenOrCreatePosixMessageQueue::*;
 
 		let oflag = send_or_receive as i32;
 
@@ -39,7 +39,7 @@ impl OpenOrCreateMessageQueue
 
 				if likely!(result >= 0)
 				{
-					Ok(MessageQueueFileDescriptor(result))
+					Ok(PosixMessageQueueFileDescriptor(result))
 				}
 				else if likely!(result == 0)
 				{
@@ -77,7 +77,7 @@ impl OpenOrCreateMessageQueue
 
 				if likely!(result >= 0)
 				{
-					Ok(MessageQueueFileDescriptor(result))
+					Ok(PosixMessageQueueFileDescriptor(result))
 				}
 				else if likely!(result == 0)
 				{
@@ -115,7 +115,7 @@ impl OpenOrCreateMessageQueue
 
 				if likely!(result >= 0)
 				{
-					Ok(MessageQueueFileDescriptor(result))
+					Ok(PosixMessageQueueFileDescriptor(result))
 				}
 				else if likely!(result == 0)
 				{

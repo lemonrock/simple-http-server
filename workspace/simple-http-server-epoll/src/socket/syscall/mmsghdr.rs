@@ -6,7 +6,7 @@
 #[repr(C)]
 pub(crate) struct mmsghdr
 {
-	/// Message header.
+	/// PosixMessage header.
 	pub(crate) msg_hdr: msghdr,
 
 	/// Number of received bytes for header.

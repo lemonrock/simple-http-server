@@ -4,14 +4,14 @@
 
 /// Represents a POSIX message queue instance for sending and receiving messages.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SendAndReceiveMessageQueueFileDescriptor
+pub struct SendAndReceivePosixMessageQueueFileDescriptor
 {
-	message_queue_file_descriptor: MessageQueueFileDescriptor,
+	message_queue_file_descriptor: PosixMessageQueueFileDescriptor,
 	maximum_number_of_enqueued_messages: usize,
 	maximum_message_size_in_bytes: usize,
 }
 
-impl AsRawFd for SendAndReceiveMessageQueueFileDescriptor
+impl AsRawFd for SendAndReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -20,7 +20,7 @@ impl AsRawFd for SendAndReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl IntoRawFd for SendAndReceiveMessageQueueFileDescriptor
+impl IntoRawFd for SendAndReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -29,12 +29,12 @@ impl IntoRawFd for SendAndReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl MessageQueue for SendAndReceiveMessageQueueFileDescriptor
+impl PosixMessageQueue for SendAndReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn new(name: &CStr, open_or_create: &OpenOrCreateMessageQueue) -> Result<Self, CreationError>
+	fn new(name: &CStr, open_or_create: &OpenOrCreatePosixMessageQueue) -> Result<Self, CreationError>
 	{
-		MessageQueueFileDescriptor::new(name, MessageQueueCreateSendOrReceive::SendAndReceive, open_or_create).map(|(message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes)| Self { message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes })
+		PosixMessageQueueFileDescriptor::new(name, PosixMessageQueueCreateSendOrReceive::SendAndReceive, open_or_create).map(|(message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes)| Self { message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes })
 	}
 
 	#[inline(always)]
@@ -56,10 +56,10 @@ impl MessageQueue for SendAndReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl Send for SendAndReceiveMessageQueueFileDescriptor
+impl Send for SendAndReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn send(&self, message_buffer: &[u8], message_priority: MessagePriority) -> Result<(), StructWriteError>
+	fn send(&self, message_buffer: &[u8], message_priority: PosixMessagePriority) -> Result<(), StructWriteError>
 	{
 		debug_assert!(message_buffer.len() > self.maximum_message_size_in_bytes(), "message_buffer is too large to send a message");
 
@@ -67,10 +67,10 @@ impl Send for SendAndReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl Receive for SendAndReceiveMessageQueueFileDescriptor
+impl Receive for SendAndReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, MessagePriority), StructReadError>
+	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, PosixMessagePriority), StructReadError>
 	{
 		debug_assert!(message_buffer.len() >= self.maximum_message_size_in_bytes(), "message_buffer is too small to receive a message");
 

@@ -20,16 +20,16 @@ use ::std::convert::TryFrom;
 mod syscall;
 
 
-include!("MessagePriority.rs");
-include!("MessageQueue.rs");
-include!("MessageQueueCreateSendOrReceive.rs");
-include!("MessageQueueCreateSettings.rs");
-include!("MessageQueueFileDescriptor.rs");
-include!("MessageQueueUnlinkError.rs");
-include!("OpenOrCreateMessageQueue.rs");
-include!("OptionalMessageQueueCreateSettings.rs");
+include!("PosixMessagePriority.rs");
+include!("PosixMessageQueue.rs");
+include!("PosixMessageQueueCreateSendOrReceive.rs");
+include!("PosixMessageQueueCreateSettings.rs");
+include!("PosixMessageQueueFileDescriptor.rs");
+include!("PosixMessageQueueUnlinkError.rs");
+include!("OpenOrCreatePosixMessageQueue.rs");
+include!("OptionalPosixMessageQueueCreateSettings.rs");
 include!("Receive.rs");
-include!("ReceiveMessageQueueFileDescriptor.rs");
+include!("ReceivePosixMessageQueueFileDescriptor.rs");
 include!("Send.rs");
-include!("SendAndReceiveMessageQueueFileDescriptor.rs");
-include!("SendMessageQueueFileDescriptor.rs");
+include!("SendAndReceivePosixMessageQueueFileDescriptor.rs");
+include!("SendPosixMessageQueueFileDescriptor.rs");

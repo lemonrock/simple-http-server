@@ -3,10 +3,10 @@
 
 
 /// Receive a message from a queue.
-pub trait Receive: MessageQueue
+pub trait Receive: PosixMessageQueue
 {
 	/// Returns a tuple of `(message_size, message_priority)`.
 	///
-	/// Fails with a panic if the `message_buffer` is too small for the queue's configured message size (use `MessageQueue::queue_attributes()` to find this).
-	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, MessagePriority), StructReadError>;
+	/// Fails with a panic if the `message_buffer` is too small for the queue's configured message size (use `PosixMessageQueue::queue_attributes()` to find this).
+	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, PosixMessagePriority), StructReadError>;
 }

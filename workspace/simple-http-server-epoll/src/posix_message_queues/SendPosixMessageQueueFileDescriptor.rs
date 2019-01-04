@@ -4,14 +4,14 @@
 
 /// Represents a POSIX message queue instance for sending messages.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SendMessageQueueFileDescriptor
+pub struct SendPosixMessageQueueFileDescriptor
 {
-	message_queue_file_descriptor: MessageQueueFileDescriptor,
+	message_queue_file_descriptor: PosixMessageQueueFileDescriptor,
 	maximum_number_of_enqueued_messages: usize,
 	maximum_message_size_in_bytes: usize,
 }
 
-impl AsRawFd for SendMessageQueueFileDescriptor
+impl AsRawFd for SendPosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -20,7 +20,7 @@ impl AsRawFd for SendMessageQueueFileDescriptor
 	}
 }
 
-impl IntoRawFd for SendMessageQueueFileDescriptor
+impl IntoRawFd for SendPosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -29,12 +29,12 @@ impl IntoRawFd for SendMessageQueueFileDescriptor
 	}
 }
 
-impl MessageQueue for SendMessageQueueFileDescriptor
+impl PosixMessageQueue for SendPosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn new(name: &CStr, open_or_create: &OpenOrCreateMessageQueue) -> Result<Self, CreationError>
+	fn new(name: &CStr, open_or_create: &OpenOrCreatePosixMessageQueue) -> Result<Self, CreationError>
 	{
-		MessageQueueFileDescriptor::new(name, MessageQueueCreateSendOrReceive::Send, open_or_create).map(|(message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes)| Self { message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes })
+		PosixMessageQueueFileDescriptor::new(name, PosixMessageQueueCreateSendOrReceive::Send, open_or_create).map(|(message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes)| Self { message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes })
 	}
 
 	#[inline(always)]
@@ -56,10 +56,10 @@ impl MessageQueue for SendMessageQueueFileDescriptor
 	}
 }
 
-impl Send for SendMessageQueueFileDescriptor
+impl Send for SendPosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn send(&self, message_buffer: &[u8], message_priority: MessagePriority) -> Result<(), StructWriteError>
+	fn send(&self, message_buffer: &[u8], message_priority: PosixMessagePriority) -> Result<(), StructWriteError>
 	{
 		debug_assert!(message_buffer.len() > self.maximum_message_size_in_bytes(), "message_buffer is too large to send a message");
 

@@ -28,12 +28,13 @@
 //!
 //! ## Supported File Descriptors
 //!
+//! * character devices and serial ports.
 //! * epoll.
 //! * eventfd.
 //! * fanotify.
 //! * inotify.
 //! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
-//! * pipes (anonymous and named (FIFO)s).
+//! * pipes_and_fifos (anonymous and named (FIFO)s).
 //! * signalfd.
 //! * sockets (TCP, UDP and the equivalent over Unix Domain Sockets).
 //! * timerfd.
@@ -55,9 +56,9 @@
 //!
 //! ## Pipes
 //!
-//! * To be able to use epoll with standard in (`stdin`), use `pipes::ReceivePipeFileDescriptor::standard_in()`.
-//! * To be able to use epoll with standard out (`stdout`), use `pipes::SendPipeFileDescriptor::standard_out()`.
-//! * To be able to use epoll with standard error (`stderr`), use `pipes::SendPipeFileDescriptor::standard_error()`.
+//! * To be able to use epoll with standard in (`stdin`), use `pipes_and_fifos::ReceivePipeFileDescriptor::standard_in()`.
+//! * To be able to use epoll with standard out (`stdout`), use `pipes_and_fifos::SendPipeFileDescriptor::standard_out()`.
+//! * To be able to use epoll with standard error (`stderr`), use `pipes_and_fifos::SendPipeFileDescriptor::standard_error()`.
 //!
 //!
 //! ## Unsupported for now
@@ -68,7 +69,7 @@
 //! * Receiving credentials over Unix Domain Sockets using `recvmsg()`.
 //! * `vmsplice()`, `tee()` and `splice()`.
 //! * `mkfifo()`
-//! * epoll and serial port / USB, eg https://www.cnblogs.com/darryo/p/selectpollepoll-on-serial-port.html; in effect, very similar to a pipe. Can we epoll on any character device, then?
+//! * epoll and serial port / USB, eg https://www.cnblogs.com/darryo/p/selectpollepoll-on-serial-port.html; in effect, very similar to a pipe. Can we epoll on any character device, then? (and `mknod()`).
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;
@@ -168,10 +169,10 @@ cfg_if!
 
 		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
 		/// POSIX message queue file descriptors.
-		pub mod mq;
+		pub mod posix_message_queues;
 
 
-		/// Anonymous and named, connected unidirectional pipes (act like TCP connected sockets).
+		/// Anonymous and named, connected unidirectional pipes_and_fifos (act like TCP connected sockets).
 		///
 		/// Since Linux 2.6.35, the default pipe capacity is 16 pages (which are 4096 bytes on x86-64), but the capacity can be queried and set using the `fcntl()` `F_GETPIPE_SZ` and `F_SETPIPE_SZ` operations.
 		///
@@ -182,7 +183,7 @@ cfg_if!
 		/// Writes of less than `PIPE_BUF` bytes are atomic; `PIPE_BUF` is 4096 bytes on Linux.
 		///
 		/// Atomic writes are significant when there are many writers sharing one named pipe (FIFO).
-		pub mod pipes;
+		pub mod pipes_and_fifos;
 
 
 		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]

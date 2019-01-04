@@ -4,7 +4,7 @@
 
 /// Optional message queue creation settings.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct OptionalMessageQueueCreateSettings
+pub struct OptionalPosixMessageQueueCreateSettings
 {
 	/// Must not be zero or negative.
 	///

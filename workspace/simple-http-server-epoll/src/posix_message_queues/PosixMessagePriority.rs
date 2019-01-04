@@ -4,9 +4,9 @@
 
 /// Represents a message queue priority.
 #[derive(Default, Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct MessagePriority(u16);
+pub struct PosixMessagePriority(u16);
 
-impl Into<u16> for MessagePriority
+impl Into<u16> for PosixMessagePriority
 {
 	#[inline(always)]
 	fn into(self) -> u16
@@ -15,7 +15,7 @@ impl Into<u16> for MessagePriority
 	}
 }
 
-impl Into<u32> for MessagePriority
+impl Into<u32> for PosixMessagePriority
 {
 	#[inline(always)]
 	fn into(self) -> u32
@@ -24,16 +24,16 @@ impl Into<u32> for MessagePriority
 	}
 }
 
-impl From<u8> for MessagePriority
+impl From<u8> for PosixMessagePriority
 {
 	#[inline(always)]
 	fn from(value: u8) -> Self
 	{
-		MessagePriority(value as u16)
+		PosixMessagePriority(value as u16)
 	}
 }
 
-impl TryFrom<u16> for MessagePriority
+impl TryFrom<u16> for PosixMessagePriority
 {
 	type Error = ();
 
@@ -46,12 +46,12 @@ impl TryFrom<u16> for MessagePriority
 		}
 		else
 		{
-			Ok(MessagePriority(value))
+			Ok(PosixMessagePriority(value))
 		}
 	}
 }
 
-impl TryFrom<u32> for MessagePriority
+impl TryFrom<u32> for PosixMessagePriority
 {
 	type Error = ();
 
@@ -64,7 +64,7 @@ impl TryFrom<u32> for MessagePriority
 		}
 		else
 		{
-			Ok(MessagePriority(value as u16))
+			Ok(PosixMessagePriority(value as u16))
 		}
 	}
 }

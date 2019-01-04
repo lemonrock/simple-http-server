@@ -13,7 +13,7 @@ pub enum ReceiveFileDescriptorsError
 	MoreThanOneHeader,
 
 	/// A received ancillary message was not for `SOL_SOCKET`.
-	WasNotSocketLevelMessage,
+	WasNotSocketLevelPosixMessage,
 
 	/// A received ancillary message was not for `SCM_RIGHTS`.
 	WasNotScmRights,
@@ -41,7 +41,7 @@ impl error::Error for ReceiveFileDescriptorsError
 
 			&MoreThanOneHeader => None,
 
-			&WasNotSocketLevelMessage => None,
+			&WasNotSocketLevelPosixMessage => None,
 
 			&WasNotScmRights => None,
 		}

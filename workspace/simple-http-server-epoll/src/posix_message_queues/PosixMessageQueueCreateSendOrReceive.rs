@@ -2,26 +2,17 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur during binding of a socket instance.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum MessageQueueUnlinkError
+/// Read, write or read and write?
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+#[repr(i32)]
+pub(crate) enum PosixMessageQueueCreateSendOrReceive
 {
-	/// Permission denied.
-	PermissionDenied,
+	/// Only send.
+	Send = O_WRONLY | O_CLOEXEC | O_NONBLOCK,
 
-	/// Does not exist.
-	DoesNotExist,
-}
+	/// Only receive.
+	Receive = O_RDONLY | O_CLOEXEC | O_NONBLOCK,
 
-impl Display for MessageQueueUnlinkError
-{
-	#[inline(always)]
-	fn fmt(&self, f: &mut Formatter) -> fmt::Result
-	{
-		<MessageQueueUnlinkError as Debug>::fmt(self, f)
-	}
-}
-
-impl error::Error for MessageQueueUnlinkError
-{
+	/// Send and receive.
+	SendAndReceive = O_RDWR | O_CLOEXEC | O_NONBLOCK,
 }

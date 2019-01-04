@@ -3,10 +3,10 @@
 
 
 /// Represents a message queue file descriptor for reading, writing or both.
-pub trait MessageQueue: AsRawFd + IntoRawFd + Sized
+pub trait PosixMessageQueue: AsRawFd + IntoRawFd + Sized
 {
 	/// Creates a new instance.
-	fn new(name: &CStr, open_or_create: &OpenOrCreateMessageQueue) -> Result<Self, CreationError>;
+	fn new(name: &CStr, open_or_create: &OpenOrCreatePosixMessageQueue) -> Result<Self, CreationError>;
 
 	/// Removes and destroys a queue.
 	///
@@ -15,9 +15,9 @@ pub trait MessageQueue: AsRawFd + IntoRawFd + Sized
 	///
 	/// Failure is caused by the queue not existing or by not having permission.
 	#[inline(always)]
-	fn unlink(name: &CStr) -> Result<(), MessageQueueUnlinkError>
+	fn unlink(name: &CStr) -> Result<(), PosixMessageQueueUnlinkError>
 	{
-		MessageQueueFileDescriptor::guard_name(name);
+		PosixMessageQueueFileDescriptor::guard_name(name);
 
 		let result = unsafe { mq_unlink(name.as_ptr()) };
 		if likely!(result == 0)
@@ -26,7 +26,7 @@ pub trait MessageQueue: AsRawFd + IntoRawFd + Sized
 		}
 		else if likely!(result == -1)
 		{
-			use self::MessageQueueUnlinkError::*;
+			use self::PosixMessageQueueUnlinkError::*;
 
 			Err
 			(

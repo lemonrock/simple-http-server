@@ -4,7 +4,7 @@
 
 /// An error that can occur when opening one end of a FIFO (a named pipe).
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum FifiOpenError
+pub enum FifoOpenError
 {
 	/// Errors common to opening or creation of most file descriptors.
 	Common(CreationError),
@@ -23,21 +23,21 @@ pub enum FifiOpenError
 	InvalidFifoPath(InvalidFifoPathReason),
 }
 
-impl Display for FifiOpenError
+impl Display for FifoOpenError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<FifiOpenError as Debug>::fmt(self, f)
+		<FifoOpenError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for FifiOpenError
+impl error::Error for FifoOpenError
 {
 	#[inline(always)]
 	fn source(&self) ->  Option<&(error::Error + 'static)>
 	{
-		use self::FifiOpenError::*;
+		use self::FifoOpenError::*;
 
 		match self
 		{

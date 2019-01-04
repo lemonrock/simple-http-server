@@ -4,14 +4,14 @@
 
 /// Represents a POSIX message queue instance for receiving messages.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ReceiveMessageQueueFileDescriptor
+pub struct ReceivePosixMessageQueueFileDescriptor
 {
-	message_queue_file_descriptor: MessageQueueFileDescriptor,
+	message_queue_file_descriptor: PosixMessageQueueFileDescriptor,
 	maximum_number_of_enqueued_messages: usize,
 	maximum_message_size_in_bytes: usize,
 }
 
-impl AsRawFd for ReceiveMessageQueueFileDescriptor
+impl AsRawFd for ReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -20,7 +20,7 @@ impl AsRawFd for ReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl IntoRawFd for ReceiveMessageQueueFileDescriptor
+impl IntoRawFd for ReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -29,12 +29,12 @@ impl IntoRawFd for ReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl MessageQueue for ReceiveMessageQueueFileDescriptor
+impl PosixMessageQueue for ReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn new(name: &CStr, open_or_create: &OpenOrCreateMessageQueue) -> Result<Self, CreationError>
+	fn new(name: &CStr, open_or_create: &OpenOrCreatePosixMessageQueue) -> Result<Self, CreationError>
 	{
-		MessageQueueFileDescriptor::new(name, MessageQueueCreateSendOrReceive::Receive, open_or_create).map(|(message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes)| Self { message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes })
+		PosixMessageQueueFileDescriptor::new(name, PosixMessageQueueCreateSendOrReceive::Receive, open_or_create).map(|(message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes)| Self { message_queue_file_descriptor, maximum_number_of_enqueued_messages, maximum_message_size_in_bytes })
 	}
 
 	#[inline(always)]
@@ -56,10 +56,10 @@ impl MessageQueue for ReceiveMessageQueueFileDescriptor
 	}
 }
 
-impl Receive for ReceiveMessageQueueFileDescriptor
+impl Receive for ReceivePosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
-	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, MessagePriority), StructReadError>
+	fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, PosixMessagePriority), StructReadError>
 	{
 		debug_assert!(message_buffer.len() >= self.maximum_message_size_in_bytes(), "message_buffer is too small to receive a message");
 

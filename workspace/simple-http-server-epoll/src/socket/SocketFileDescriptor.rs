@@ -215,7 +215,7 @@ impl SocketFileDescriptor<sockaddr_un>
 			file_descriptor_end_pointer
 		};
 
-		let result = unsafe { recvmsg(self.0, &mut message, ReceiveFlags::ControlMessageCloseOnExec.bits) };
+		let result = unsafe { recvmsg(self.0, &mut message, ReceiveFlags::ControlPosixMessageCloseOnExec.bits) };
 
 		use self::ReceiveFileDescriptorsError::*;
 
@@ -284,7 +284,7 @@ impl SocketFileDescriptor<sockaddr_un>
 						_ => Err(WasNotScmRights),
 					}
 
-					_ => Err(WasNotSocketLevelMessage)
+					_ => Err(WasNotSocketLevelPosixMessage)
 				}
 			}
 		}

@@ -22,7 +22,7 @@ pub enum PollCode
 	/// Input message available.
 	///
 	/// Known as `POLL_MSG` in Linux sources.
-	InputMessage = 3,
+	InputPosixMessage = 3,
 
 	/// Input / Output (IO) error.
 	///

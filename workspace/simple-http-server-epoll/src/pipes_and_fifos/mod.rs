@@ -20,7 +20,7 @@ use ::std::io::Write;
 mod syscall;
 
 
-include!("FifiOpenError.rs");
+include!("FifoOpenError.rs");
 include!("InvalidFifoPathReason.rs");
 include!("ReceivePipeFileDescriptor.rs");
 include!("SendPipeFileDescriptor.rs");

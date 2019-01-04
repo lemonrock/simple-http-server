@@ -40,7 +40,7 @@ pub struct mq_attr
 impl mq_attr
 {
 	#[inline(always)]
-	pub(crate) fn for_create(optional_message_queue_create_settings: &OptionalMessageQueueCreateSettings) -> Self
+	pub(crate) fn for_create(optional_message_queue_create_settings: &OptionalPosixMessageQueueCreateSettings) -> Self
 	{
 		Self
 		{

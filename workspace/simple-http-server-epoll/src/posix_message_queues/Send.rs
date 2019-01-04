@@ -3,10 +3,10 @@
 
 
 /// Receive a message to a queue.
-pub trait Send: MessageQueue
+pub trait Send: PosixMessageQueue
 {
 	/// Sends a message.
 	///
 	/// A message may be empty.
-	fn send(&self, message_buffer: &[u8], message_priority: MessagePriority) -> Result<(), StructWriteError>;
+	fn send(&self, message_buffer: &[u8], message_priority: PosixMessagePriority) -> Result<(), StructWriteError>;
 }

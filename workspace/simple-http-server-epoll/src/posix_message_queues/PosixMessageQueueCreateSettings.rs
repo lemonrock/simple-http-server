@@ -4,18 +4,18 @@
 
 /// Settings for creating a queue.
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct MessageQueueCreateSettings
+pub struct PosixMessageQueueCreateSettings
 {
 	/// File-like permissions to use.
 	pub permissions: mode_t,
 
 	/// Optional create settings.
 	///
-	/// If `None`, then Linux applies a default (see documentation of fields on `OptionalMessageQueueCreateSettings`).
-	pub optional_create_settings: Option<OptionalMessageQueueCreateSettings>,
+	/// If `None`, then Linux applies a default (see documentation of fields on `OptionalPosixMessageQueueCreateSettings`).
+	pub optional_create_settings: Option<OptionalPosixMessageQueueCreateSettings>,
 }
 
-impl Default for MessageQueueCreateSettings
+impl Default for PosixMessageQueueCreateSettings
 {
 	#[inline(always)]
 	fn default() -> Self
@@ -28,7 +28,7 @@ impl Default for MessageQueueCreateSettings
 	}
 }
 
-impl MessageQueueCreateSettings
+impl PosixMessageQueueCreateSettings
 {
 	#[inline(always)]
 	pub(crate) fn invoke_mq_open(&self, name_pointer: *const c_char, oflag: i32) -> c_int

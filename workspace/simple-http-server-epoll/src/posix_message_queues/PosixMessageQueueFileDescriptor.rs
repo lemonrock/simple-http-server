@@ -3,9 +3,9 @@
 
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) struct MessageQueueFileDescriptor(mqd_t);
+pub(crate) struct PosixMessageQueueFileDescriptor(mqd_t);
 
-impl Drop for MessageQueueFileDescriptor
+impl Drop for PosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn drop(&mut self)
@@ -14,7 +14,7 @@ impl Drop for MessageQueueFileDescriptor
 	}
 }
 
-impl AsRawFd for MessageQueueFileDescriptor
+impl AsRawFd for PosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn as_raw_fd(&self) -> RawFd
@@ -23,7 +23,7 @@ impl AsRawFd for MessageQueueFileDescriptor
 	}
 }
 
-impl IntoRawFd for MessageQueueFileDescriptor
+impl IntoRawFd for PosixMessageQueueFileDescriptor
 {
 	#[inline(always)]
 	fn into_raw_fd(self) -> RawFd
@@ -32,11 +32,11 @@ impl IntoRawFd for MessageQueueFileDescriptor
 	}
 }
 
-impl MessageQueueFileDescriptor
+impl PosixMessageQueueFileDescriptor
 {
 	/// Creates a new instance.
 	#[inline(always)]
-	pub(crate) fn new(name: &CStr, send_or_receive: MessageQueueCreateSendOrReceive, open_or_create: &OpenOrCreateMessageQueue) -> Result<(Self, usize, usize), CreationError>
+	pub(crate) fn new(name: &CStr, send_or_receive: PosixMessageQueueCreateSendOrReceive, open_or_create: &OpenOrCreatePosixMessageQueue) -> Result<(Self, usize, usize), CreationError>
 	{
 		match open_or_create.invoke_mq_open(send_or_receive, name)
 		{
@@ -51,7 +51,7 @@ impl MessageQueueFileDescriptor
 		}
 	}
 
-	pub(crate) fn send(&self, message_buffer: &[u8], message_priority: MessagePriority) -> Result<(), StructWriteError>
+	pub(crate) fn send(&self, message_buffer: &[u8], message_priority: PosixMessagePriority) -> Result<(), StructWriteError>
 	{
 		let result = unsafe { mq_timedsend(self.0, message_buffer.as_ptr() as *const _ as *const _, message_buffer.len(), message_priority.into(), null()) };
 
@@ -88,13 +88,13 @@ impl MessageQueueFileDescriptor
 	/// Returns a tuple of `(message_size, message_priority)`.
 	///
 	/// Fails with a panic if the `message_buffer` is too small for the queue's configured message size.
-	pub(crate) fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, MessagePriority), StructReadError>
+	pub(crate) fn receive(&self, message_buffer: &mut [u8]) -> Result<(usize, PosixMessagePriority), StructReadError>
 	{
 		let mut priority = unsafe { uninitialized() };
 		let result = unsafe { mq_timedreceive(self.0, message_buffer.as_mut_ptr() as *mut _ as *mut _, message_buffer.len(), &mut priority, null()) } ;
 		if likely!(result >= 0)
 		{
-			Ok((result as usize, MessagePriority(priority as u16)))
+			Ok((result as usize, PosixMessagePriority(priority as u16)))
 		}
 		else if likely!(result == -1)
 		{

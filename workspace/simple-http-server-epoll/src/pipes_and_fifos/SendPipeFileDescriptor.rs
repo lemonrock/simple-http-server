@@ -117,7 +117,7 @@ impl SendPipeFileDescriptor
 	/// Returns `Ok(Some(Self))` if successful.
 	/// Returns `Ok(None)` if there wasn't a process already receiving from this FIFO.
 	#[inline(always)]
-	pub fn open_fifo_for_send(fifo_path: impl AsRef<Path>) -> Result<Option<Self>, FifiOpenError>
+	pub fn open_fifo_for_send(fifo_path: impl AsRef<Path>) -> Result<Option<Self>, FifoOpenError>
 	{
 		Self::open_fifo(fifo_path, O_WRONLY, Self)
 	}
@@ -128,7 +128,7 @@ impl SendPipeFileDescriptor
 	///
 	/// Opens regardless of whether another process is already receiving from this FIFO.
 	#[inline(always)]
-	pub fn open_fifo_for_send_irrespective_of_another_process_already_having_opened_the_fifo_for_receive(fifo_path: impl AsRef<Path>) -> Result<Self, FifiOpenError>
+	pub fn open_fifo_for_send_irrespective_of_another_process_already_having_opened_the_fifo_for_receive(fifo_path: impl AsRef<Path>) -> Result<Self, FifoOpenError>
 	{
 		Self::open_fifo(fifo_path, O_RDWR, Self).map(|optional| optional.expect("ENXIO should not occur with O_RDWR set in open()"))
 	}
@@ -187,7 +187,7 @@ impl SendPipeFileDescriptor
 	}
 
 	#[inline(always)]
-	pub(crate) fn open_fifo<PFD>(fifo_path: impl AsRef<Path>, access_flag: c_int, constructor: impl FnOnce(RawFd) -> PFD) -> Result<Option<PFD>, FifiOpenError>
+	pub(crate) fn open_fifo<PFD>(fifo_path: impl AsRef<Path>, access_flag: c_int, constructor: impl FnOnce(RawFd) -> PFD) -> Result<Option<PFD>, FifoOpenError>
 	{
 		let fifo_path = CString::new(path_bytes_without_trailing_nul(&fifo_path)).unwrap();
 
@@ -201,7 +201,7 @@ impl SendPipeFileDescriptor
 		else
 		{
 			use self::CreationError::*;
-			use self::FifiOpenError::*;
+			use self::FifoOpenError::*;
 			use self::InvalidFifoPathReason::*;
 
 			Err
