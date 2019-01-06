@@ -2,13 +2,6 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-// c_lflag bits
-
-// PowerPc is different...
-
-
-
-
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const ECHOKE: tcflag_t = 0o004000;
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const ECHOKE: tcflag_t = 0x00000001;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const ECHOKE: tcflag_t = 0x00000001;
@@ -68,7 +61,6 @@
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const PENDIN: tcflag_t = 0o040000;
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const PENDIN: tcflag_t = 0x20000000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const PENDIN: tcflag_t = 0x20000000;
-
 
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const XCASE: tcflag_t = 0o000004;
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const XCASE: tcflag_t = 0x00004000;
