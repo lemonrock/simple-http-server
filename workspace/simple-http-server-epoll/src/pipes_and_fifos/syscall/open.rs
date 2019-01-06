@@ -2,6 +2,7 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[link(name = "c")]
 extern "C"
 {
 	/// Given a `pathname` for a file, `open()` returns a file descriptor.

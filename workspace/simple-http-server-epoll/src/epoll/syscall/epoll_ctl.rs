@@ -12,6 +12,7 @@ pub(crate) const EPOLL_CTL_DEL: c_int = 2;
 /// The event `event` is ignored and can be `NULL`.
 pub(crate) const EPOLL_CTL_MOD: c_int = 3;
 
+#[link(name = "c")]
 extern "C"
 {
 	/// Adds, modifies or removes a file descriptor to monitor using epoll.

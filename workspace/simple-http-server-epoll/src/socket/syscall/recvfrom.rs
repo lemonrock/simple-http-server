@@ -3,6 +3,7 @@
 
 
 /// The flags argument to a recv() call is a bitwise or of the constants starting `MSG_*`.
+#[link(name = "c")]
 extern "C"
 {
 	/// Receives data from a socket.

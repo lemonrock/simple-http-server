@@ -2,6 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[link(name = "c")]
 extern "C"
 {
 	/// The `epoll_wait() `call waits for events on the `epoll` instance referred to by the file descriptor `epfd`.

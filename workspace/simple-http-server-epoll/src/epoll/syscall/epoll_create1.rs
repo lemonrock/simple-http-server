@@ -10,6 +10,7 @@
 /// Valid on Solaris.
 pub(crate) const EPOLL_CLOEXEC: c_int = O_CLOEXEC;
 
+#[link(name = "c")]
 extern "C"
 {
 	/// Modern version of epoll suitable for all modern versions of Linux.

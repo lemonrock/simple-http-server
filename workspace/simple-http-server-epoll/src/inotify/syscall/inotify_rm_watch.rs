@@ -2,6 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[link(name = "c")]
 extern "C"
 {
 	/// `inotify_rm_watch()` removes the watch associated with the watch descriptor `wd` from the inotify instance associated with the file descriptor `fd`.

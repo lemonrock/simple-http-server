@@ -2,6 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[link(name = "c")]
 extern "C"
 {
 	/// `mq_open() `creates a new POSIX message queue or opens an existing queue.

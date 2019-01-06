@@ -70,6 +70,8 @@
 //! * `vmsplice()`, `tee()` and `splice()`.
 //! * `mkfifo()`
 //! * epoll and serial port / USB, eg https://www.cnblogs.com/darryo/p/selectpollepoll-on-serial-port.html; in effect, very similar to a pipe. Can we epoll on any character device, then? (and `mknod()`).
+//! * infiniband sockets
+//! * canbus sockets
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;
@@ -86,6 +88,7 @@ cfg_if!
 		use self::epoll::*;
 		use ::arrayvec::ArrayVec;
 		use ::errno::errno;
+		use ::errno::Errno;
 		use ::libc::c_char;
 		use ::libc::c_int;
 		use ::libc::c_void;
@@ -154,6 +157,10 @@ cfg_if!
 		#[cfg(unix)] use ::std::os::unix::io::RawFd;
 
 
+		/// Character device file descriptors, with support for terminals (and thus serial ports).
+		pub mod character_devices_and_terminals;
+
+
 		/// EPoll file descriptors.
 		pub mod epoll;
 
@@ -205,8 +212,10 @@ cfg_if!
 
 
 		include!("CreationError.rs");
+		include!("InvalidPathReason.rs");
 		include!("path_bytes_without_trailing_nul.rs");
 		include!("RawFdExt.rs");
+		include!("SpecialFileOpenError.rs");
 		include!("StructReadError.rs");
 		include!("StructWriteError.rs");
 	}

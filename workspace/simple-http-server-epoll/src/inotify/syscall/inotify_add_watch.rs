@@ -2,6 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[link(name = "c")]
 extern "C"
 {
 	/// `inotify_add_watch()` adds a new watch, or modifies an existing watch, for the file whose location is specified in pathname; the caller must have read permission for this file.

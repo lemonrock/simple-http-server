@@ -2,6 +2,7 @@
 // Copyright © 2018 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
+#[link(name = "c")]
 extern "C"
 {
 	/// `mq_timedreceive()` removes the oldest message with the highest priority from the message queue referred to by the message queue descriptor  `mqdes`, and places it in the buffer pointed to by `msg_ptr`.

@@ -4,40 +4,46 @@
 
 /// An error that can occur when opening one end of a FIFO (a named pipe).
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum FifoOpenError
+pub enum SpecialFileOpenError
 {
 	/// Errors common to opening or creation of most file descriptors.
 	Common(CreationError),
 
-	/// A (possibly mandatory) file lock is held on the FIFO.
+	/// A (possibly mandatory) file lock is held on the special file path.
 	///
 	/// Rationally, this would not seem to make sense but the Linux documentation doesn't make it clear if it is possible or not.
 	///
 	/// If this is encountered then an orderly shutdown is probably the only course of action as it is not possible to epoll for lock status changes on files that haven't even be opened.
 	WouldBlock,
 
-	/// `EINTR` occurred; this can be handled by either re-trying the open of the FIFO or might actual be fatal depending on the signal handling strategy in use.
+	/// `EINTR` occurred; this can be handled by either re-trying the open of a FIFO or might actual be fatal depending on the signal handling strategy in use.
 	Interrupted,
 
-	/// Invalid FIFO path
-	InvalidFifoPath(InvalidFifoPathReason),
+	/// Invalid path.
+	InvalidPath(InvalidPathReason),
+
+	/// Not a terminal.
+	NotATerminal(Errno),
+
+	/// Could not set terminal attributes.
+	CouldNotSetTerminalAttributes(Errno),
 }
 
-impl Display for FifoOpenError
+impl Display for SpecialFileOpenError
 {
 	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result
 	{
-		<FifoOpenError as Debug>::fmt(self, f)
+		<SpecialFileOpenError as Debug>::fmt(self, f)
 	}
 }
 
-impl error::Error for FifoOpenError
+impl error::Error for SpecialFileOpenError
 {
 	#[inline(always)]
 	fn source(&self) ->  Option<&(error::Error + 'static)>
 	{
-		use self::FifoOpenError::*;
+		use self::SpecialFileOpenError::*;
 
 		match self
 		{
@@ -47,7 +53,11 @@ impl error::Error for FifoOpenError
 
 			Interrupted => None,
 
-			&InvalidFifoPath(_) => None,
+			&InvalidPath(_) => None,
+
+			NotATerminal(_) => None,
+
+			CouldNotSetTerminalAttributes(_) => None,
 		}
 	}
 }

@@ -17,10 +17,8 @@ use ::std::io::Read;
 use ::std::io::Write;
 
 
-mod syscall;
+pub(crate) mod syscall;
 
 
-include!("FifoOpenError.rs");
-include!("InvalidFifoPathReason.rs");
 include!("ReceivePipeFileDescriptor.rs");
 include!("SendPipeFileDescriptor.rs");

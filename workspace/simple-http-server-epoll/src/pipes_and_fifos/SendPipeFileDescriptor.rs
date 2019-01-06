@@ -117,9 +117,9 @@ impl SendPipeFileDescriptor
 	/// Returns `Ok(Some(Self))` if successful.
 	/// Returns `Ok(None)` if there wasn't a process already receiving from this FIFO.
 	#[inline(always)]
-	pub fn open_fifo_for_send(fifo_path: impl AsRef<Path>) -> Result<Option<Self>, FifoOpenError>
+	pub fn open_fifo_for_send(fifo_file_path: impl AsRef<Path>) -> Result<Option<Self>, SpecialFileOpenError>
 	{
-		Self::open_fifo(fifo_path, O_WRONLY, Self)
+		Self::open_fifo(fifo_file_path, O_WRONLY, Self)
 	}
 
 	/// Opens a pipe (FIFO) named in the file system suitable for sending data to.
@@ -128,9 +128,9 @@ impl SendPipeFileDescriptor
 	///
 	/// Opens regardless of whether another process is already receiving from this FIFO.
 	#[inline(always)]
-	pub fn open_fifo_for_send_irrespective_of_another_process_already_having_opened_the_fifo_for_receive(fifo_path: impl AsRef<Path>) -> Result<Self, FifoOpenError>
+	pub fn open_fifo_for_send_irrespective_of_another_process_already_having_opened_the_fifo_for_receive(fifo_file_path: impl AsRef<Path>) -> Result<Self, SpecialFileOpenError>
 	{
-		Self::open_fifo(fifo_path, O_RDWR, Self).map(|optional| optional.expect("ENXIO should not occur with O_RDWR set in open()"))
+		Self::open_fifo(fifo_file_path, O_RDWR, Self).map(|optional| optional.expect("ENXIO should not occur with O_RDWR set in open()"))
 	}
 
 	/// Creates a new pipe.
@@ -187,9 +187,9 @@ impl SendPipeFileDescriptor
 	}
 
 	#[inline(always)]
-	pub(crate) fn open_fifo<PFD>(fifo_path: impl AsRef<Path>, access_flag: c_int, constructor: impl FnOnce(RawFd) -> PFD) -> Result<Option<PFD>, FifoOpenError>
+	pub(crate) fn open_fifo<PFD>(fifo_file_path: impl AsRef<Path>, access_flag: c_int, constructor: impl FnOnce(RawFd) -> PFD) -> Result<Option<PFD>, SpecialFileOpenError>
 	{
-		let fifo_path = CString::new(path_bytes_without_trailing_nul(&fifo_path)).unwrap();
+		let fifo_path = CString::new(path_bytes_without_trailing_nul(&fifo_file_path)).unwrap();
 
 		const CommonFlags: c_int = O_CLOEXEC | O_NONBLOCK;
 
@@ -201,8 +201,8 @@ impl SendPipeFileDescriptor
 		else
 		{
 			use self::CreationError::*;
-			use self::FifoOpenError::*;
-			use self::InvalidFifoPathReason::*;
+			use self::SpecialFileOpenError::*;
+			use self::InvalidPathReason::*;
 
 			Err
 			(
@@ -214,12 +214,12 @@ impl SendPipeFileDescriptor
 					ENOMEM => Common(KernelWouldBeOutOfMemory),
 					EAGAIN => WouldBlock,
 					EINTR => Interrupted,
-					ELOOP => InvalidFifoPath(TooManySymbolicLinks),
-					ENAMETOOLONG => InvalidFifoPath(TooLong),
-					EISDIR => InvalidFifoPath(IsADirectory),
-					ENOENT => InvalidFifoPath(DoesNotExist),
-					ENOTDIR => InvalidFifoPath(ParentComponentIsNotADirectory),
-					ENODEV | EROFS | ETXTBSY => InvalidFifoPath(ExistsButCanNotBeUsed),
+					ELOOP => InvalidPath(TooManySymbolicLinks),
+					ENAMETOOLONG => InvalidPath(TooLong),
+					EISDIR => InvalidPath(IsADirectory),
+					ENOENT => InvalidPath(DoesNotExist),
+					ENOTDIR => InvalidPath(ParentComponentIsNotADirectory),
+					ENODEV | EROFS | ETXTBSY => InvalidPath(ExistsButCanNotBeUsed),
 
 					ENXIO => if access_flag == O_WRONLY
 					{
@@ -227,7 +227,7 @@ impl SendPipeFileDescriptor
 					}
 					else
 					{
-						InvalidFifoPath(ExistsButCanNotBeUsed)
+						InvalidPath(ExistsButCanNotBeUsed)
 					},
 
 					EDQUOT => panic!("Where `O_CREAT `is specified, the file does not exist, and the user's quota of disk blocks or inodes on the file system has been exhausted"),

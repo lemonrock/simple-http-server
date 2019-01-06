@@ -112,9 +112,9 @@ impl ReceivePipeFileDescriptor
 	///
 	/// Sadly, there is no way to atomically detect if the provided path is **not** a FIFO.
 	#[inline(always)]
-	pub fn open_fifo_for_receive(fifo_path: impl AsRef<Path>) -> Result<Self, FifoOpenError>
+	pub fn open_fifo_for_receive(fifo_file_path: impl AsRef<Path>) -> Result<Self, SpecialFileOpenError>
 	{
-		SendPipeFileDescriptor::open_fifo(fifo_path, O_RDONLY, Self).map(|optional| optional.expect("ENXIO should not occur when open() is used with the flag O_RDONLY"))
+		SendPipeFileDescriptor::open_fifo(fifo_file_path, O_RDONLY, Self).map(|optional| optional.expect("ENXIO should not occur when open() is used with the flag O_RDONLY"))
 	}
 
 	/// Creates a new pipe.

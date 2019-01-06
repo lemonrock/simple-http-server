@@ -4,7 +4,7 @@
 
 /// Reason given for why a path is an invalid for a FIFO.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum InvalidFifoPathReason
+pub enum InvalidPathReason
 {
 	/// Equivalent to `ELOOP`.
 	TooManySymbolicLinks,
