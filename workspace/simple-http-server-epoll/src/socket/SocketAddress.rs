@@ -12,7 +12,6 @@ pub enum SocketAddress<FilePath: AsRef<Path>>
 	Unix(UnixSocketAddress<FilePath>),
 }
 
-
 impl<FilePath: AsRef<Path>> SocketAddress<FilePath>
 {
 	/// New streaming server listener.

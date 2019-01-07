@@ -72,7 +72,7 @@
 //! * `mkfifo()`.
 //! * `mknod()`.
 //! * infiniband sockets.
-//! * canbus sockets.
+//! * canbus (SocketCAN sockets and can4linux character device drivers).
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;

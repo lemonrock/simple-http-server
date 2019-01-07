@@ -4,6 +4,7 @@
 
 use super::*;
 use self::syscall::*;
+use ::libc::AF_IB;
 use ::libc::AF_INET;
 use ::libc::AF_INET6;
 use ::libc::AF_UNIX;
@@ -79,6 +80,7 @@ include!("DatagramServerListenerSocketFileDescriptor.rs");
 include!("DatagramServerListenerSocketFileDescriptorEnum.rs");
 include!("ErrorFlags.rs");
 include!("FilePathInvalidReason.rs");
+include!("InfinibandSocketAddress.rs");
 include!("MessageHeadersIterator.rs");
 include!("NewSocketClientError.rs");
 include!("NewSocketServerListenerError.rs");
