@@ -182,7 +182,7 @@ impl CharacterDeviceFileDescriptor
 	}
 
 	#[inline(always)]
-	fn open_character_device_internal(character_device_file_path: impl AsRef<Path>, additional_flags: c_int) -> Result<Self, SpecialFileOpenError>
+	pub(crate) fn open_character_device_internal(character_device_file_path: impl AsRef<Path>, additional_flags: c_int) -> Result<Self, SpecialFileOpenError>
 	{
 		let fifo_path = CString::new(path_bytes_without_trailing_nul(&character_device_file_path)).unwrap();
 

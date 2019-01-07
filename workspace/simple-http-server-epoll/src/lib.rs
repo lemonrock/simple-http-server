@@ -28,7 +28,7 @@
 //!
 //! ## Supported File Descriptors
 //!
-//! * character devices and serial ports.
+//! * character devices.
 //! * epoll.
 //! * eventfd.
 //! * fanotify.
@@ -37,6 +37,7 @@
 //! * pipes_and_fifos (anonymous and named (FIFO)s).
 //! * signalfd.
 //! * sockets (TCP, UDP and the equivalent over Unix Domain Sockets).
+//! * terminals (serial ports and modems).
 //! * timerfd.
 //!
 //!
@@ -68,10 +69,10 @@
 //! * Unix Domain Sockets using `autobind`; setting of the `SO_PASSCRED` socket option.
 //! * Receiving credentials over Unix Domain Sockets using `recvmsg()`.
 //! * `vmsplice()`, `tee()` and `splice()`.
-//! * `mkfifo()`
-//! * epoll and serial port / USB, eg https://www.cnblogs.com/darryo/p/selectpollepoll-on-serial-port.html; in effect, very similar to a pipe. Can we epoll on any character device, then? (and `mknod()`).
-//! * infiniband sockets
-//! * canbus sockets
+//! * `mkfifo()`.
+//! * `mknod()`.
+//! * infiniband sockets.
+//! * canbus sockets.
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;
@@ -88,7 +89,7 @@ cfg_if!
 	if #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))]
 	{
 		use self::epoll::*;
-		use self::character_devices_and_terminals::TerminalSettingsError;
+		use self::terminal::TerminalSettingsError;
 		use ::arrayvec::ArrayVec;
 		use ::errno::errno;
 		use ::errno::Errno;
@@ -160,8 +161,8 @@ cfg_if!
 		#[cfg(unix)] use ::std::os::unix::io::RawFd;
 
 
-		/// Character device file descriptors, with support for terminals (and thus serial ports).
-		pub mod character_devices_and_terminals;
+		/// Character device file descriptors.
+		pub mod character_device;
 
 
 		/// EPoll file descriptors.
@@ -208,6 +209,10 @@ cfg_if!
 		#[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux"))]
 		/// Socket file descriptors.
 		pub mod socket;
+
+
+		/// Terminal (serial port and modem) file descriptors.
+		pub mod terminal;
 
 
 		/// Timer file descriptors.

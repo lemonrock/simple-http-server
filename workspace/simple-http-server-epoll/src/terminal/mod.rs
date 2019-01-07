@@ -3,18 +3,11 @@
 
 
 use super::*;
-use super::pipes_and_fifos::syscall::open;
+use super::character_device::CharacterDeviceFileDescriptor;
 use self::c::*;
-use ::libc::ENAMETOOLONG;
-use ::libc::ENXIO;
-use ::libc::EOVERFLOW;
-use ::libc::EROFS;
-use ::libc::ETXTBSY;
 use ::libc::O_NOCTTY;
 use ::std::collections::BTreeMap;
-use ::std::ffi::CString;
 use ::std::io;
-use ::std::io::ErrorKind;
 use ::std::io::Initializer;
 use ::std::io::Read;
 use ::std::io::Write;
@@ -34,7 +27,6 @@ include!("CanonicalSettings.rs");
 include!("CarriageReturnDelay.rs");
 include!("Character.rs");
 include!("CharacterSettings.rs");
-include!("CharacterDeviceFileDescriptor.rs");
 include!("ControlModeFlagSettings.rs");
 include!("CurrentTerminalSettings.rs");
 include!("Echo.rs");
