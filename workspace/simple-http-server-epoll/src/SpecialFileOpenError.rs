@@ -2,7 +2,7 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// An error that can occur when opening one end of a FIFO (a named pipe).
+/// An error that can occur when opening one end of a FIFO (a named pipe) or a character device.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SpecialFileOpenError
 {
@@ -23,10 +23,7 @@ pub enum SpecialFileOpenError
 	InvalidPath(InvalidPathReason),
 
 	/// Not a terminal.
-	NotATerminal(Errno),
-
-	/// Could not set terminal attributes.
-	CouldNotSetTerminalAttributes(Errno),
+	Terminal(TerminalSettingsError),
 }
 
 impl Display for SpecialFileOpenError
@@ -55,9 +52,7 @@ impl error::Error for SpecialFileOpenError
 
 			&InvalidPath(_) => None,
 
-			NotATerminal(_) => None,
-
-			CouldNotSetTerminalAttributes(_) => None,
+			Terminal(ref error) => Some(error),
 		}
 	}
 }

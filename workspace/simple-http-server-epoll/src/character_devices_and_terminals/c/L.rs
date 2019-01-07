@@ -68,3 +68,38 @@
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const NOKERNINFO: tcflag_t = 0x02000000;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const ALTWERASE: tcflag_t = 0x00000200;
+
+
+/*
+
+	/// If set, input characters are echoed back to the terminal device. Input characters can be echoed in either canonical or noncanonical mode.
+	ECHO is independent of ICANON
+
+	ICANON related settings:-
+		XCASE
+		ECHOE
+		ECHOK
+		ECHONL
+		ECHOKE
+		?IEXTEN
+
+	ECHO related settings:-
+		///
+		//
+		//(c_lflag, FreeBSD, Linux, Mac OS X, Solaris) If set and if ECHO is set, ASCII control characters (those characters in the range 0 through octal 37, inclusive) other than the ASCII TAB, the ASCII NL, and the START and STOP characters are echoed as ^X, where X is the character formed by adding octal 100 to the control character. This means that the ASCII Control-A character (octal 1) is echoed as ^A. Also, the ASCII DELETE character (octal 177) is echoed as ^?. If this flag is not set, the ASCII control characters are echoed as themselves. As with the ECHO flag, this flag affects the echoing of control characters in both canonical and noncanonical modes.
+		//
+		//
+		//Be aware that some systems echo the EOF character differently, since its typical value is Control-D. (Control-D is the ASCII EOT character, which can cause some terminals to hang up.) Check your manual.
+		ECHOCTL
+
+	ICANON and ECHO related:-
+		///  If set and if both ICANON and ECHO are set, then the ERASE character (and WERASE character, if supported) cause all the characters being erased to be printed as they are erased. This is often useful on a hard-copy terminal to see exactly which characters are being deleted.
+		ECHOPRT
+
+	Read-only
+		FLUSHO
+
+	ISIG related:-
+		NOFLSH
+
+*/

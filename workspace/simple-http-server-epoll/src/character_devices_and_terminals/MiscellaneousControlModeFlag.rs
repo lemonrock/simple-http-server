@@ -10,12 +10,19 @@
 pub enum MiscellaneousControlModeFlag
 {
 	/// Enable receiver.
+	///
+	/// If set, the receiver is enabled, and characters can be received.
 	EnableReceiver = CREAD,
 
 	/// Hang up on last close.
+	///
+	/// If set, the modem control lines are lowered (ie, the modem connection is broken) when the last process closes the device.
 	HangUpOnLastClose = HUPCL,
 
 	/// Ignore modem status lines (actually, ignores only the `CD` signal).
+	///
+	/// This usually means that the device is directly attached.
+	/// When this flag is not set, an open of a terminal device usually blocks until the modem answers a call and establishes a connection, for example.
 	IgnoreModemStatusLines = CLOCAL,
 
 	/// Ignore control flags.

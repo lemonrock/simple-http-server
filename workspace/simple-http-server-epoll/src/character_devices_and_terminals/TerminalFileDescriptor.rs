@@ -83,87 +83,30 @@ impl Write for TerminalFileDescriptor
 
 impl TerminalFileDescriptor
 {
-	/*
-	from http://man7.org/linux/man-pages/man2/ioctl_tty.2.html
-
-	   TODO: Exclusive mode
-       TIOCEXCL  void
-              Put the terminal into exclusive mode.  No further open(2)
-              operations on the terminal are permitted.  (They fail with
-              EBUSY, except for a process with the CAP_SYS_ADMIN capabil‐
-              ity.)
-
-       TIOCGEXCL int *argp
-              (since Linux 3.8) If the terminal is currently in exclusive
-              mode, place a nonzero value in the location pointed to by
-              argp; otherwise, place zero in *argp.
-
-       TIOCNXCL  void
-              Disable exclusive mode.
-
-   Line discipline
-       TIOCGETD  int *argp
-              Get the line discipline of the terminal.
-
-       TIOCSETD  const int *argp
-              Set the line discipline of the terminal.
-
-	TODO:
-       TCSBRKP   int arg
-              So-called "POSIX version" of TCSBRK (tcsendbreak() with working interval).  It treats nonzero arg as
-              a timeinterval measured in deciseconds, and does nothing when
-              the driver does not support breaks.
-
-       TIOCSBRK  void
-              Turn break on, that is, start sending zero bits.
-
-       TIOCCBRK  void
-              Turn break off, that is, stop sending zero bits.
-
-
-These are ERRORS from ioctl-backed functions.
-TODO: ERRORS         top
-
-       EINVAL Invalid command parameter.
-
-       ENOIOCTLCMD
-              Unknown command.
-
-       ENOTTY Inappropriate fd.
-
-       EPERM  Insufficient permission.  - preferable.
-
-TODO: Make some propert bitflags for various terminal control flags; implement cfmakeraw() as a default for terminal settings - see http://man7.org/linux/man-pages/man3/termios.3.html
-
-See also https://github.com/dcuddeback/serial-rs/blob/master/serial-unix/src/tty.rs
-
-	*/
-
-
 	/// Opens a terminal character device named in the file system suitable for sending data to.
 	///
 	/// Sadly, there is no way to atomically detect if the provided path is **not** a terminal character device.
 	#[inline(always)]
-	pub fn open_terminal_character_device(terminal_character_device_file_path: impl AsRef<Path>, baud_rate: BaudRate, input_mode_settings: &InputModeFlagSettings, output_mode_settings: &OutputModeFlagSettings) -> Result<Self, SpecialFileOpenError>
+	pub fn open_terminal_character_device(terminal_character_device_file_path: impl AsRef<Path>, terminal_settings: &TerminalSettings) -> Result<Self, SpecialFileOpenError>
 	{
 		use self::SpecialFileOpenError::*;
 
 		let this = Self(CharacterDeviceFileDescriptor::open_character_device_internal(terminal_character_device_file_path, O_NOCTTY)?);
 
+		this.change_terminal_settings(terminal_settings).map_err(|terminal_settings_error| SpecialFileOpenError::Terminal(terminal_settings_error))
+	}
+
+	/// Changes terminal settings.
+	#[inline(always)]
+	pub fn change_terminal_settings(&self, terminal_settings: &TerminalSettings) -> Result<(), TerminalSettingsError>
+	{
 		let mut terminal_options: termios = unsafe { uninitialized() };
+
 		Self::handle_terminal_error(unsafe { tcgetattr(this.as_raw_fd(), &mut terminal_options, NotATerminal) })?;
 
-		baud_rate.set_terminal_input_and_output_speed(&mut terminal_options);
+		terminal_settings.change_settings(&mut terminal_options);
 
-
-		// Input mode - unset canonical mode (ie raw mode), echo, echo erase and signal raising.
-		terminal_options.c_lflag &= !(ICANON | ECHO | ECHOE | ISIG);
-		input_mode_settings.change_input_mode_flags(&mut terminal_options);
-		output_mode_settings.change_output_mode_flags(&mut terminal_options);
-
-		Self::handle_terminal_error(unsafe { tcsetattr(file_descriptor, TCSANOW, &terminal_options, CouldNotSetTerminalAttributes) })?;
-
-		this
+		Self::handle_terminal_error(unsafe { tcsetattr(file_descriptor, TCSANOW, &terminal_options, CouldNotSetTerminalAttributes) })
 	}
 
 	/// Discard input.

@@ -28,40 +28,33 @@ mod c;
 include!("BackspaceTabDelay.rs");
 include!("BaudRate.rs");
 include!("BitsPerByte.rs");
+include!("CanonicalEchoKillCharacter.rs");
+include!("CanonicalSettings.rs");
 include!("CarriageReturnDelay.rs");
+include!("Character.rs");
+include!("CharacterSettings.rs");
 include!("CharacterDeviceFileDescriptor.rs");
+include!("Echo.rs");
 include!("FlagSetting.rs");
 include!("FormFeedTabDelay.rs");
 include!("HorizontalTabDelay.rs");
 include!("InputModeFlag.rs");
 include!("InputModeFlagSettings.rs");
+include!("LocalModeFlagSettings.rs");
 include!("MiscellaneousControlModeFlag.rs");
 include!("MiscellaneousControlModeFlagSettings.rs");
+include!("MiscellaneousLocalModeFlag.rs");
+include!("MiscellaneousLocalModeFlagSettings.rs");
 include!("MiscellaneousOutputModeFlag.rs");
 include!("MiscellaneousOutputModeFlagSettings.rs");
 include!("MultipleBits.rs");
 include!("NewLineDelay.rs");
 include!("OutputModeFlagSettings.rs");
 include!("Parity.rs");
+include!("SignalRaising.rs");
 include!("StopBits.rs");
 include!("TerminalFileDescriptor.rs");
+include!("TerminalMode.rs");
+include!("TerminalSettings.rs");
+include!("TerminalSettingsError.rs");
 include!("VerticalTabDelay.rs");
-
-
-
-
-
-/*
-
-On freebsd: tcsetsid  and  cfmakesane
-not on linux.
-
-
-
-pub use {CSIZE,CS5,CS6,CS7,CS8,CSTOPB,CREAD,PARENB,PARODD,HUPCL,CLOCAL}; // control modes
-pub use {ECHO,ECHOE,ECHOK,ECHONL,ICANON,IEXTEN,ISIG,NOFLSH,TOSTOP}; // local modes
-
-pub use {TCSANOW,TCSADRAIN,TCSAFLUSH}; // attribute selection
-pub use {TCIFLUSH,TCIOFLUSH,TCOFLUSH,TCIOFF,TCION,TCOOFF,TCOON}; // line control
-
-*/

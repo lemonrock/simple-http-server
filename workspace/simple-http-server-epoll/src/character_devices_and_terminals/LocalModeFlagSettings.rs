@@ -2,51 +2,56 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// Represents settings for output mode flags.
+/// Represents settings for local mode flags.
+///
+/// Note that is is not possible to set the `FLUSHO` flag.
 #[derive(Default, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ControlModeFlagSettings
+pub struct LocalModeFlagSettings
 {
-	/// Bits per byte.
-	pub bits_per_byte: Option<BitsPerByte>,
+	/// Terminal mode.
+	pub terminal_mode: Option<TerminalMode>,
 
-	/// How many stop bits?
-	pub stop_bits: Option<StopBits>,
+	/// Echo settings.
+	pub echo: Option<Echo>,
 
-	/// Parity.
-	pub parity: Option<Parity>,
+	pub signal_raising: Option<SignalRaising>,
 
 	/// Miscellaneous.
-	pub miscellaneous: MiscellaneousControlModeFlagSettings,
+	pub miscellaneous: MiscellaneousLocalModeFlagSettings,
 }
 
-impl Default for ControlModeFlagSettings
+impl Default for LocalModeFlagSettings
 {
 	#[inline(always)]
 	fn default() -> Self
 	{
 		Self
 		{
-			bits_per_byte: Some(BitsPerByte::default()),
-			stop_bits: Some(StopBits::default()),
-			parity: Some(Parity::default()),
-			miscellaneous: MiscellaneousControlModeFlagSettings::default(),
+			terminal_mode: Some(TerminalMode::default()),
+			echo: Some(Echo::default()),
+			signal_raising: Some(SignalRaising::default()),
+			miscellaneous: MiscellaneousLocalModeFlagSettings::default(),
 		}
 	}
 }
 
-impl ControlModeFlagSettings
+impl LocalModeFlagSettings
 {
 	#[inline(always)]
 	pub(crate) fn change_mode_flags(&self, mut terminal_options: &mut termios)
 	{
-		let existing_flags = terminal_options.c_cflag;
+		let existing_flags = terminal_options.c_lflag;
 
 		let mut new_flags = existing_flags;
-		new_flags = MultipleBits::change_mode_flags(self.bits_per_byte, new_flags);
-		new_flags = MultipleBits::change_mode_flags(self.stop_bits, new_flags);
-		new_flags = MultipleBits::change_mode_flags(self.parity, new_flags);
+
+		if let Some(ref terminal_mode) = self.terminal_mode
+		{
+			new_flags = terminal_mode.change_mode_flags(new_flags);
+		}
+		new_flags = MultipleBits::change_mode_flags(self.echo, new_flags);
+		new_flags = MultipleBits::change_mode_flags(self.signal_raising, new_flags);
 		new_flags = self.miscellaneous.change_mode_flags(new_flags);
 
-		terminal_options.c_cflag = new_flags;
+		terminal_options.c_lflag = new_flags;
 	}
 }

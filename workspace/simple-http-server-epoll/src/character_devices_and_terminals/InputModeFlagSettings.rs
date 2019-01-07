@@ -76,7 +76,7 @@ impl DerefMut for InputModeFlagSettings
 impl InputModeFlagSettings
 {
 	#[inline(always)]
-	pub(crate) fn change_input_mode_flags(&self, mut terminal_options: &mut termios)
+	pub(crate) fn change_mode_flags(&self, mut terminal_options: &mut termios)
 	{
 		let existing_flags: tcflag_t = terminal_options.c_iflag;
 

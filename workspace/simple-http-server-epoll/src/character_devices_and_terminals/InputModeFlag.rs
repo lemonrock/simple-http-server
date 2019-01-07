@@ -12,7 +12,7 @@ pub enum InputModeFlag
 	///
 	/// If `IgnoreBreakCondition` is set, a `BREAK` is ignored.
 	///
-	/// If it is not set but `SignalInterruptOnBreak` is set, then a `BREAK` character causes the input and output queues to be flushed, and if the terminal is the controlling terminal of a foreground process group, it will cause a `SIGINT` to be sent to this foreground process group.
+	/// If it is not set but `SignalInterruptOnBreak` is set, then a `BREAK` character causes the input and output queues to be flushed, and if the terminal is the controlling terminal of a foreground process group, it will cause a `SIGINT` signal to be sent to this foreground process group.
 	///
 	/// When neither `IgnoreBreakCondition` nor `SignalInterruptOnBreak` are set, a `BREAK` character reads as a null byte, `\0'`, except when `MarkParityErrors` is set, in which case it reads as the sequence `\377 \0 \0`.
 	SignalInterruptOnBreak = BRKINT,
@@ -43,6 +43,12 @@ pub enum InputModeFlag
 	MapNewLineToCarriageReturn = INLCR,
 
 	/// Enable input parity checking.
+	///
+	/// Parity "generation and detection" and "input parity checking" are two different things.
+	/// The generation and detection of parity bits is controlled by the `Parity` struct.
+	/// Setting this flag usually causes the device driver for the serial interface to generate parity for outgoing characters and to verify the parity of incoming characters.
+	/// If an input character arrives with the wrong parity (eg odd when should be even), then the state of this flag is checked
+	/// If this flag is set, then the `IgnoreCharactersWithParityErrors` flag is checked (to see whether the input byte with the parity error should be ignored); if the byte should not be ignored, then the `MarkParityErrors` flag is checked to see what characters should be passed to the reading process.
 	EnableParityChecking = INPCK,
 
 	/// Strips off the eighth bit of every character.

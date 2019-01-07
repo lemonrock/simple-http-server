@@ -49,11 +49,11 @@ impl Default for OutputModeFlagSettings
 impl OutputModeFlagSettings
 {
 	#[inline(always)]
-	pub(crate) fn change_output_mode_flags(&self, mut terminal_options: &mut termios)
+	pub(crate) fn change_mode_flags(&self, mut terminal_options: &mut termios)
 	{
 		let existing_flags = terminal_options.c_oflag;
 
-		let mut new_flags = existing_flags;;
+		let mut new_flags = existing_flags;
 		new_flags = MultipleBits::change_mode_flags(self.backspace_delay, new_flags);
 		new_flags = MultipleBits::change_mode_flags(self.carriage_return_delay, new_flags);
 		new_flags = MultipleBits::change_mode_flags(self.form_feed_delay, new_flags);
