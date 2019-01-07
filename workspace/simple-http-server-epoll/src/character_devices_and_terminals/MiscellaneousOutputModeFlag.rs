@@ -45,7 +45,7 @@ pub enum MiscellaneousOutputModeFlag
 	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] FillCharacterIsAsciiDeleteRatherThaAsciiNul = OFDEL,
 
 	/// Expands tabs to spaces (with tab stops every eight columns).
-	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] XTABS = XTABS,
+	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] ExpandTabsToSpaces = XTABS,
 	#[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] ExpandTabsToSpaces = OXTABS,
 
 	/// Discard `Ctrl-D` characters (`\x04`) on output.

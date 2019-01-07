@@ -23,7 +23,7 @@ pub enum HorizontalTabDelay
 	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] One = TAB1,
 
 	/// Two.
-	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] One = TAB2,
+	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] Two = TAB2,
 
 	/// Three.
 	#[cfg(any(target_os = "android", target_os = "freebsd", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos", target_os = "openbsd"))] Three = TAB3,

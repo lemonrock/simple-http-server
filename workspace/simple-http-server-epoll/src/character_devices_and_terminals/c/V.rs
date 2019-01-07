@@ -5,8 +5,8 @@
 #[cfg(target_os = "dragonfly")] pub(crate) const VCHECKPT: usize = 19;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VDISCARD: usize = 15;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VDISCARD: usize = 13;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VDISCARD: usize = 16;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VDISCARD: usize = 13;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VDISCARD: usize = 16;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos"))] pub(crate) const VDSUSP: usize = 11;
 
@@ -14,12 +14,12 @@
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const VEOF: usize = 4;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VEOL2: usize = 2;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VEOL2: usize = 16;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VEOL2: usize = 8;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VEOL2: usize = 16;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VEOL2: usize = 8;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VEOL: usize = 1;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VEOL: usize = 11;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VEOL: usize = 6;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VEOL: usize = 11;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VEOL: usize = 6;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))] pub(crate) const VERASE2: usize = 7;
 
@@ -36,37 +36,37 @@
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const VLNEXT: usize = 15;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VMIN: usize = 16;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VMIN: usize = 6;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VMIN: usize = 5;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VMIN: usize = 6;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VMIN: usize = 5;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VQUIT: usize = 9;
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const VQUIT: usize = 1;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VREPRINT: usize = 6;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VREPRINT: usize = 12;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VREPRINT: usize = 11;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VREPRINT: usize = 12;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VREPRINT: usize = 11;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VSTART: usize = 12;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VSTART: usize = 8;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VSTART: usize = 13;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VSTART: usize = 8;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VSTART: usize = 13;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos"))] pub(crate) const VSTATUS: usize = 18;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VSTOP: usize = 13;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VSTOP: usize = 9;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VSTOP: usize = 14;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VSTOP: usize = 9;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VSTOP: usize = 14;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VSUSP: usize = 10;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VSUSP: usize = 10;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VSUSP: usize = 12;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VSUSP: usize = 10;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VSUSP: usize = 12;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VSWTC: usize = 7;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VSWTC: usize = 9;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VSWTC: usize = 7;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VSWTC: usize = 9;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VTIME: usize = 17;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VTIME: usize = 5;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VTIME: usize = 7;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VTIME: usize = 5;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VTIME: usize = 7;
 
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const VWERASE: usize = 4;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const VWERASE: usize = 14;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const VWERASE: usize = 10;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const VWERASE: usize = 14;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const VWERASE: usize = 10;

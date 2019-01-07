@@ -27,9 +27,9 @@ impl Default for InputModeFlagSettings
 		this.insert(MapCarriageReturnToNewLine, Off);
 		this.insert(EnableXOnXOffFlowControlOnOutput, Off);
 		this.insert(AnyCharacterToRestartOutput, Off);
-		#[cfg(target_os = "android", target_os = "fuschia", target_os = "linux")] this.insert(MapUppercaseToLowercase, Off);
+		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] this.insert(MapUppercaseToLowercase, Off);
 		this.insert(RingBellWhenInputQueueIsFull, Off);
-		#[cfg(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos")] this.insert(Utf8, Off);
+		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] this.insert(Utf8, Off);
 
 		this
 	}
@@ -111,7 +111,6 @@ impl InputModeFlagSettings
 		let mut this = Self(BTreeMap::new());
 
 		use self::InputModeFlag::*;
-		use self::FlagSetting::*;
 
 		this.insert_flag_setting(SignalInterruptOnBreak, output_mode_flags);
 		this.insert_flag_setting(MapCarriageReturnToNewLine, output_mode_flags);
@@ -124,9 +123,9 @@ impl InputModeFlagSettings
 		this.insert_flag_setting(EnableXOnXOffFlowControlOnInput, output_mode_flags);
 		this.insert_flag_setting(EnableXOnXOffFlowControlOnOutput, output_mode_flags);
 		this.insert_flag_setting(MarkParityErrors, output_mode_flags);
-		#[cfg(target_os = "android", target_os = "fuschia", target_os = "linux")] this.insert_flag_setting(MapUppercaseToLowercase, output_mode_flags);
+		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] this.insert_flag_setting(MapUppercaseToLowercase, output_mode_flags);
 		this.insert_flag_setting(RingBellWhenInputQueueIsFull, output_mode_flags);
-		#[cfg(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos")] this.insert_flag_setting(Utf8, output_mode_flags);
+		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] this.insert_flag_setting(Utf8, output_mode_flags);
 
 		this
 	}
@@ -135,6 +134,6 @@ impl InputModeFlagSettings
 	fn insert_flag_setting(&mut self, input_mode_flag: InputModeFlag, input_mode_flags: tcflag_t)
 	{
 		let flag_setting = FlagSetting::from(input_mode_flags & input_mode_flag.into() != 0);
-		this.insert(input_mode_flag, flag_setting);
+		self.insert(input_mode_flag, flag_setting);
 	}
 }

@@ -13,9 +13,6 @@ impl Default for MiscellaneousControlModeFlagSettings
 	#[inline(always)]
 	fn default() -> Self
 	{
-		use self::MiscellaneousControlModeFlag::*;
-		use self::FlagSetting::*;
-
 		Self(BTreeMap::new())
 	}
 }
@@ -89,7 +86,6 @@ impl MiscellaneousControlModeFlagSettings
 		let mut this = Self(BTreeMap::new());
 
 		use self::MiscellaneousControlModeFlag::*;
-		use self::FlagSetting::*;
 
 		this.insert_flag_setting(EnableReceiver, control_mode_flags);
 		this.insert_flag_setting(HangUpOnLastClose, control_mode_flags);
@@ -109,6 +105,6 @@ impl MiscellaneousControlModeFlagSettings
 	fn insert_flag_setting(&mut self, miscellaneous_control_mode_flag: MiscellaneousControlModeFlag, control_mode_flags: tcflag_t)
 	{
 		let flag_setting = FlagSetting::from(control_mode_flags & miscellaneous_control_mode_flag.into() != 0);
-		this.insert(miscellaneous_control_mode_flag, flag_setting);
+		self.insert(miscellaneous_control_mode_flag, flag_setting);
 	}
 }

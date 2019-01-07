@@ -50,52 +50,52 @@
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const B38400: speed_t = 0o000017;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const B38400: speed_t = 38400;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B57600: speed_t = 0o010001;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B57600: speed_t = 0o020;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B57600: speed_t = 0o010001;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B57600: speed_t = 0o020;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const B57600: speed_t = 57600;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B115200: speed_t = 0o010002;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B115200: speed_t = 0o021;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B115200: speed_t = 0o010002;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B115200: speed_t = 0o021;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const B115200: speed_t = 115200;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B230400: speed_t = 0o010003;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B230400: speed_t = 0o022;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B230400: speed_t = 0o010003;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B230400: speed_t = 0o022;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const B230400: speed_t = 230400;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B460800: speed_t = 0o010004;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B460800: speed_t = 0o023;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B460800: speed_t = 0o010004;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B460800: speed_t = 0o023;
 #[cfg(any(target_os = "freebsd"))] pub(crate) const B460800: speed_t = 460800;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B500000: speed_t = 0o010005;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B500000: speed_t = 0o024;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B500000: speed_t = 0o010005;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B500000: speed_t = 0o024;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B576000: speed_t = 0o010006;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B576000: speed_t = 0o025;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B576000: speed_t = 0o010006;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B576000: speed_t = 0o025;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B921600: speed_t = 0o010007;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B921600: speed_t = 0o026;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B921600: speed_t = 0o010007;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B921600: speed_t = 0o026;
 #[cfg(any(target_os = "freebsd"))] pub(crate) const B921600: speed_t = 921600;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B1000000: speed_t = 0o010010;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B1000000: speed_t = 0o027;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B1000000: speed_t = 0o010010;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B1000000: speed_t = 0o027;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B1152000: speed_t = 0o010011;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B1152000: speed_t = 0o030;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B1152000: speed_t = 0o010011;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B1152000: speed_t = 0o030;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B1500000: speed_t = 0o010012;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B1500000: speed_t = 0o031;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B1500000: speed_t = 0o010012;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B1500000: speed_t = 0o031;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B2000000: speed_t = 0o010013;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B2000000: speed_t = 0o032;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B2000000: speed_t = 0o010013;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B2000000: speed_t = 0o032;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B2500000: speed_t = 0o010014;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B2500000: speed_t = 0o033;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B2500000: speed_t = 0o010014;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B2500000: speed_t = 0o033;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B3000000: speed_t = 0o010015;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B3000000: speed_t = 0o034;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B3000000: speed_t = 0o010015;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B3000000: speed_t = 0o034;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B3500000: speed_t = 0o010016;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B3500000: speed_t = 0o035;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B3500000: speed_t = 0o010016;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B3500000: speed_t = 0o035;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const B4000000: speed_t = 0o010017;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const B4000000: speed_t = 0o036;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const B4000000: speed_t = 0o010017;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const B4000000: speed_t = 0o036;

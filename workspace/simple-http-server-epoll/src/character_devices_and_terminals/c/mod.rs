@@ -3,10 +3,13 @@
 
 
 use super::*;
+use ::libc::c_uchar;
+use ::libc::c_uint;
 
 
 include!("_POSIX_VDISABLE.rs");
 include!("B.rs");
+include!("C.rs");
 include!("cc_t.rs");
 include!("cfgetispeed.rs");
 include!("cfgetospeed.rs");

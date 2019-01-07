@@ -13,9 +13,6 @@ impl Default for MiscellaneousLocalModeFlagSettings
 	#[inline(always)]
 	fn default() -> Self
 	{
-		use self::MiscellaneousLocalModeFlag::*;
-		use self::FlagSetting::*;
-
 		Self(BTreeMap::new())
 	}
 }
@@ -89,7 +86,6 @@ impl MiscellaneousLocalModeFlagSettings
 		let mut this = Self(BTreeMap::new());
 
 		use self::MiscellaneousLocalModeFlag::*;
-		use self::FlagSetting::*;
 
 		this.insert_flag_setting(ImplementationDefinedOutputProcessing, control_mode_flags);
 		this.insert_flag_setting(RaiseSigTTouSignal, control_mode_flags);
@@ -105,6 +101,6 @@ impl MiscellaneousLocalModeFlagSettings
 	fn insert_flag_setting(&mut self, miscellaneous_control_mode_flag: MiscellaneousLocalModeFlag, control_mode_flags: tcflag_t)
 	{
 		let flag_setting = FlagSetting::from(control_mode_flags & miscellaneous_control_mode_flag.into() != 0);
-		this.insert(miscellaneous_control_mode_flag, flag_setting);
+		self.insert(miscellaneous_control_mode_flag, flag_setting);
 	}
 }

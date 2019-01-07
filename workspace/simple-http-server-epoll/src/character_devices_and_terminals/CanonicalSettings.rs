@@ -88,7 +88,7 @@ impl CanonicalSettings
 
 		if self.print_before_erase
 		{
-			bits_to_set |= (ECHO | ECHOPRT);
+			bits_to_set |= ECHO | ECHOPRT;
 		}
 
 		bits_to_set |= self.echo_kill_character as tcflag_t;

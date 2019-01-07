@@ -3,57 +3,57 @@
 
 
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CSIZE: tcflag_t = 0o000060;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CSIZE: tcflag_t = 00001400;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CSIZE: tcflag_t = 0o000060;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CSIZE: tcflag_t = 00001400;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CSIZE: tcflag_t = 0x00000300;
 
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const CS5: tcflag_t = 0o000000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CS5: tcflag_t = 0x00000000;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CS6: tcflag_t = 0o000020;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CS6: tcflag_t = 00000400;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CS6: tcflag_t = 0o000020;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CS6: tcflag_t = 00000400;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CS6: tcflag_t = 0x00000100;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CS7: tcflag_t = 0o000040;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CS7: tcflag_t = 00001000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CS7: tcflag_t = 0o000040;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CS7: tcflag_t = 00001000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CS7: tcflag_t = 0x00000200;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CS8: tcflag_t = 0o000060;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CS8: tcflag_t = 00001400;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CS8: tcflag_t = 0o000060;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CS8: tcflag_t = 00001400;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CS8: tcflag_t = 0x00000300;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CSTOPB: tcflag_t = 0o000100;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CSTOPB: tcflag_t = 00002000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CSTOPB: tcflag_t = 0o000100;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CSTOPB: tcflag_t = 00002000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CSTOPB: tcflag_t = 0x00000400;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CREAD: tcflag_t = 0o000200;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CREAD: tcflag_t = 00004000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CREAD: tcflag_t = 0o000200;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CREAD: tcflag_t = 00004000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CREAD: tcflag_t = 0x00000800;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const PARENB: tcflag_t = 0o000400;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const PARENB: tcflag_t = 00010000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const PARENB: tcflag_t = 0o000400;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const PARENB: tcflag_t = 00010000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const PARENB: tcflag_t = 0x00001000;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const PARODD: tcflag_t = 0o001000;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const PARODD: tcflag_t = 00020000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const PARODD: tcflag_t = 0o001000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const PARODD: tcflag_t = 00020000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const PARODD: tcflag_t = 0x00002000;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const HUPCL: tcflag_t = 0o002000;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const HUPCL: tcflag_t = 00040000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const HUPCL: tcflag_t = 0o002000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const HUPCL: tcflag_t = 00040000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const PARODD: tcflag_t = 0x00004000;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CLOCAL: tcflag_t = 0o004000;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CLOCAL: tcflag_t = 0o0100000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CLOCAL: tcflag_t = 0o004000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CLOCAL: tcflag_t = 0o0100000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CLOCAL: tcflag_t = 0x00008000;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CBAUD: tcflag_t = 0o010017;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CBAUD: tcflag_t = 0o0377;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CBAUD: tcflag_t = 0o010017;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CBAUD: tcflag_t = 0o0377;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CBAUDEX: tcflag_t = 0o010000;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CBAUDEX: tcflag_t = 0o000020;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CBAUDEX: tcflag_t = 0o010000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CBAUDEX: tcflag_t = 0o000020;
 
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", not(target_arch = "powerpc")))] pub(crate) const CIBAUD: tcflag_t = 0o02003600000;
-#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux", target_arch = "powerpc"))] pub(crate) const CIBAUD: tcflag_t = 0o77600000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CIBAUD: tcflag_t = 0o02003600000;
+#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CIBAUD: tcflag_t = 0o77600000;
 
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const CMSPAR: tcflag_t = 0o10000000000;
 

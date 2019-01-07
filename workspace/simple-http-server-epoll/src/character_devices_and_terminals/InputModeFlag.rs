@@ -77,7 +77,7 @@ pub enum InputModeFlag
 	/// Map uppercase to lowercase.
 	///
 	/// This is considered a legacy feature by later POSIX standards.
-	#[cfg(target_os = "android", target_os = "fuschia", target_os = "linux")] MapUppercaseToLowercase = IUCLC,
+	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] MapUppercaseToLowercase = IUCLC,
 
 	/// Ring bell when input queue is full.
 	///
@@ -93,5 +93,5 @@ pub enum InputModeFlag
 	/// This input flag is not in any POSIX standard.
 	///
 	/// Valid on Linux since Linux 2.6.4 and on iOS / macos.
-	#[cfg(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos")] Utf8 = IUTF8,
+	#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] Utf8 = IUTF8,
 }

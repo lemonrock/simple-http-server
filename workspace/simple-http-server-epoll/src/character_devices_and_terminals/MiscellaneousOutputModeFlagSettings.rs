@@ -121,6 +121,6 @@ impl MiscellaneousOutputModeFlagSettings
 	fn insert_flag_setting(&mut self, miscellaneous_output_mode_flag: MiscellaneousOutputModeFlag, output_mode_flags: tcflag_t)
 	{
 		let flag_setting = FlagSetting::from(output_mode_flags & miscellaneous_output_mode_flag.into() != 0);
-		this.insert(miscellaneous_output_mode_flag, flag_setting);
+		self.insert(miscellaneous_output_mode_flag, flag_setting);
 	}
 }

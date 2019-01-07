@@ -33,7 +33,7 @@ impl Into<bool> for FlagSetting
 impl From<bool> for FlagSetting
 {
 	#[inline(always)]
-	fn into(value: bool) -> Self
+	fn from(value: bool) -> Self
 	{
 		use self::FlagSetting::*;
 

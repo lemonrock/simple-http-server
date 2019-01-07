@@ -89,8 +89,6 @@ impl TerminalFileDescriptor
 	#[inline(always)]
 	pub fn open_terminal_character_device(terminal_character_device_file_path: impl AsRef<Path>, terminal_settings: &TerminalSettings) -> Result<Self, SpecialFileOpenError>
 	{
-		use self::SpecialFileOpenError::*;
-
 		let this = Self(CharacterDeviceFileDescriptor::open_character_device_internal(terminal_character_device_file_path, O_NOCTTY)?);
 
 		this.change_terminal_settings(terminal_settings).map_err(|terminal_settings_error| SpecialFileOpenError::Terminal(terminal_settings_error))
@@ -100,13 +98,15 @@ impl TerminalFileDescriptor
 	#[inline(always)]
 	pub fn change_terminal_settings(&self, terminal_settings: &TerminalSettings) -> Result<(), TerminalSettingsError>
 	{
+		use self::TerminalSettingsError::*;
+
 		let mut terminal_options: termios = unsafe { uninitialized() };
 
-		Self::handle_terminal_error(unsafe { tcgetattr(this.as_raw_fd(), &mut terminal_options, NotATerminal) })?;
+		Self::handle_terminal_error(unsafe { tcgetattr(self.as_raw_fd(), &mut terminal_options, NotATerminal) })?;
 
 		terminal_settings.change_settings(&mut terminal_options);
 
-		Self::handle_terminal_error(unsafe { tcsetattr(file_descriptor, TCSANOW, &terminal_options, CouldNotSetTerminalAttributes) })
+		Self::handle_terminal_error(unsafe { tcsetattr(self.as_raw_fd(), TCSANOW, &terminal_options, CouldNotSetTerminalAttributes) })
 	}
 
 	/// Discard input.
@@ -142,7 +142,7 @@ impl TerminalFileDescriptor
 	///
 	/// Does not use a guard and move self as in practice a file descriptor will be held in an arena, Vec, etc and so can not be moved.
 	#[inline(always)]
-	pub fn suspend_output(&self) -> io::Result<>
+	pub fn suspend_output(&self) -> io::Result<()>
 	{
 		Self::handle_generic_io_error(unsafe { tcflow(self.as_raw_fd(), TCOOFF) })
 	}

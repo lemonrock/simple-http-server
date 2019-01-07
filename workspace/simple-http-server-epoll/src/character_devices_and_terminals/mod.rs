@@ -4,12 +4,13 @@
 
 use super::*;
 use super::pipes_and_fifos::syscall::open;
-use self::c;
+use self::c::*;
 use ::libc::ENAMETOOLONG;
 use ::libc::ENXIO;
 use ::libc::EOVERFLOW;
 use ::libc::EROFS;
 use ::libc::ETXTBSY;
+use ::libc::O_NOCTTY;
 use ::std::collections::BTreeMap;
 use ::std::ffi::CString;
 use ::std::io;
@@ -17,7 +18,6 @@ use ::std::io::ErrorKind;
 use ::std::io::Initializer;
 use ::std::io::Read;
 use ::std::io::Write;
-use ::std::ops::BitOr;
 use ::std::ops::Deref;
 use ::std::ops::DerefMut;
 
@@ -25,7 +25,7 @@ use ::std::ops::DerefMut;
 mod c;
 
 
-include!("BackspaceTabDelay.rs");
+include!("BackspaceDelay.rs");
 include!("BaudRate.rs");
 include!("BitsPerByte.rs");
 include!("CanonicalEchoKillCharacter.rs");
@@ -36,7 +36,7 @@ include!("CharacterSettings.rs");
 include!("CharacterDeviceFileDescriptor.rs");
 include!("Echo.rs");
 include!("FlagSetting.rs");
-include!("FormFeedTabDelay.rs");
+include!("FormFeedDelay.rs");
 include!("HorizontalTabDelay.rs");
 include!("InputModeFlag.rs");
 include!("InputModeFlagSettings.rs");
