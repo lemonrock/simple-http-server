@@ -5,5 +5,5 @@
 #[link(name = "c")]
 extern "C"
 {
-	pub(crate) fn cfgetispeed(termios_p: *const termios) -> speed_t;
+	#[allow(dead_code)] pub(crate) fn cfgetispeed(termios_p: *const termios) -> speed_t;
 }

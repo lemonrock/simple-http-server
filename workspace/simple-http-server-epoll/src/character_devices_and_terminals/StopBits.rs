@@ -5,7 +5,7 @@
 /// Abstracts the number of stop bits.
 ///
 /// Defaults to one.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(not(any(target_os = "ios", target_os = "macos")), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "32"), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "64"), repr(u64))]
@@ -16,6 +16,15 @@ pub enum StopBits
 
 	/// Two.
 	Two = CSTOPB,
+}
+
+impl Into<tcflag_t> for StopBits
+{
+	#[inline(always)]
+	fn into(self) -> tcflag_t
+	{
+		self as tcflag_t
+	}
 }
 
 impl Default for StopBits
@@ -32,11 +41,11 @@ impl MultipleBits for StopBits
 	const Bitmask: tcflag_t = CSTOPB;
 
 	#[inline(always)]
-	fn from_mode_flags(mode_flags: tcflag_t) -> Self
+	fn transmute_from_clean_mode_flags(clean_mode_flags: tcflag_t) -> Self
 	{
 		use self::StopBits::*;
 
-		match mode_flags & Self::Bitmask != 0
+		match clean_mode_flags & Self::Bitmask != 0
 		{
 			true => Two,
 			false => One,

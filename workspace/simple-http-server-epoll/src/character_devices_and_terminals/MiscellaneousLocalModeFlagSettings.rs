@@ -67,32 +67,27 @@ impl MiscellaneousLocalModeFlagSettings
 
 		for (flag, setting) in self.0.iter()
 		{
-			let flag_value = flag.into();
+			let flag_value = (*flag) as tcflag_t;
 
 			match setting
 			{
 				On => flags_on |= flag_value,
 				Off => flags_off |= flag_value,
-				Inherit => (),
 			}
 		}
 
-		(existing_flags | flags_on) & !flags_on
+		(existing_flags | flags_on) & !flags_off
 	}
 
 	#[inline(always)]
-	pub(crate) fn from_mode_flags(control_mode_flags: tcflag_t) -> Self
+	pub(crate) fn from_mode_flags(mode_flags: tcflag_t) -> Self
 	{
 		let mut this = Self(BTreeMap::new());
 
-		use self::MiscellaneousLocalModeFlag::*;
-
-		this.insert_flag_setting(ImplementationDefinedOutputProcessing, control_mode_flags);
-		this.insert_flag_setting(RaiseSigTTouSignal, control_mode_flags);
-		this.insert_flag_setting(ReprintUnreadInput, control_mode_flags);
-		this.insert_flag_setting(ReprintUnreadInput, control_mode_flags);
-		#[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] this.insert_flag_setting(PreventStatusCharacterFromPrintingInformation, control_mode_flags);
-		#[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos"))] this.insert_flag_setting(AlternativeWordEraseAlgorithm, control_mode_flags);
+		for flag in MiscellaneousLocalModeFlag::iter()
+		{
+			this.insert_flag_setting(flag, mode_flags);
+		}
 
 		this
 	}
@@ -100,7 +95,7 @@ impl MiscellaneousLocalModeFlagSettings
 	#[inline(always)]
 	fn insert_flag_setting(&mut self, miscellaneous_control_mode_flag: MiscellaneousLocalModeFlag, control_mode_flags: tcflag_t)
 	{
-		let flag_setting = FlagSetting::from(control_mode_flags & miscellaneous_control_mode_flag.into() != 0);
+		let flag_setting = FlagSetting::from((miscellaneous_control_mode_flag as tcflag_t) & control_mode_flags != 0);
 		self.insert(miscellaneous_control_mode_flag, flag_setting);
 	}
 }

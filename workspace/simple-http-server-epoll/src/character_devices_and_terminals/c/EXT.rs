@@ -2,6 +2,6 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-pub(crate) const EXTA: speed_t = B19200;
+#[allow(dead_code)] pub(crate) const EXTA: speed_t = B19200;
 
-pub(crate) const EXTB: speed_t = B38400;
+#[allow(dead_code)] pub(crate) const EXTB: speed_t = B38400;

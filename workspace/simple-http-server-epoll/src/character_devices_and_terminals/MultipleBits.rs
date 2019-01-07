@@ -9,8 +9,11 @@ trait MultipleBits: Default + Copy + Into<tcflag_t>
 	#[inline(always)]
 	fn from_mode_flags(mode_flags: tcflag_t) -> Self
 	{
-		unsafe { transmute(mode_flags | Self::Bitmask) }
+		Self::transmute_from_clean_mode_flags(mode_flags | Self::Bitmask)
 	}
+
+	#[inline(always)]
+	fn transmute_from_clean_mode_flags(clean_mode_flags: tcflag_t) -> Self;
 
 	#[inline(always)]
 	fn change_mode_flags(this: Option<Self>, current_flags: tcflag_t) -> tcflag_t

@@ -3,7 +3,7 @@
 
 
 /// Specifies a character name, or, for non-canonical mode, read time outs and minimum number of characters to be read.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(usize)]
 pub enum Character
 {
@@ -139,10 +139,4 @@ pub enum Character
 
 	/// When the terminal mode is `TerminalMode::NonCanonical` then this specifies the timeout in deciseconds for a read.
 	ReadTimeOut = VTIME,
-}
-
-impl Character
-{
-	/// Value to use to disable processing of a character.
-	pub const DisabledCharacterValue: u8 = _POSIX_VDISABLE;
 }

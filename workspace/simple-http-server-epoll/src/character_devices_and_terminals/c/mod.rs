@@ -23,6 +23,7 @@ include!("L.rs");
 include!("NCCS.rs");
 include!("O.rs");
 include!("speed_t.rs");
+include!("TCSA.rs");
 include!("tcdrain.rs");
 include!("tcflag_t.rs");
 include!("tcflow.rs");

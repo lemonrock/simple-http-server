@@ -7,3 +7,11 @@ extern "C"
 {
 	pub(crate) fn tcflow(fd: c_int, action: c_int) -> c_int;
 }
+
+pub(crate) const TCOOFF: c_int = 1;
+
+pub(crate) const TCOON: c_int = 2;
+
+pub(crate) const TCIOFF: c_int = 3;
+
+pub(crate) const TCION: c_int = 4;

@@ -9,7 +9,7 @@
 /// Values one and two are only supported on Android, ?Fuschia and Linux.
 ///
 /// Value three is supported on all Android, FreeBSD, ?Fuschia, iOS, Linux, macos and OpenBSD (it is not supported on DragonflyBSD).
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(not(any(target_os = "ios", target_os = "macos")), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "32"), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "64"), repr(u64))]
@@ -29,7 +29,7 @@ pub enum HorizontalTabDelay
 	#[cfg(any(target_os = "android", target_os = "freebsd", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos", target_os = "openbsd"))] Three = TAB3,
 }
 
-impl Into<tcflag_t>
+impl Into<tcflag_t> for HorizontalTabDelay
 {
 	#[inline(always)]
 	fn into(self) -> tcflag_t
@@ -56,5 +56,11 @@ impl MultipleBits for HorizontalTabDelay
 	fn from_mode_flags(mode_flags: tcflag_t) -> Self
 	{
 		unsafe { transmute(mode_flags & TAB3) }
+	}
+
+	#[inline(always)]
+	fn transmute_from_clean_mode_flags(clean_mode_flags: tcflag_t) -> Self
+	{
+		unsafe { transmute(clean_mode_flags) }
 	}
 }

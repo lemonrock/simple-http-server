@@ -5,5 +5,5 @@
 #[link(name = "c")]
 extern "C"
 {
-	pub(crate) fn cfsetospeed(termios_p: *mut termios, speed: speed_t) -> c_int;
+	#[allow(dead_code)] pub(crate) fn cfsetospeed(termios_p: *mut termios, speed: speed_t) -> c_int;
 }

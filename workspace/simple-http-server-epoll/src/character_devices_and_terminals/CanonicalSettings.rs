@@ -96,4 +96,19 @@ impl CanonicalSettings
 
 		new_flags | bits_to_set
 	}
+
+
+	#[inline(always)]
+	pub(crate) fn interpret_mode_flags(current_flags: tcflag_t) -> Self
+	{
+		CanonicalSettings
+		{
+			#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] convert_uppercase_to_lowercase: current_flags & XCASE != 0,
+			echo_erase: current_flags & ECHOE != 0,
+			echo_new_line: current_flags & ECHONL != 0,
+			external_processing: current_flags & EXTPROC != 0,
+			print_before_erase: current_flags & (ECHO | ECHOPRT) != 0,
+			echo_kill_character: CanonicalEchoKillCharacter::interprete_mode_flags(current_flags)
+		}
+	}
 }

@@ -20,6 +20,7 @@ use ::std::io::Read;
 use ::std::io::Write;
 use ::std::ops::Deref;
 use ::std::ops::DerefMut;
+use ::strum::IntoEnumIterator;
 
 
 mod c;
@@ -34,6 +35,8 @@ include!("CarriageReturnDelay.rs");
 include!("Character.rs");
 include!("CharacterSettings.rs");
 include!("CharacterDeviceFileDescriptor.rs");
+include!("ControlModeFlagSettings.rs");
+include!("CurrentTerminalSettings.rs");
 include!("Echo.rs");
 include!("FlagSetting.rs");
 include!("FormFeedDelay.rs");
@@ -58,3 +61,4 @@ include!("TerminalMode.rs");
 include!("TerminalSettings.rs");
 include!("TerminalSettingsError.rs");
 include!("VerticalTabDelay.rs");
+include!("WhenToChangeTerminalAttributes.rs");

@@ -5,7 +5,7 @@
 /// Represents settings for local mode flags.
 ///
 /// Note that is is not possible to set the `FLUSHO` flag.
-#[derive(Default, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LocalModeFlagSettings
 {
 	/// Terminal mode.
@@ -14,6 +14,7 @@ pub struct LocalModeFlagSettings
 	/// Echo settings.
 	pub echo: Option<Echo>,
 
+	/// Signal raising behaviour.
 	pub signal_raising: Option<SignalRaising>,
 
 	/// Miscellaneous.
@@ -38,7 +39,7 @@ impl Default for LocalModeFlagSettings
 impl LocalModeFlagSettings
 {
 	#[inline(always)]
-	pub(crate) fn change_mode_flags(&self, mut terminal_options: &mut termios)
+	pub(crate) fn change_mode_flags(&self, terminal_options: &mut termios)
 	{
 		let existing_flags = terminal_options.c_lflag;
 

@@ -3,7 +3,7 @@
 
 
 /// Represents settings for output mode flags.
-#[derive(Default, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct OutputModeFlagSettings
 {
 	/// Backspace delay.
@@ -49,7 +49,7 @@ impl Default for OutputModeFlagSettings
 impl OutputModeFlagSettings
 {
 	#[inline(always)]
-	pub(crate) fn change_mode_flags(&self, mut terminal_options: &mut termios)
+	pub(crate) fn change_mode_flags(&self, terminal_options: &mut termios)
 	{
 		let existing_flags = terminal_options.c_oflag;
 

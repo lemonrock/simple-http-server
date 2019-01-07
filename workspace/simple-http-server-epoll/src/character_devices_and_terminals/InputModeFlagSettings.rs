@@ -6,7 +6,7 @@
 ///
 /// Default is sane for a raw terminal (no XON/XOFF flow control on output, no mapping or ignoring of characters, 8-bit clean, no signal interrupts, no ignoring of break conditions.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct InputModeFlagSettings(BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>);
+pub struct InputModeFlagSettings(BTreeMap<InputModeFlag, FlagSetting>);
 
 impl Default for InputModeFlagSettings
 {
@@ -35,19 +35,19 @@ impl Default for InputModeFlagSettings
 	}
 }
 
-impl From<BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>> for InputModeFlagSettings
+impl From<BTreeMap<InputModeFlag, FlagSetting>> for InputModeFlagSettings
 {
 	#[inline(always)]
-	fn from(map: BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>) -> Self
+	fn from(map: BTreeMap<InputModeFlag, FlagSetting>) -> Self
 	{
 		Self(map)
 	}
 }
 
-impl Into<BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>> for InputModeFlagSettings
+impl Into<BTreeMap<InputModeFlag, FlagSetting>> for InputModeFlagSettings
 {
 	#[inline(always)]
-	fn into(self) -> BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>
+	fn into(self) -> BTreeMap<InputModeFlag, FlagSetting>
 	{
 		self.0
 	}
@@ -55,7 +55,7 @@ impl Into<BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>> for InputModeFlagS
 
 impl Deref for InputModeFlagSettings
 {
-	type Target = BTreeMap<MiscellaneousOutputModeFlag, FlagSetting>;
+	type Target = BTreeMap<InputModeFlag, FlagSetting>;
 
 	#[inline(always)]
 	fn deref(&self) -> &Self::Target
@@ -76,7 +76,7 @@ impl DerefMut for InputModeFlagSettings
 impl InputModeFlagSettings
 {
 	#[inline(always)]
-	pub(crate) fn change_mode_flags(&self, mut terminal_options: &mut termios)
+	pub(crate) fn change_mode_flags(&self, terminal_options: &mut termios)
 	{
 		let existing_flags: tcflag_t = terminal_options.c_iflag;
 
@@ -89,43 +89,30 @@ impl InputModeFlagSettings
 
 			for (flag, setting) in self.0.iter()
 			{
-				let flag_value = flag.into();
+				let flag_value = (*flag) as tcflag_t;
 
 				match setting
 				{
 					On => flags_on |= flag_value,
 					Off => flags_off |= flag_value,
-					Inherit => (),
 				}
 			}
 
-			(existing_flags | flags_on) & !flags_on;
+			(existing_flags | flags_on) & !flags_off
 		};
 
 		terminal_options.c_iflag = new_flags;
 	}
 
 	#[inline(always)]
-	pub(crate) fn from_input_mode_flags(output_mode_flags: tcflag_t) -> Self
+	pub(crate) fn from_mode_flags(mode_flags: tcflag_t) -> Self
 	{
 		let mut this = Self(BTreeMap::new());
 
-		use self::InputModeFlag::*;
-
-		this.insert_flag_setting(SignalInterruptOnBreak, output_mode_flags);
-		this.insert_flag_setting(MapCarriageReturnToNewLine, output_mode_flags);
-		this.insert_flag_setting(IgnoreCarriageReturn, output_mode_flags);
-		this.insert_flag_setting(IgnoreCharactersWithParityErrors, output_mode_flags);
-		this.insert_flag_setting(MapNewLineToCarriageReturn, output_mode_flags);
-		this.insert_flag_setting(EnableParityChecking, output_mode_flags);
-		this.insert_flag_setting(StripOffEigthBitOfEveryCharacter, output_mode_flags);
-		this.insert_flag_setting(AnyCharacterToRestartOutput, output_mode_flags);
-		this.insert_flag_setting(EnableXOnXOffFlowControlOnInput, output_mode_flags);
-		this.insert_flag_setting(EnableXOnXOffFlowControlOnOutput, output_mode_flags);
-		this.insert_flag_setting(MarkParityErrors, output_mode_flags);
-		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] this.insert_flag_setting(MapUppercaseToLowercase, output_mode_flags);
-		this.insert_flag_setting(RingBellWhenInputQueueIsFull, output_mode_flags);
-		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] this.insert_flag_setting(Utf8, output_mode_flags);
+		for flag in InputModeFlag::iter()
+		{
+			this.insert_flag_setting(flag, mode_flags);
+		}
 
 		this
 	}
@@ -133,7 +120,7 @@ impl InputModeFlagSettings
 	#[inline(always)]
 	fn insert_flag_setting(&mut self, input_mode_flag: InputModeFlag, input_mode_flags: tcflag_t)
 	{
-		let flag_setting = FlagSetting::from(input_mode_flags & input_mode_flag.into() != 0);
+		let flag_setting = FlagSetting::from((input_mode_flag as tcflag_t) & input_mode_flags != 0);
 		self.insert(input_mode_flag, flag_setting);
 	}
 }

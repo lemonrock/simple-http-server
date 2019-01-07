@@ -2,54 +2,36 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-/// On or off.
-///
-/// Default is `FlagSetting::Off`.
+/// When to change the terminal attributes.
 #[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum FlagSetting
+#[repr(i32)]
+pub enum WhenToChangeTerminalAttributes
 {
-	/// Set on.
-	On,
+	/// Change immediately.
+	Now = TCSANOW,
 
-	/// Set off.
-	Off,
+	/// Change after waiting until all queued output has been written.
+	///
+	/// You should usually use this option when changing parameters that affect output.
+	Drain = TCSADRAIN,
+
+	/// Change after waiting until all queued output has been written and after discarding all queued input.
+	Flush = TCSAFLUSH,
 }
 
-impl Into<bool> for FlagSetting
+impl WhenToChangeTerminalAttributes
 {
 	#[inline(always)]
-	fn into(self) -> bool
+	pub(crate) fn flags(self, ignore_control_flags: bool) -> c_int
 	{
-		use self::FlagSetting::*;
-
-		match self
+		let flags = self as c_int;
+		if unlikely!(ignore_control_flags)
 		{
-			On => true,
-			Off => false,
+			flags | TCSASOFT
 		}
-	}
-}
-
-impl From<bool> for FlagSetting
-{
-	#[inline(always)]
-	fn from(value: bool) -> Self
-	{
-		use self::FlagSetting::*;
-
-		match value
+		else
 		{
-			true => On,
-			false => Off,
+			flags
 		}
-	}
-}
-
-impl Default for FlagSetting
-{
-	#[inline(always)]
-	fn default() -> Self
-	{
-		FlagSetting::Off
 	}
 }

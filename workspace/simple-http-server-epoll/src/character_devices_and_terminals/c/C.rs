@@ -46,14 +46,14 @@
 #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CLOCAL: tcflag_t = 0o0100000;
 #[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] pub(crate) const CLOCAL: tcflag_t = 0x00008000;
 
-#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CBAUD: tcflag_t = 0o010017;
-#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CBAUD: tcflag_t = 0o0377;
+#[allow(dead_code)] #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CBAUD: tcflag_t = 0o010017;
+#[allow(dead_code)] #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CBAUD: tcflag_t = 0o0377;
 
-#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CBAUDEX: tcflag_t = 0o010000;
-#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CBAUDEX: tcflag_t = 0o000020;
+#[allow(dead_code)] #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CBAUDEX: tcflag_t = 0o010000;
+#[allow(dead_code)] #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CBAUDEX: tcflag_t = 0o000020;
 
-#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CIBAUD: tcflag_t = 0o02003600000;
-#[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CIBAUD: tcflag_t = 0o77600000;
+#[allow(dead_code)] #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), not(target_arch = "powerpc")))] pub(crate) const CIBAUD: tcflag_t = 0o02003600000;
+#[allow(dead_code)] #[cfg(all(any(target_os = "android", target_os = "fuschia", target_os = "linux"), target_arch = "powerpc"))] pub(crate) const CIBAUD: tcflag_t = 0o77600000;
 
 #[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] pub(crate) const CMSPAR: tcflag_t = 0o10000000000;
 

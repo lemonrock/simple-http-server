@@ -43,7 +43,7 @@ impl Read for TerminalFileDescriptor
 	#[inline(always)]
 	unsafe fn initializer(&self) -> Initializer
 	{
-		CharacterDeviceFileDescriptor::initializer()
+		self.0.initializer()
 	}
 }
 
@@ -91,22 +91,39 @@ impl TerminalFileDescriptor
 	{
 		let this = Self(CharacterDeviceFileDescriptor::open_character_device_internal(terminal_character_device_file_path, O_NOCTTY)?);
 
-		this.change_terminal_settings(terminal_settings).map_err(|terminal_settings_error| SpecialFileOpenError::Terminal(terminal_settings_error))
+		this.change_terminal_settings(terminal_settings, WhenToChangeTerminalAttributes::Now, false).map_err(|terminal_settings_error| SpecialFileOpenError::Terminal(terminal_settings_error))?;
+
+		Ok(this)
 	}
 
 	/// Changes terminal settings.
+	///
+	/// `ignore_control_flags` is only honoured on BSD systems; it is equivalent to setting `MiscellaneousControlModeFlag::Ignore` flag (`CIGNORE`).
 	#[inline(always)]
-	pub fn change_terminal_settings(&self, terminal_settings: &TerminalSettings) -> Result<(), TerminalSettingsError>
+	pub fn change_terminal_settings(&self, terminal_settings: &TerminalSettings, when: WhenToChangeTerminalAttributes, ignore_control_flags: bool) -> Result<(), TerminalSettingsError>
 	{
-		use self::TerminalSettingsError::*;
-
-		let mut terminal_options: termios = unsafe { uninitialized() };
-
-		Self::handle_terminal_error(unsafe { tcgetattr(self.as_raw_fd(), &mut terminal_options, NotATerminal) })?;
+		let mut terminal_options = self.get_terminal_settings()?;
 
 		terminal_settings.change_settings(&mut terminal_options);
 
-		Self::handle_terminal_error(unsafe { tcsetattr(self.as_raw_fd(), TCSANOW, &terminal_options, CouldNotSetTerminalAttributes) })
+		Self::handle_terminal_settings_error(unsafe { tcsetattr(self.as_raw_fd(), when.flags(ignore_control_flags), &terminal_options) }, TerminalSettingsError::CouldNotSetTerminalAttributes)
+	}
+
+	/// Current terminal settings.
+	#[inline(always)]
+	pub fn current_terminal_settings(&self) -> Result<CurrentTerminalSettings, TerminalSettingsError>
+	{
+		self.get_terminal_settings().map(|terminal_options| CurrentTerminalSettings(terminal_options))
+	}
+
+	#[inline(always)]
+	fn get_terminal_settings(&self) -> Result<termios, TerminalSettingsError>
+	{
+		let mut terminal_options: termios = unsafe { uninitialized() };
+
+		Self::handle_terminal_settings_error(unsafe { tcgetattr(self.as_raw_fd(), &mut terminal_options) }, TerminalSettingsError::NotATerminal)?;
+
+		Ok(terminal_options)
 	}
 
 	/// Discard input.
@@ -169,11 +186,26 @@ impl TerminalFileDescriptor
 	#[inline(always)]
 	pub fn start(&self) -> io::Result<()>
 	{
-		Self::handle_generic_io_error(unsafe { tcflow(self.as_raw_fd(), TCIOFF) })
+		Self::handle_generic_io_error(unsafe { tcflow(self.as_raw_fd(), TCION) })
+	}
+
+	/// Obtains the session identifier ('sid'); not normally available for serial ports.
+	#[inline(always)]
+	pub fn session_identifier(&self) -> io::Result<pid_t>
+	{
+		let result = unsafe { tcgetsid(self.0.as_raw_fd()) };
+		if unlikely!(result == -1)
+		{
+			Err(io::Error::last_os_error())
+		}
+		else
+		{
+			Ok(result)
+		}
 	}
 
 	#[inline(always)]
-	fn handle_terminal_error(result: c_int, constructor: FnOnce(Errno) -> SpecialFileOpenError) -> Result<(), SpecialFileOpenError>
+	fn handle_terminal_settings_error(result: c_int, constructor: impl FnOnce(Errno) -> TerminalSettingsError) -> Result<(), TerminalSettingsError>
 	{
 		if likely!(result == 0)
 		{

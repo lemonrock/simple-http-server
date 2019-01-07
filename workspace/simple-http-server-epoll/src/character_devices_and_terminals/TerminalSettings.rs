@@ -3,7 +3,7 @@
 
 
 /// Terminal settings.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TerminalSettings
 {
 	/// Input mode settings.

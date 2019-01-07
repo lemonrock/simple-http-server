@@ -5,7 +5,7 @@
 /// Abstracts the canonical setting of the echoing of the `KILL` character.
 ///
 /// Defaults to `CanonicalEchoKillCharacter::Off`, which is the most sensible choice.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(not(any(target_os = "ios", target_os = "macos")), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "32"), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "64"), repr(u64))]
@@ -42,5 +42,28 @@ impl Default for CanonicalEchoKillCharacter
 	fn default() -> Self
 	{
 		CanonicalEchoKillCharacter::Off
+	}
+}
+
+impl CanonicalEchoKillCharacter
+{
+	#[inline(always)]
+	pub(crate) fn interprete_mode_flags(current_flags: tcflag_t) -> Self
+	{
+		use self::CanonicalEchoKillCharacter::*;
+
+		// Test for ECHOKE before ECHOK as ECHOKE overrides ECHOK.
+		if current_flags & ECHOKE != 0
+		{
+			Erase
+		}
+		else if current_flags & ECHOK != 0
+		{
+			K
+		}
+		else
+		{
+			Off
+		}
 	}
 }

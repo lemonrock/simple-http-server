@@ -3,6 +3,10 @@
 
 
 /// Choices for character settings.
+///
+/// The value `CharacterSettings::DisabledCharacterValue` is interpreted as disabling a character.
+///
+/// This value is ASCII `NUL`.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CharacterSettings(BTreeMap<Character, u8>);
 
@@ -61,13 +65,32 @@ impl DerefMut for CharacterSettings
 
 impl CharacterSettings
 {
+	/// Value to use to disable processing of a character.
+	pub const DisabledCharacterValue: u8 = _POSIX_VDISABLE;
+
 	#[inline(always)]
-	pub(crate) fn change_character_settings(&self, mut terminal_options: &mut termios)
+	pub(crate) fn change_character_settings(&self, terminal_options: &mut termios)
 	{
-		let mut settings = &mut terminal_options.c_cc;
+		let settings = &mut terminal_options.c_cc;
 		for (character, setting) in self.0.iter()
 		{
 			*(unsafe { settings.get_unchecked_mut((*character) as usize) }) = *setting;
 		}
+	}
+
+	#[inline(always)]
+	pub(crate) fn from_terminal_options(terminal_options: &termios) -> Self
+	{
+		let settings = &terminal_options.c_cc;
+
+		let mut this = Self(BTreeMap::new());
+
+		for character in Character::iter()
+		{
+			let raw_value = *(unsafe {settings.get_unchecked(character as usize) });
+			this.insert(character, raw_value);
+		}
+
+		this
 	}
 }

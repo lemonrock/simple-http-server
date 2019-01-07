@@ -2,10 +2,17 @@
 // Copyright © 2019 The developers of simple-http-server. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/simple-http-server/master/COPYRIGHT.
 
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+/// Baud rate.
+#[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u32)]
 pub enum BaudRate
 {
+	/// This is used to terminate the connection.
+	///
+	/// If specified, the modem control lines shall no longer be asserted.
+	/// Normally, this will disconnect the line.
+	HangUpModem = B0,
+
 	/// Baud rate of 50 bits per second (bps).
 	B50 = B50,
 
@@ -49,6 +56,8 @@ pub enum BaudRate
 	B19200 = B19200,
 
 	/// Baud rate of 38,400 bits per second (bps).
+	///
+	/// Actually, this can be almost any bit rate on linux; see `man 8 setserial`.
 	B38400 = B38400,
 
 	/// Baud rate of 57,600 bits per second (bps).
@@ -146,6 +155,12 @@ impl Default for BaudRate
 
 impl BaudRate
 {
+	/// `EXTA` baud rate; 19,200 bits per second.
+	pub const ExtendedA: Self = BaudRate::B19200;
+
+	/// `EXTB` baud rate; 38,400 bits per second.
+	pub const ExtendedB: Self = BaudRate::B38400;
+
 	/// On Linux, the terminal input speed and terminal output speed can not differ.
 	#[inline(always)]
 	pub(crate) fn set_terminal_input_and_output_speed(self, terminal_options: &mut termios)

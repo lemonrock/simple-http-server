@@ -7,7 +7,7 @@
 /// Defaults to `Echo::Off`, which is the most sensible choice.
 ///
 /// Echoing is possible in both NonCanonical and Canonical modes.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(not(any(target_os = "ios", target_os = "macos")), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "32"), repr(u32))]
 #[cfg_attr(all(any(target_os = "ios", target_os = "macos"), target_pointer_width = "64"), repr(u64))]
@@ -43,7 +43,22 @@ impl Default for Echo
 	}
 }
 
+impl Into<tcflag_t> for Echo
+{
+	#[inline(always)]
+	fn into(self) -> tcflag_t
+	{
+		self as tcflag_t
+	}
+}
+
 impl MultipleBits for Echo
 {
 	const Bitmask: tcflag_t = ECHO | ECHOCTL | ECHOPRT;
+
+	#[inline(always)]
+	fn transmute_from_clean_mode_flags(clean_mode_flags: tcflag_t) -> Self
+	{
+		unsafe { transmute(clean_mode_flags) }
+	}
 }

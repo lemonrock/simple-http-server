@@ -5,5 +5,5 @@
 #[link(name = "c")]
 extern "C"
 {
-	pub(crate) fn cfmakeraw(termios_p: *mut termios);
+	#[allow(dead_code)] pub(crate) fn cfmakeraw(termios_p: *mut termios);
 }

@@ -82,37 +82,27 @@ impl MiscellaneousOutputModeFlagSettings
 
 		for (flag, setting) in self.0.iter()
 		{
-			let flag_value = flag.into();
+			let flag_value = (*flag) as tcflag_t;
 
 			match setting
 			{
 				On => flags_on |= flag_value,
 				Off => flags_off |= flag_value,
-				Inherit => (),
 			}
 		}
 
-		(existing_flags | flags_on) & !flags_on
+		(existing_flags | flags_on) & !flags_off
 	}
 
 	#[inline(always)]
-	pub(crate) fn from_mode_flags(output_mode_flags: tcflag_t) -> Self
+	pub(crate) fn from_mode_flags(mode_flags: tcflag_t) -> Self
 	{
 		let mut this = Self(BTreeMap::new());
 
-		use self::MiscellaneousOutputModeFlag::*;
-		use self::FlagSetting::*;
-
-		this.insert_flag_setting(ImplementationDefinedOutputProcessing, output_mode_flags);
-		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "linux"))] this.insert_flag_setting(MapLowercaseToUppercase, output_mode_flags);
-		this.insert_flag_setting(MapNewLineToCarriageReturnNewLine, output_mode_flags);
-		this.insert_flag_setting(MapCarriageReturnToNewLine, output_mode_flags);
-		this.insert_flag_setting(DiscardCarriageReturnAtColumnZero, output_mode_flags);
-		this.insert_flag_setting(DiscardCarriageReturn, output_mode_flags);
-		#[cfg(any(target_os = "android", target_os = "fuschia", target_os = "ios", target_os = "linux", target_os = "macos"))] this.insert_flag_setting(SendFillCharactersForADelay, output_mode_flags);
-		#[cfg(any(target_os = "android", target_os = "output_mode_flags", target_os = "ios", target_os = "linux", target_os = "macos"))] this.insert_flag_setting(FillCharacterIsAsciiDeleteRatherThaAsciiNul, output_mode_flags);
-		this.insert_flag_setting(ExpandTabsToSpaces, Off);
-		#[cfg(any(target_os = "dragonfly", target_os = "freebsd", target_os = "ios", target_os = "macos", target_os = "openbsd"))] this.insert_flag_setting(DiscardControlD, output_mode_flags);
+		for flag in MiscellaneousOutputModeFlag::iter()
+		{
+			this.insert_flag_setting(flag, mode_flags);
+		}
 
 		this
 	}
@@ -120,7 +110,7 @@ impl MiscellaneousOutputModeFlagSettings
 	#[inline(always)]
 	fn insert_flag_setting(&mut self, miscellaneous_output_mode_flag: MiscellaneousOutputModeFlag, output_mode_flags: tcflag_t)
 	{
-		let flag_setting = FlagSetting::from(output_mode_flags & miscellaneous_output_mode_flag.into() != 0);
+		let flag_setting = FlagSetting::from((miscellaneous_output_mode_flag as tcflag_t) & output_mode_flags != 0);
 		self.insert(miscellaneous_output_mode_flag, flag_setting);
 	}
 }
