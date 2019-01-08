@@ -35,6 +35,14 @@ impl IntoRawFd for CharacterDeviceFileDescriptor
 	}
 }
 
+impl SpliceRecipient for CharacterDeviceFileDescriptor
+{
+}
+
+impl SpliceSender for CharacterDeviceFileDescriptor
+{
+}
+
 impl Read for CharacterDeviceFileDescriptor
 {
 	/// This particular implementation can only return an `io::ErrorKind` of:-

@@ -34,7 +34,7 @@
 //! * fanotify.
 //! * inotify.
 //! * POSIX message queues (<(https://linux.die.net/man/7/mq_overview>).
-//! * pipes_and_fifos (anonymous and named (FIFO)s).
+//! * pipes_and_fifos (anonymous and named (FIFO)s), including support for splice, vmsplice and tee.
 //! * signalfd.
 //! * sockets (TCP, UDP and the equivalent over Unix Domain Sockets).
 //! * terminals (serial ports and modems).
@@ -68,11 +68,10 @@
 //! * `SO_BUSY_POLL` and `SO_INCOMING_CPU`.
 //! * Unix Domain Sockets using `autobind`; setting of the `SO_PASSCRED` socket option.
 //! * Receiving credentials over Unix Domain Sockets using `recvmsg()`.
-//! * `vmsplice()`, `tee()` and `splice()`.
 //! * `mkfifo()`.
 //! * `mknod()`.
 //! * infiniband sockets.
-//! * canbus (SocketCAN sockets and can4linux character device drivers).
+//! * canbus (SocketCAN sockets and can4linux <http://can-wiki.info/can4linux/man/can4linux_8h_source.html> character device drivers).
 
 
 #[cfg(any(target_os = "android", target_os = "emscripten", target_os = "fuschia", target_os = "linux", target_os = "solaris", target_env = "uclibc"))] extern crate arrayvec;
@@ -212,6 +211,8 @@ cfg_if!
 
 
 		/// Terminal (serial port and modem) file descriptors.
+		///
+		/// Create an instance of `TerminalFileDescriptor` to get started with a terminal or serial port.
 		pub mod terminal;
 
 

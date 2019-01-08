@@ -3,6 +3,8 @@
 
 
 use super::*;
+use super::pipes_and_fifos::SpliceRecipient;
+use super::pipes_and_fifos::SpliceSender;
 use self::syscall::*;
 use ::libc::AF_IB;
 use ::libc::AF_INET;

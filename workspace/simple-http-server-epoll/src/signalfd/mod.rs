@@ -4,7 +4,6 @@
 
 use super::*;
 use self::syscall::*;
-use super::epoll::syscall::EPOLLIN;
 use ::libc::pthread_sigmask;
 use ::libc::raise;
 use ::libc::SIG_BLOCK;

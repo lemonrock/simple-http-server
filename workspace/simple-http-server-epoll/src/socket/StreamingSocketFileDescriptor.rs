@@ -34,6 +34,14 @@ impl<SD: SocketData> Drop for StreamingSocketFileDescriptor<SD>
 	}
 }
 
+impl<SD: SocketData> SpliceRecipient for StreamingSocketFileDescriptor<SD>
+{
+}
+
+impl<SD: SocketData> SpliceSender for StreamingSocketFileDescriptor<SD>
+{
+}
+
 impl<SD: SocketData> AsRawFd for StreamingSocketFileDescriptor<SD>
 {
 	#[inline(always)]

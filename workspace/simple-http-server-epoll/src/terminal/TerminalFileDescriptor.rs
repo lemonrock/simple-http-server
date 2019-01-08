@@ -26,6 +26,14 @@ impl IntoRawFd for TerminalFileDescriptor
 	}
 }
 
+impl SpliceRecipient for TerminalFileDescriptor
+{
+}
+
+impl SpliceSender for TerminalFileDescriptor
+{
+}
+
 impl Read for TerminalFileDescriptor
 {
 	/// This particular implementation can only return an `io::ErrorKind` of:-

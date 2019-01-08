@@ -4,6 +4,8 @@
 
 use super::*;
 use super::character_device::CharacterDeviceFileDescriptor;
+use super::pipes_and_fifos::SpliceRecipient;
+use super::pipes_and_fifos::SpliceSender;
 use self::c::*;
 use ::libc::O_NOCTTY;
 use ::std::collections::BTreeMap;

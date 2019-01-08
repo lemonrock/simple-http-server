@@ -36,6 +36,10 @@ impl IntoRawFd for ReceivePipeFileDescriptor
 	}
 }
 
+impl SpliceSender for ReceivePipeFileDescriptor
+{
+}
+
 impl Read for ReceivePipeFileDescriptor
 {
 	/// This particular implementation can only return an `io::ErrorKind` of:-
@@ -131,5 +135,127 @@ impl ReceivePipeFileDescriptor
 	pub fn standard_in() -> Self
 	{
 		Self(Self::StandardInFileDescriptor)
+	}
+
+	/// Uses Linux's `splice()` functionality to move data.
+	///
+	/// A successful result returning `0` means end-of-input, unless `maximum_number_of_bytes_to_transfer` was `0`.
+	///
+	/// Non-blocking.
+	///
+	/// `more_is_coming_hint` is used to hint that more data may be sent to `splice_to` soon.
+	#[inline(always)]
+	pub fn splice_from(&self, splice_to: &impl SpliceRecipient, maximum_number_of_bytes_to_transfer: usize, more_is_coming_hint: bool) -> Result<usize, StructReadError>
+	{
+		if unlikely!(maximum_number_of_bytes_to_transfer == 0)
+		{
+			return Ok(0)
+		}
+
+		let fd_out = splice_to.as_raw_fd();
+
+		debug_assert_ne!(fd_out, self.0, "Can not splice to self");
+
+		const CommonFlags: c_uint = SPLICE_F_MOVE | SPLICE_F_NONBLOCK;
+
+		let flags = if unlikely!(more_is_coming_hint)
+		{
+			CommonFlags | SPLICE_F_MORE
+		}
+		else
+		{
+			CommonFlags
+		};
+
+		let result = unsafe { splice(self.0, null_mut(), fd_out, null_mut(), maximum_number_of_bytes_to_transfer, flags) };
+
+		if likely!(result >= 0)
+		{
+			Ok(result as usize)
+		}
+		else if likely!(result == -1)
+		{
+			use self::StructReadError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EAGAIN | ENOMEM => WouldBlock,
+
+					EINTR => Interrupted,
+
+					EBADF => panic!("One or both file descriptors are not valid, or do not have proper read-write mode"),
+					EINVAL => panic!("The target filesystem doesn't support splicing; or the target file is opened in append mode; or neither of the file descriptors refers to a pipe; or an offset was given for nonseekable device (eg, a pipe); or `fd_in` and `fd_out` refer to the same pipe"),
+					ESPIPE => panic!("Either `off_in` or `off_out` was not `NULL`, but the corresponding file descriptor refers to a pipe"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!()
+		}
+	}
+
+	/// Uses Linux's `tee()` functionality to zero copy data.
+	///
+	/// A successful result returning `0` means end-of-input, unless `maximum_number_of_bytes_to_transfer` was `0`.
+	///
+	/// Non-blocking.
+	///
+	/// `more_is_coming_hint` is used to hint that more data may be sent to `tee_to` soon.
+	#[inline(always)]
+	pub fn tee_from(&self, tee_to: &impl SpliceRecipient, maximum_number_of_bytes_to_transfer: usize, more_is_coming_hint: bool) -> Result<usize, StructReadError>
+	{
+		if unlikely!(maximum_number_of_bytes_to_transfer == 0)
+		{
+			return Ok(0)
+		}
+
+		let fd_out = tee_to.as_raw_fd();
+
+		debug_assert_ne!(fd_out, self.0, "Can not tee to self");
+
+		const CommonFlags: c_uint = SPLICE_F_NONBLOCK;
+
+		let flags = if unlikely!(more_is_coming_hint)
+		{
+			CommonFlags | SPLICE_F_MORE
+		}
+		else
+		{
+			CommonFlags
+		};
+
+		let result = unsafe { tee(self.0, fd_out, maximum_number_of_bytes_to_transfer, flags) };
+
+		if likely!(result >= 0)
+		{
+			Ok(result as usize)
+		}
+		else if likely!(result == -1)
+		{
+			use self::StructReadError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EAGAIN | ENOMEM => WouldBlock,
+
+					EINTR => Interrupted,
+
+					EINVAL => panic!("`fd_in` and `fd_out` does not refer to a pipe; or `fd_in` and `fd_out` refer to the same pipe"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!()
+		}
 	}
 }

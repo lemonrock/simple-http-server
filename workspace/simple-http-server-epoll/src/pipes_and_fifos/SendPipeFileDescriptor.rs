@@ -37,6 +37,10 @@ impl IntoRawFd for SendPipeFileDescriptor
 	}
 }
 
+impl SpliceRecipient for SendPipeFileDescriptor
+{
+}
+
 impl Write for SendPipeFileDescriptor
 {
 	/// This particular implementation can only return an `io::ErrorKind` of:-
@@ -243,4 +247,180 @@ impl SendPipeFileDescriptor
 		}
 	}
 
+	/// Uses Linux's `splice()` functionality to move data.
+	///
+	/// A successful result returning `0` means end-of-input, unless `maximum_number_of_bytes_to_transfer` was `0`.
+	///
+	/// Non-blocking.
+	///
+	/// `more_is_coming_hint` is used to hint that more data may be sent to `splice_to` soon.
+	#[inline(always)]
+	pub fn splice_to(&self, splice_from: &impl SpliceSender, maximum_number_of_bytes_to_transfer: usize, more_is_coming_hint: bool) -> Result<usize, StructWriteError>
+	{
+		if unlikely!(maximum_number_of_bytes_to_transfer == 0)
+		{
+			return Ok(0)
+		}
+
+		let fd_in = splice_from.as_raw_fd();
+
+		debug_assert_ne!(fd_in, self.0, "Can not splice to self");
+
+		const CommonFlags: c_uint = SPLICE_F_MOVE | SPLICE_F_NONBLOCK;
+
+		let flags = if unlikely!(more_is_coming_hint)
+		{
+			CommonFlags | SPLICE_F_MORE
+		}
+		else
+		{
+			CommonFlags
+		};
+
+		let result = unsafe { splice(fd_in, null_mut(), self.0, null_mut(), maximum_number_of_bytes_to_transfer, flags) };
+
+		if likely!(result >= 0)
+		{
+			Ok(result as usize)
+		}
+		else if likely!(result == -1)
+		{
+			use self::StructWriteError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EAGAIN | ENOMEM => WouldBlock,
+
+					EINTR => Interrupted,
+
+					EBADF => panic!("One or both file descriptors are not valid, or do not have proper read-write mode"),
+					EINVAL => panic!("The target filesystem doesn't support splicing; or the target file is opened in append mode; or neither of the file descriptors refers to a pipe; or an offset was given for nonseekable device (eg, a pipe); or `fd_in` and `fd_out` refer to the same pipe"),
+					ESPIPE => panic!("Either `off_in` or `off_out` was not `NULL`, but the corresponding file descriptor refers to a pipe"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!()
+		}
+	}
+
+	/// Uses Linux's `tee()` functionality to zero copy data.
+	///
+	/// A successful result returning `0` means end-of-input, unless `maximum_number_of_bytes_to_transfer` was `0`.
+	///
+	/// Non-blocking.
+	///
+	/// `more_is_coming_hint` is used to hint that more data may be sent to `tee_from` soon.
+	#[inline(always)]
+	pub fn tee_to(&self, tee_from: &impl SpliceRecipient, maximum_number_of_bytes_to_transfer: usize, more_is_coming_hint: bool) -> Result<usize, StructWriteError>
+	{
+		if unlikely!(maximum_number_of_bytes_to_transfer == 0)
+		{
+			return Ok(0)
+		}
+
+		let fd_in = tee_from.as_raw_fd();
+
+		debug_assert_ne!(fd_in, self.0, "Can not tee to self");
+
+		const CommonFlags: c_uint = SPLICE_F_NONBLOCK;
+
+		let flags = if unlikely!(more_is_coming_hint)
+		{
+			CommonFlags | SPLICE_F_MORE
+		}
+		else
+		{
+			CommonFlags
+		};
+
+		let result = unsafe { tee(fd_in, self.0, maximum_number_of_bytes_to_transfer, flags) };
+
+		if likely!(result >= 0)
+		{
+			Ok(result as usize)
+		}
+		else if likely!(result == -1)
+		{
+			use self::StructWriteError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EAGAIN | ENOMEM => WouldBlock,
+
+					EINTR => Interrupted,
+
+					EINVAL => panic!("`fd_in` and `fd_in` does not refer to a pipe; or `fd_in` and `fd_in` refer to the same pipe"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!()
+		}
+	}
+
+	/// Copies memory buffers into this pipe.
+	///
+	/// If `gift` is specified the application may never modify the memory buffers again; gifting existing to make `splice_from()` more efficient, but currently has no advantage as Linux's `splice()` currently does not move memory.
+	///
+	/// When using `gift` the `memory_buffers` must be aligned.
+	///
+	/// The maximum number of items in `memory_buffers` is `IOV_MAX` (1024).
+	#[inline(always)]
+	pub fn vmsplice(&self, memory_buffers: &[iovec], gift_to_kernel: bool) -> Result<usize, StructWriteError>
+	{
+		const IOV_MAX: usize = 1024;
+		debug_assert!(memory_buffers.len() <= IOV_MAX, "too many memory buffers");
+
+		const CommonFlags: c_uint = SPLICE_F_NONBLOCK;
+
+		let flags = if unlikely!(gift_to_kernel)
+		{
+			CommonFlags | SPLICE_F_GIFT
+		}
+		else
+		{
+			CommonFlags
+		};
+
+		let result = unsafe { vmsplice(self.0, memory_buffers.as_ptr(), memory_buffers.len() as c_ulong, flags) };
+
+		if likely!(result >= 0)
+		{
+			Ok(result as usize)
+		}
+		else if likely!(result == -1)
+		{
+			use self::StructWriteError::*;
+
+			Err
+			(
+				match errno().0
+				{
+					EAGAIN | ENOMEM => WouldBlock,
+
+					EINTR => Interrupted,
+
+					EBADF => panic!("`fd` is either not valid, or doesn't refer to a pipe"),
+					EINVAL => panic!("`nr_segs` is greater than `IOV_MAX`; or memory not aligned if `SPLICE_F_GIFT` set"),
+
+					_ => unreachable!(),
+				}
+			)
+		}
+		else
+		{
+			unreachable!()
+		}
+	}
 }

@@ -11,12 +11,7 @@ impl Drop for EPollFileDescriptor
 	#[inline(always)]
 	fn drop(&mut self)
 	{
-		// Please see <http://austingroupbugs.net/view.php?id=529> and <http://austingroupbugs.net/view.php?id=529> for why ignoring the `EINTR` error on close is actually sane.
-		//
-		// Frankly, the defects here are those of POSIX: (a) signals, and (b) using a file descriptor so small that it isn't thread safe.
-		//
-		// To be far, both signals and file descriptors predate threads by a long way.
-		unsafe { close(self.0) };
+		self.0.close()
 	}
 }
 
@@ -35,6 +30,104 @@ impl IntoRawFd for EPollFileDescriptor
 	fn into_raw_fd(self) -> RawFd
 	{
 		self.0
+	}
+}
+
+impl EventPoll for EPollFileDescriptor
+{
+	#[inline(always)]
+	fn add(&self, fd: RawFd, flags: EPollAddFlags, token: u64) -> Result<(), EPollAddError>
+	{
+		let mut event = epoll_event
+		{
+			events: flags.bits,
+			data: epoll_data_t
+			{
+				u64: token,
+			},
+		};
+
+		use self::EPollAddError::*;
+
+		match unsafe { epoll_ctl(self.0, EPOLL_CTL_ADD, fd, &mut event) }
+		{
+			0 => Ok(()),
+
+			-1 => Err
+			(
+				match errno().0
+				{
+					ENOMEM => ThereWasInsufficientKernelMemory,
+
+					ENOSPC => LimitOnWatchesWouldBeExceeded,
+
+					EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
+					EEXIST => panic!("The supplied file descriptor was already registered with this epoll instance"),
+					EINVAL => panic!("Can not add epoll file descriptor to its self, or can not make wait on an epoll file descriptor `EPOLLEXCLUSIVE`"),
+					ELOOP => panic!("The supplied file descriptor is for an epoll instance and this operation would result in a circular loop of epoll instances monitoring one another"),
+					EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
+
+					_ => unreachable!(),
+				}
+			),
+
+			_ => unreachable!(),
+		}
+	}
+
+	#[inline(always)]
+	fn modify(&self, fd: RawFd, flags: EPollModifyFlags, token: u64) -> Result<(), EPollModifyError>
+	{
+		let mut event = epoll_event
+		{
+			events: flags.bits,
+			data: epoll_data_t
+			{
+				u64: token,
+			},
+		};
+
+		match unsafe { epoll_ctl(self.0, EPOLL_CTL_MOD, fd, &mut event) }
+		{
+			0 => Ok(()),
+
+			-1 => match errno().0
+			{
+				ENOMEM => Err(EPollModifyError::ThereWasInsufficientKernelMemory),
+
+				EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
+				EINVAL => panic!("Supplied file descriptor was not usable or there was the presence or absence of `Exclusive` when required"),
+				ENOENT => panic!("The supplied file descriptor is not registered with this epoll instance"),
+				EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
+
+				_ => unreachable!(),
+			},
+
+			_ => unreachable!(),
+		}
+	}
+
+	#[inline(always)]
+	fn delete(&self, fd: RawFd) -> Result<(), EPollDeleteError>
+	{
+		match unsafe { epoll_ctl(self.0, EPOLL_CTL_DEL, fd, null_mut()) }
+		{
+			0 => Ok(()),
+
+			-1 => match errno().0
+			{
+				ENOMEM => Err(EPollDeleteError::ThereWasInsufficientKernelMemory),
+
+				EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
+				EINVAL => panic!("Supplied file descriptor was not usable"),
+				ENOENT => panic!("The supplied file descriptor is not registered with this epoll instance"),
+				EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
+
+				_ => unreachable!(),
+			},
+
+			_ => unreachable!(),
+		}
 	}
 }
 
@@ -84,104 +177,6 @@ impl EPollFileDescriptor
 		}
 
 		Ok(())
-	}
-
-	/// Adds a file descriptor to an EPoll instance.
-	#[inline(always)]
-	pub fn add(&self, fd: RawFd, flags: EPollAddFlags, token: u64) -> Result<(), EPollAddError>
-	{
-		let mut event = epoll_event
-		{
-			events: flags.bits,
-			data: epoll_data_t
-			{
-				u64: token,
-			},
-		};
-
-		use self::EPollAddError::*;
-
-		match unsafe { epoll_ctl(self.0, EPOLL_CTL_ADD, fd, &mut event) }
-		{
-			0 => Ok(()),
-
-			-1 => Err
-			(
-				match errno().0
-				{
-					ENOMEM => ThereWasInsufficientKernelMemory,
-
-					ENOSPC => LimitOnWatchesWouldBeExceeded,
-
-					EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
-					EEXIST => panic!("The supplied file descriptor was already registered with this epoll instance"),
-					EINVAL => panic!("Can not add epoll file descriptor to its self, or can not make wait on an epoll file descriptor `EPOLLEXCLUSIVE`"),
-					ELOOP => panic!("The supplied file descriptor is for an epoll instance and this operation would result in a circular loop of epoll instances monitoring one another"),
-					EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
-
-					_ => unreachable!(),
-				}
-			),
-
-			_ => unreachable!(),
-		}
-	}
-
-	/// Modifies a file descriptor in an EPoll instance.
-	#[inline(always)]
-	pub fn modify(&self, fd: RawFd, flags: EPollModifyFlags, token: u64) -> Result<(), EPollModifyError>
-	{
-		let mut event = epoll_event
-		{
-			events: flags.bits,
-			data: epoll_data_t
-			{
-				u64: token,
-			},
-		};
-
-		match unsafe { epoll_ctl(self.0, EPOLL_CTL_MOD, fd, &mut event) }
-		{
-			0 => Ok(()),
-
-			-1 => match errno().0
-			{
-				ENOMEM => Err(EPollModifyError::ThereWasInsufficientKernelMemory),
-
-				EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
-				EINVAL => panic!("Supplied file descriptor was not usable or there was the presence or absence of `Exclusive` when required"),
-				ENOENT => panic!("The supplied file descriptor is not registered with this epoll instance"),
-				EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
-
-				_ => unreachable!(),
-			},
-
-			_ => unreachable!(),
-		}
-	}
-
-	/// Deletes a file descriptor in an EPoll instance.
-	#[inline(always)]
-	pub fn delete(&self, fd: RawFd) -> Result<(), EPollDeleteError>
-	{
-		match unsafe { epoll_ctl(self.0, EPOLL_CTL_DEL, fd, null_mut()) }
-		{
-			0 => Ok(()),
-
-			-1 => match errno().0
-			{
-				ENOMEM => Err(EPollDeleteError::ThereWasInsufficientKernelMemory),
-
-				EBADF => panic!("The supplied file descriptor was not a valid file descriptor"),
-				EINVAL => panic!("Supplied file descriptor was not usable"),
-				ENOENT => panic!("The supplied file descriptor is not registered with this epoll instance"),
-				EPERM => panic!("The supplied file descriptor does not support epoll (perhaps it is an open regular file or the like)"),
-
-				_ => unreachable!(),
-			},
-
-			_ => unreachable!(),
-		}
 	}
 
 	/// Waits for events.

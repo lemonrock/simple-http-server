@@ -3,7 +3,13 @@
 
 
 use super::*;
+use ::libc::loff_t;
+use ::libc::ssize_t;
 
 
 include!("open.rs");
 include!("pipe2.rs");
+include!("splice.rs");
+include!("SPLICE_F.rs");
+include!("tee.rs");
+include!("vmsplice.rs");

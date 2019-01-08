@@ -4,11 +4,15 @@
 
 use super::*;
 use self::syscall::*;
+use ::libc::c_uint;
+use ::libc::c_ulong;
 use ::libc::ENAMETOOLONG;
 use ::libc::ENXIO;
 use ::libc::EOVERFLOW;
 use ::libc::EROFS;
+use ::libc::ESPIPE;
 use ::libc::ETXTBSY;
+use ::libc::iovec;
 use ::std::ffi::CString;
 use ::std::io;
 use ::std::io::ErrorKind;
@@ -22,3 +26,5 @@ pub(crate) mod syscall;
 
 include!("ReceivePipeFileDescriptor.rs");
 include!("SendPipeFileDescriptor.rs");
+include!("SpliceRecipient.rs");
+include!("SpliceSender.rs");

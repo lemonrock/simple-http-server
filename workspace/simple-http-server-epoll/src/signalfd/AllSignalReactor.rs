@@ -10,6 +10,37 @@ pub struct AllSignalReactor<SH: SignalHandler>
 	signal_file_descriptor: SignalFileDescriptor,
 }
 
+impl<SH: SignalHandler> Reactor for AllSignalReactor<SH>
+{
+	/// React to events becoming ready.
+	///
+	/// If an error is returned then all activity is cut short; any dequeued events not yet 'reacted' to are discarded.
+	fn react(&mut self, _event_poll: &impl EventPoll, _token: u64, flags: EPollEventFlags) -> Result<(), ()>
+	{
+		debug_assert_eq!(flags, EPollEventFlags::Input, "flags contained a flag other than `Input`");
+
+		use self::StructReadError::*;
+
+		let mut signals: [signalfd_siginfo; 32] = unsafe { uninitialized() };
+
+		match self.signal_file_descriptor.read(&mut signals)
+		{
+			Err(WouldBlock) => (),
+
+			Err(Cancelled) => panic!("Signal file descriptor was interrupted"),
+
+			Err(Interrupted) => panic!("EINTR should not occur for read() et al when using a signalfd and blocking all signals on a thread"),
+
+			Ok(signals) => for signal in signals
+			{
+				signal.handle_signal(&self.signal_handler)?
+			},
+		}
+
+		Ok(())
+	}
+}
+
 impl<SH: SignalHandler> AllSignalReactor<SH>
 {
 	/// Register with epoll.
@@ -72,33 +103,5 @@ impl<SH: SignalHandler> AllSignalReactor<SH>
 				_ => unreachable!(),
 			}
 		}
-	}
-
-	/// React to events becoming ready.
-	///
-	/// If an error is returned then all activity is cut short; any dequeued events not yet 'reacted' to are discarded.
-	pub fn react(&mut self, _epoll_file_descriptor: &EPollFileDescriptor, _token: u64, flags: u32) -> Result<(), ()>
-	{
-		debug_assert_eq!(flags, EPOLLIN, "flags contained a flag other than `EPOLLIN`");
-
-		use self::StructReadError::*;
-
-		let mut signals: [signalfd_siginfo; 32] = unsafe { uninitialized() };
-
-		match self.signal_file_descriptor.read(&mut signals)
-		{
-			Err(WouldBlock) => (),
-
-			Err(Cancelled) => panic!("Signal file descriptor was interrupted"),
-
-			Err(Interrupted) => panic!("EINTR should not occur for read() et al when using a signalfd and blocking all signals on a thread"),
-
-			Ok(signals) => for signal in signals
-			{
-				signal.handle_signal(&self.signal_handler)?
-			}
-		}
-
-		Ok(())
 	}
 }
